@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "prepare": "husky install",
+    "lint": "eslint './**/*.{ts,tsx}'",
+    "lint:fix": "yarn lint --fix",
+    "prettify": "prettier --check './**/*.{ts,tsx}'",
+    "prettify:write": "prettier --write './**/*.{ts,tsx}'"
   },
   "browser": {
     "fs": false,
@@ -35,6 +39,9 @@
     "typescript": "5.1.6"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^13.4.9"
+    "@next/eslint-plugin-next": "^13.4.9",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "husky": "^8.0.0",
+    "prettier": "^3.0.0"
   }
 }
