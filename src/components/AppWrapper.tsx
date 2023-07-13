@@ -1,8 +1,9 @@
 'use client';
 
-import Env from '@/constants/environment';
-import { initializeDriftStore, DriftProvider } from '@drift-labs/react';
+import { DriftProvider, initializeDriftStore } from '@drift-labs/react';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
+
+import Env from '@/constants/environment';
 
 initializeDriftStore(Env);
 

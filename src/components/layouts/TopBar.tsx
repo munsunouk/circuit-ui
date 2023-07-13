@@ -1,11 +1,10 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-
-import Image from 'next/image';
 import { Syne } from 'next/font/google';
-import { twMerge } from 'tailwind-merge';
+import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { twMerge } from 'tailwind-merge';
 
 const syne = Syne({ subsets: ['latin'] });
 
