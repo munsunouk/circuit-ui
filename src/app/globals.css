@@ -13,6 +13,9 @@
 	--text-selected: var(--main-blue);
 
 	/* Background/Border Colors */
+	--container-bg: #000;
+	--container-bg-selected: #08121b;
+	--container-border: #333333;
 	--success-green-border: #66d485;
 	--success-green-bg: #002009;
 	--error-red-border: #d46d66;
@@ -22,4 +25,15 @@
 body {
 	background-color: #000;
 	color: var(--text-default);
+}
+
+.backdrop {
+	background-image: url('../../public/backdrop.png');
+	background-repeat: no-repeat;
+	background-size: 100%;
+	background-position: top center;
+
+	@media (max-width: 768px) {
+		background-size: 140%;
+	}
 }

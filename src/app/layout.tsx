@@ -1,9 +1,10 @@
 import AppWrapper from '@/components/AppWrapper';
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Source_Sans_3 } from 'next/font/google';
+import TopBar from '@/components/layouts/TopBar';
 
-const inter = Inter({ subsets: ['latin'] });
+const sourceSans3 = Source_Sans_3({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
 	title: 'Circuits',
@@ -17,8 +18,13 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>
-				<AppWrapper>{children}</AppWrapper>
+			<body className={sourceSans3.className}>
+				<AppWrapper>
+					<div className="min-h-screen backdrop">
+						<TopBar />
+						{children}
+					</div>
+				</AppWrapper>
 			</body>
 		</html>
 	);

@@ -11,6 +11,9 @@ const SEMANTIC_CLASSES = {
 	'text-selected': 'var(--text-selected)',
 
 	// Background/Border Colors
+	'container-bg': 'var(--container-bg)',
+	'container-bg-selected': 'var(--container-bg-selected)',
+	'container-border': 'var(--container-border)',
 	'success-green-border': 'var(--success-green-border)',
 	'success-green-bg': 'var(--success-green-bg)',
 	'error-red-border': 'var(--error-red-border)',
