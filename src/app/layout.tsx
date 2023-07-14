@@ -4,9 +4,9 @@ import { Source_Sans_3 } from 'next/font/google';
 import AppWrapper from '@/components/AppWrapper';
 import TopBar from '@/components/layouts/TopBar';
 
-import './globals.css';
+import { sourceSans3 } from '@/constants/fonts';
 
-const sourceSans3 = Source_Sans_3({ subsets: ['latin'] });
+import './globals.css';
 
 export const metadata: Metadata = {
 	title: 'Circuits',

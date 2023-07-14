@@ -1,12 +1,11 @@
 'use client';
 
-import { Syne } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 
-const syne = Syne({ subsets: ['latin'] });
+import { syne } from '@/constants/fonts';
 
 type TabProps = {
 	label: string;
@@ -30,7 +29,7 @@ const Tab = (props: TabProps) => {
 		<Link
 			href={props.route}
 			className={twMerge(
-				'flex items-center justify-center w-40 h-full cursor-pointer hover:opacity-80',
+				'flex items-center justify-center w-40 h-full cursor-pointer hover:opacity-80 font-normal',
 				props.selected && 'bg-container-bg-selected text-text-selected'
 			)}
 		>
