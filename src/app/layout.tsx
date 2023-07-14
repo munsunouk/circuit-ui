@@ -24,7 +24,11 @@ export default function RootLayout({
 				<AppWrapper>
 					<div className="min-h-screen backdrop">
 						<TopBar />
-						{children}
+						<div className="flex justify-center w-full">
+							<div className="max-w-[1440px] [&>div]:w-full w-full px-[135px] pb-20">
+								{children}
+							</div>
+						</div>
 					</div>
 				</AppWrapper>
 			</body>

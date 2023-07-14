@@ -10,7 +10,8 @@
     "lint": "eslint './**/*.{ts,tsx}'",
     "lint:fix": "yarn lint --fix",
     "prettify": "prettier --check './**/*.{ts,tsx}'",
-    "prettify:write": "prettier --write './**/*.{ts,tsx}'"
+    "prettify:write": "prettier --write './**/*.{ts,tsx}'",
+    "convert-icons": "npx @svgr/cli --typescript --no-prettier --icon --out-dir ./src/components/icons ./public/icons"
   },
   "browser": {
     "fs": false,
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.4.9",
+    "@svgr/cli": "^8.0.1",
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "husky": "^8.0.0",

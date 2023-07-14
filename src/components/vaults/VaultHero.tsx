@@ -25,7 +25,7 @@ export default function VaultHero() {
 				<span
 					className={twMerge(
 						syne.className,
-						'text-6xl font-bold text-main-blue'
+						'text-6xl font-bold gradient-vault-name'
 					)}
 				>
 					Supercharger Vault

@@ -14,6 +14,8 @@ const SEMANTIC_CLASSES = {
 	'container-bg': 'var(--container-bg)',
 	'container-bg-selected': 'var(--container-bg-selected)',
 	'container-border': 'var(--container-border)',
+	'container-border-light': 'var(--container-border-light)',
+	'container-border-selected': 'var(--container-border-selected)',
 	'success-green-border': 'var(--success-green-border)',
 	'success-green-bg': 'var(--success-green-bg)',
 	'error-red-border': 'var(--error-red-border)',
