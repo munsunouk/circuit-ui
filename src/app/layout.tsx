@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { Source_Sans_3 } from 'next/font/google';
 
 import AppWrapper from '@/components/AppWrapper';
 import TopBar from '@/components/layouts/TopBar';
+import FloatingUi from '@/components/modals/FloatingUi';
 
 import { sourceSans3 } from '@/constants/fonts';
 
@@ -29,6 +29,7 @@ export default function RootLayout({
 								{children}
 							</div>
 						</div>
+						<FloatingUi />
 					</div>
 				</AppWrapper>
 			</body>
