@@ -9,6 +9,7 @@
 	/* Font Colors */
 	--text-default: #ccc;
 	--text-secondary: #cdcdcd;
+	--text-semi-emphasis: #fafafa;
 	--text-emphasis: #fff;
 	--text-selected: var(--main-blue);
 

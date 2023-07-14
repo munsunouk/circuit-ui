@@ -8,6 +8,7 @@ const SEMANTIC_CLASSES = {
 	'text-default': 'var(--text-default)',
 	'text-secondary': 'var(--text-secondary)',
 	'text-emphasis': 'var(--text-emphasis)',
+	'text-semi-emphasis': 'var(--text-semi-emphasis)',
 	'text-selected': 'var(--text-selected)',
 
 	// Background/Border Colors

@@ -11,7 +11,7 @@
     "lint:fix": "yarn lint --fix",
     "prettify": "prettier --check './**/*.{ts,tsx}'",
     "prettify:write": "prettier --write './**/*.{ts,tsx}'",
-    "convert-icons": "npx @svgr/cli --typescript --no-prettier --icon --out-dir ./src/components/icons ./public/icons"
+    "convert-icons": "npx @svgr/cli --typescript --no-prettier --icon --out-dir ./src/components/icons ./public/icons && prettier --write './src/components/icons/*.{ts,tsx}'"
   },
   "browser": {
     "fs": false,

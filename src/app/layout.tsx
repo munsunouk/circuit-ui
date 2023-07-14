@@ -25,7 +25,7 @@ export default function RootLayout({
 					<div className="min-h-screen backdrop">
 						<TopBar />
 						<div className="flex justify-center w-full">
-							<div className="max-w-[1440px] [&>div]:w-full w-full px-[135px] pb-20">
+							<div className="max-w-[1440px] [&>div]:w-full w-full xl:px-[135px] lg:px-20 px-10 pb-20">
 								{children}
 							</div>
 						</div>
