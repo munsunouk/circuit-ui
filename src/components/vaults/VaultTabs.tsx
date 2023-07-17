@@ -37,7 +37,7 @@ export default function VaultTabs({
 				selected: selectedTab === tab.tab,
 				onSelect: () => setSelectedTab(tab.tab),
 			}))}
-			className="mt-20 overflow-hidden"
+			className="mt-20"
 			tabClassName="w-[200px] text-xl first:rounded-l-sm last:rounded-r-sm"
 		/>
 	);
