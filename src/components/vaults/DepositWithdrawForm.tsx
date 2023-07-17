@@ -84,6 +84,16 @@ const Form = ({
 	maxAmount: number;
 	setAmount: (amount: number) => void;
 }) => {
+	const [isFocused, setIsFocused] = useState(false);
+
+	const handleFocus = () => {
+		setIsFocused(true);
+	};
+
+	const handleBlur = () => {
+		setIsFocused(false);
+	};
+
 	return (
 		<div className="flex flex-col gap-2">
 			<div className="flex justify-between">
@@ -100,14 +110,26 @@ const Form = ({
 					</span>
 				</span>
 			</div>
-			<div className="flex items-center border border-container-border-light">
+			<div
+				className={twMerge(
+					'flex items-center border border-container-border-light',
+					isFocused && 'border-container-border-selected'
+				)}
+			>
 				<input
 					type="number"
 					className="w-full h-12 px-4 text-lg font-semibold bg-black focus:outline-none focus:border-container-border-selected text-text-emphasis"
 					value={amount}
 					onChange={(e) => setAmount(Number(e.target.value))}
+					onFocus={handleFocus}
+					onBlur={handleBlur}
 				/>
-				<div className="flex items-center justify-center flex-1 h-12 font-medium border-l border-container-border-light px-7">
+				<div
+					className={twMerge(
+						'flex items-center justify-center flex-1 h-12 font-medium border-l border-container-border-light px-7',
+						isFocused && 'border-container-border-selected'
+					)}
+				>
 					USDC
 				</div>
 			</div>
