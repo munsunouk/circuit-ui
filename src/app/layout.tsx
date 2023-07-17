@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import AppWrapper from '@/components/AppWrapper';
+import ToastContainer from '@/components/elements/ToastContainer';
 import TopBar from '@/components/layouts/TopBar';
 import FloatingUi from '@/components/modals/FloatingUi';
 
@@ -30,6 +31,7 @@ export default function RootLayout({
 							</div>
 						</div>
 						<FloatingUi />
+						<ToastContainer />
 					</div>
 				</AppWrapper>
 			</body>

@@ -220,7 +220,7 @@ const DepositWithdrawForm = () => {
 											: 'available for withdrawal'}
 									</span>
 								)}
-							<Button disabled={isButtonDisabled}>
+							<Button className="text-xl" disabled={isButtonDisabled}>
 								{selectedTab === Tab.Deposit
 									? 'Deposit'
 									: getWithdrawButtonLabel(withdrawalState)}

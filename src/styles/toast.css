@@ -1,0 +1,12 @@
+.Toastify__toast-body {
+	align-items: flex-start;
+}
+
+.Toastify__toast-icon {
+	position: relative;
+	top: 2px;
+}
+
+.Toastify__close-button {
+	color: #fff;
+}
