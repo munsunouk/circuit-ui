@@ -14,10 +14,12 @@ const SEMANTIC_CLASSES = {
 
 	// Background/Border Colors
 	'container-bg': 'var(--container-bg)',
+	'container-bg-hover': 'var(--container-bg-hover)',
 	'container-bg-selected': 'var(--container-bg-selected)',
 	'container-border': 'var(--container-border)',
 	'container-border-light': 'var(--container-border-light)',
 	'container-border-selected': 'var(--container-border-selected)',
+	'container-border-hover': 'var(--container-border-hover)',
 	'button-bg-disabled': 'var(--button-bg-disabled)',
 	'success-green-border': 'var(--success-green-border)',
 	'success-green-bg': 'var(--success-green-bg)',

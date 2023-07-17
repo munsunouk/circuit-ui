@@ -3,6 +3,15 @@ import { twMerge } from 'tailwind-merge';
 
 import ConnectButton from '@/components/ConnectButton';
 
+import ButtonTabs from '../elements/ButtonTabs';
+
+const PERCENTAGE_SELECTOR_OPTIONS = [
+	{ label: '25%', value: 0.25 },
+	{ label: '50%', value: 0.5 },
+	{ label: '75%', value: 0.75 },
+	{ label: 'Max', value: 1 },
+];
+
 enum Tab {
 	Deposit,
 	Withdraw,
@@ -86,24 +95,14 @@ const Form = ({
 					USDC
 				</span>
 			</div>
-			<div className="flex items-center border divide-x border-container-border-light divide-container-border-light">
-				<PercentageSelector
-					setAmount={() => setAmount(maxAmount * 0.25)}
-					label="25%"
-				/>
-				<PercentageSelector
-					setAmount={() => setAmount(maxAmount * 0.5)}
-					label="50%"
-				/>
-				<PercentageSelector
-					setAmount={() => setAmount(maxAmount * 0.75)}
-					label="75%"
-				/>
-				<PercentageSelector
-					setAmount={() => setAmount(maxAmount)}
-					label="Max"
-				/>
-			</div>
+
+			<ButtonTabs
+				tabs={PERCENTAGE_SELECTOR_OPTIONS.map((option) => ({
+					label: option.label,
+					onSelect: () => setAmount(maxAmount * option.value),
+					selected: amount === maxAmount * option.value,
+				}))}
+			/>
 		</div>
 	);
 };
