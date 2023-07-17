@@ -1,14 +1,19 @@
-import { twMerge } from 'tailwind-merge';
+import useAppStore from '@/hooks/useAppStore';
+
+import Button from './elements/Button';
 
 export default function ConnectButton({ className }: { className?: string }) {
+	const setStore = useAppStore((s) => s.set);
+
+	const openConnectWalletModal = () => {
+		setStore((s) => {
+			s.modals.showConnectWalletModal = true;
+		});
+	};
+
 	return (
-		<button
-			className={twMerge(
-				'bg-white text-black w-full text-center py-5 font-medium',
-				className
-			)}
-		>
+		<Button className={className} onClick={openConnectWalletModal}>
 			Connect Wallet
-		</button>
+		</Button>
 	);
 }

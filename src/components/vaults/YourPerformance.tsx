@@ -6,6 +6,7 @@ import { ExternalLink } from '@/components/icons';
 import { sourceCodePro } from '@/constants/fonts';
 
 import SectionHeader from '../SectionHeader';
+import Button from '../elements/Button';
 import BreakdownRow from './BreakdownRow';
 
 const StatsBox = ({ label, value }: { label: string; value: string }) => {
@@ -58,9 +59,10 @@ export default function YourPerformance() {
 					history for your records.
 				</div>
 			</div>
-			<div className="flex items-center self-start gap-3 px-4 py-2 border border-container-border-light">
-				<span>View Vault Activity on Drift</span>
-				<ExternalLink />
+			<div>
+				<Button secondary Icon={ExternalLink}>
+					View Vault Activity on Drift
+				</Button>
 			</div>
 		</div>
 	);

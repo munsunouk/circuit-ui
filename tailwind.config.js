@@ -3,6 +3,7 @@
 const SEMANTIC_CLASSES = {
 	// Main Colors
 	'main-blue': 'var(--main-blue)',
+	'secondary-blue': 'var(--secondary-blue)',
 
 	// Font Colors
 	'text-default': 'var(--text-default)',
@@ -17,6 +18,7 @@ const SEMANTIC_CLASSES = {
 	'container-border': 'var(--container-border)',
 	'container-border-light': 'var(--container-border-light)',
 	'container-border-selected': 'var(--container-border-selected)',
+	'button-bg-disabled': 'var(--button-bg-disabled)',
 	'success-green-border': 'var(--success-green-border)',
 	'success-green-bg': 'var(--success-green-bg)',
 	'error-red-border': 'var(--error-red-border)',

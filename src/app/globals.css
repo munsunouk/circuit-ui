@@ -5,7 +5,8 @@
 :root {
 	/* Main Colors */
 	--main-blue: #88c9ff;
-	--circuit-shimmer: #;
+	--secondary-blue: #08121b;
+
 	/* Font Colors */
 	--text-default: #ccc;
 	--text-secondary: #cdcdcd;
@@ -15,10 +16,11 @@
 
 	/* Background/Border Colors */
 	--container-bg: #000;
-	--container-bg-selected: #08121b;
+	--container-bg-selected: var(--secondary-blue);
 	--container-border: #333333;
 	--container-border-light: #cdcdcd;
 	--container-border-selected: var(--main-blue);
+	--button-bg-disabled: #333333;
 	--success-green-border: #66d485;
 	--success-green-bg: #002009;
 	--error-red-border: #d46d66;
@@ -40,6 +42,14 @@ input[type='number'] {
 body {
 	background-color: #000;
 	color: var(--text-default);
+
+	/* Hide scrollbar for IE, Edge and Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+}
+
+body::-webkit-scrollbar {
+	display: none;
 }
 
 .backdrop {

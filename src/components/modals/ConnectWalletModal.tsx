@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import useAppStore from '@/hooks/useAppStore';
 
+import Button from '../elements/Button';
 import { Modal } from './Modal';
 
 const WalletOption = ({
@@ -14,15 +15,16 @@ const WalletOption = ({
 	wallet: Wallet;
 }) => {
 	return (
-		<div
+		<Button
 			onClick={onClick}
 			className={twMerge(
-				'border border-container-border flex justify-between py-4 px-4 min-w-[300px] cursor-pointer hover:opacity-80 transition duration-300',
+				'flex justify-between p-4 min-w-[360px] font-normal',
 				wallet.adapter.connected &&
 					'bg-container-bg-selected border-container-border-selected'
 			)}
+			secondary
 		>
-			<div className="flex gap-1">
+			<div className="flex gap-2">
 				<Image
 					src={wallet.adapter.icon}
 					alt={wallet.adapter.name}
@@ -31,14 +33,14 @@ const WalletOption = ({
 				/>
 				<span>{wallet.adapter.name}</span>
 			</div>
-			<div>
+			<div className={twMerge(wallet.adapter.connected && 'font-semibold')}>
 				{wallet.adapter.connected
 					? 'Connected'
 					: wallet.adapter.readyState === 'Installed'
 					? 'Detected'
 					: ''}
 			</div>
-		</div>
+		</Button>
 	);
 };
 
