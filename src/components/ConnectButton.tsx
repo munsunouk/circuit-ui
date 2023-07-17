@@ -1,3 +1,5 @@
+import { twMerge } from 'tailwind-merge';
+
 import useAppStore from '@/hooks/useAppStore';
 
 import Button from './elements/Button';
@@ -12,7 +14,10 @@ export default function ConnectButton({ className }: { className?: string }) {
 	};
 
 	return (
-		<Button className={className} onClick={openConnectWalletModal}>
+		<Button
+			className={twMerge('text-xl', className)}
+			onClick={openConnectWalletModal}
+		>
 			Connect Wallet
 		</Button>
 	);

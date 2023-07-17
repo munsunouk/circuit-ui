@@ -1,8 +1,10 @@
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import ConnectButton from '@/components/ConnectButton';
 
+import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
@@ -11,6 +13,37 @@ const PERCENTAGE_SELECTOR_OPTIONS = [
 	{ label: '75%', value: 0.75 },
 	{ label: 'Max', value: 1 },
 ];
+
+enum WithdrawalState {
+	UnRequested, // no withdrawal request has been made
+	Requested, // a withdrawal request has been made but not yet available
+	AvailableForWithdrawal, // a withdrawal request has been made and is available
+}
+
+const getWithdrawalDetails = (state: WithdrawalState) => {
+	switch (state) {
+		case WithdrawalState.UnRequested:
+		case WithdrawalState.AvailableForWithdrawal:
+			return 'Withdrawals can be requested at any time and will be available at the end of each quarter.';
+		case WithdrawalState.Requested:
+			return 'Only one withdrawal request can be made at a time.';
+		default:
+			return '';
+	}
+};
+
+const getWithdrawButtonLabel = (state: WithdrawalState) => {
+	switch (state) {
+		case WithdrawalState.UnRequested:
+			return 'Request Withdrawal';
+		case WithdrawalState.Requested:
+			return 'Cancel Request';
+		case WithdrawalState.AvailableForWithdrawal:
+			return 'Withdraw Funds';
+		default:
+			return '';
+	}
+};
 
 enum Tab {
 	Deposit,
@@ -34,23 +67,6 @@ const FormTab = ({
 					'bg-container-bg-selected text-text-selected border-container-border-selected'
 			)}
 			onClick={onSelect}
-		>
-			{label}
-		</span>
-	);
-};
-
-const PercentageSelector = ({
-	setAmount,
-	label,
-}: {
-	label: string;
-	setAmount: () => void;
-}) => {
-	return (
-		<span
-			onClick={setAmount}
-			className="flex items-center justify-center flex-1 py-3 transition duration-300 cursor-pointer hover:opacity-80"
 		>
 			{label}
 		</span>
@@ -91,9 +107,9 @@ const Form = ({
 					value={amount}
 					onChange={(e) => setAmount(Number(e.target.value))}
 				/>
-				<span className="flex items-center justify-center h-full font-medium border-l border-container-border-light px-7">
+				<div className="flex items-center justify-center flex-1 h-12 font-medium border-l border-container-border-light px-7">
 					USDC
-				</span>
+				</div>
 			</div>
 
 			<ButtonTabs
@@ -108,9 +124,23 @@ const Form = ({
 };
 
 const DepositWithdrawForm = () => {
+	const { connected } = useWallet();
+
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
 	const [maxAmount, setMaxAmount] = useState<number>(1);
 	const [amount, setAmount] = useState<number>(0);
+	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
+		WithdrawalState.AvailableForWithdrawal
+	);
+	const [amountRequested, setAmountRequested] = useState<number>(1_000_000.98);
+
+	const isWithdrawTab = selectedTab === Tab.Withdraw;
+	const isDepositTab = selectedTab === Tab.Deposit;
+	const isButtonDisabled =
+		(isDepositTab && amount === 0) ||
+		(isWithdrawTab &&
+			amount === 0 &&
+			withdrawalState !== WithdrawalState.Requested);
 
 	return (
 		<div className="w-full bg-black border border-container-border">
@@ -126,7 +156,18 @@ const DepositWithdrawForm = () => {
 					onSelect={() => setSelectedTab(Tab.Withdraw)}
 				/>
 			</div>
-			<div className="flex flex-col h-[400px] mt-9 mb-7 px-7 justify-between">
+			<div
+				className={twMerge(
+					'flex flex-col gap-9 mt-9 mb-7 px-7',
+					isDepositTab && 'justify-between h-[400px]'
+				)}
+			>
+				{isWithdrawTab && (
+					<span className="text-text-emphasis">
+						{getWithdrawalDetails(withdrawalState)}
+					</span>
+				)}
+
 				<Form
 					tab={selectedTab}
 					maxAmount={maxAmount}
@@ -134,7 +175,44 @@ const DepositWithdrawForm = () => {
 					amount={amount}
 				/>
 
-				<ConnectButton />
+				{connected ? (
+					<div className="flex flex-col items-center gap-4">
+						<div className="flex flex-col w-full">
+							{isWithdrawTab &&
+								(withdrawalState === WithdrawalState.Requested ||
+									withdrawalState ===
+										WithdrawalState.AvailableForWithdrawal) && (
+									<span
+										className={twMerge(
+											'w-full text-center py-2 text-text-emphasis',
+											withdrawalState === WithdrawalState.Requested &&
+												'bg-button-bg-disabled',
+											withdrawalState ===
+												WithdrawalState.AvailableForWithdrawal &&
+												'bg-success-green-bg font-semibold'
+										)}
+									>
+										{amountRequested.toFixed(2)}{' '}
+										{withdrawalState === WithdrawalState.Requested
+											? 'withdrawal requested'
+											: 'available for withdrawal'}
+									</span>
+								)}
+							<Button disabled={isButtonDisabled}>
+								{selectedTab === Tab.Deposit
+									? 'Deposit'
+									: getWithdrawButtonLabel(withdrawalState)}
+							</Button>
+						</div>
+						{isWithdrawTab &&
+							(withdrawalState === WithdrawalState.UnRequested ||
+								withdrawalState === WithdrawalState.Requested) && (
+								<span>Next withdrawal period: July 23-30, 2023</span>
+							)}
+					</div>
+				) : (
+					<ConnectButton />
+				)}
 			</div>
 		</div>
 	);
