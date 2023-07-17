@@ -129,7 +129,9 @@ export const Modal = ({
 					)}
 				>
 					<div className="flex justify-between w-full gap-2 mb-4">
-						<span className="text-xl text-text-emphasis">{header}</span>
+						<span className="text-2xl font-medium text-text-emphasis">
+							{header}
+						</span>
 						<button
 							onClick={onClose}
 							className="flex items-center justify-around transition-opacity duration-300 hover:opacity-80"

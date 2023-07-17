@@ -10,8 +10,8 @@ import { sourceSans3 } from '@/constants/fonts';
 import './globals.css';
 
 export const metadata: Metadata = {
-	title: 'Circuits',
-	description: 'Circuits by Drift Protocol',
+	title: 'Circuit',
+	description: 'Circuit by Drift Protocol',
 };
 
 export default function RootLayout({

@@ -1,5 +1,3 @@
-import { twMerge } from 'tailwind-merge';
-
 import ButtonTabs from '../elements/ButtonTabs';
 
 export enum VaultTab {

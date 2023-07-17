@@ -9,7 +9,6 @@ const SvgEmail = (props: SVGProps<SVGSVGElement>) => (
 		fill="none"
 		viewBox="0 0 24 24"
 		{...props}
-		className="transition-all duration-300"
 	>
 		<path stroke="#fff" strokeWidth={0.5} d="M3 19V5h18v14H3Z" />
 		<path stroke="#fff" strokeWidth={0.5} d="m3 7 9 4.5L21 7" />

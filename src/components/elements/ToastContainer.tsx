@@ -9,7 +9,7 @@ import '../../styles/toast.css';
 export default function ToastContainer() {
 	return (
 		<ToastContainerBase
-			position="bottom-right"
+			position="bottom-left"
 			toastClassName={(context) =>
 				twMerge(
 					'relative flex bg-white p-2 border border-black text-black mt-2 overflow-hidden text-text-emphasis',
