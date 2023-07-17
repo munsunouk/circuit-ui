@@ -4,27 +4,19 @@ import {
 	DriftProvider,
 	initializeDriftStore,
 	useCommonDriftStore,
-	useSyncWalletToStore,
 } from '@drift-labs/react';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 
 import useAppStore from '@/hooks/useAppStore';
+import { useSyncWalletToStore } from '@/hooks/useSyncWalletToStore';
 
 import Env from '@/constants/environment';
 
 initializeDriftStore(Env);
 
 const AppSetup = ({ children }: { children: React.ReactNode }) => {
-	const setStore = useAppStore((s) => s.set);
-
-	const closeConnectWalletModal = () => {
-		setStore((s) => {
-			s.modals.showConnectWalletModal = false;
-		});
-	};
-
-	useSyncWalletToStore(closeConnectWalletModal);
+	useSyncWalletToStore();
 
 	return <>{children}</>;
 };
