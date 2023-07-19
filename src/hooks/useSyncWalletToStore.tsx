@@ -10,7 +10,7 @@ import useAppStore from './useAppStore';
  *
  * Also sets SOL balance in the store to 0 on disconnect.
  */
-export const useSyncWalletToStore = () => {
+const useSyncWalletToStore = () => {
 	const actions = useCommonDriftActions();
 	const set = useCommonDriftStore((s) => s.set);
 	const walletContextState = useWallet();
@@ -66,3 +66,5 @@ export const useSyncWalletToStore = () => {
 		};
 	}, [walletContextState?.wallet?.adapter]);
 };
+
+export default useSyncWalletToStore;

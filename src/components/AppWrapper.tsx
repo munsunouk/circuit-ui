@@ -9,7 +9,8 @@ import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 
 import useAppStore from '@/hooks/useAppStore';
-import { useSyncWalletToStore } from '@/hooks/useSyncWalletToStore';
+import useFetchVault from '@/hooks/useFetchVault';
+import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
 
 import Env from '@/constants/environment';
 
@@ -17,6 +18,7 @@ initializeDriftStore(Env);
 
 const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useSyncWalletToStore();
+	useFetchVault();
 
 	return <>{children}</>;
 };
