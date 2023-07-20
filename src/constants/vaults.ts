@@ -1,3 +1,7 @@
-export const TEST_VAULT_NAME = 'a bigger better vault';
+import { PublicKey } from '@drift-labs/sdk';
 
-export const DEFAULT_VAULT_NAME = TEST_VAULT_NAME;
+export const TEST_VAULT_PUBKEY = new PublicKey(
+	'BxDh8x17Bf3pDf17uh65kXCwmdMpdNjTj91hVqkmFpAp'
+);
+
+export const DEFAULT_VAULT_PUBKEY = TEST_VAULT_PUBKEY;

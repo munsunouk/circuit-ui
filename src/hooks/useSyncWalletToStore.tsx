@@ -3,6 +3,7 @@ import { BASE_PRECISION_EXP, BigNum } from '@drift-labs/sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 
+import { useAppActions } from './useAppActions';
 import useAppStore from './useAppStore';
 
 /**
@@ -11,24 +12,24 @@ import useAppStore from './useAppStore';
  * Also sets SOL balance in the store to 0 on disconnect.
  */
 const useSyncWalletToStore = () => {
-	const actions = useCommonDriftActions();
-	const set = useCommonDriftStore((s) => s.set);
+	const commonActions = useCommonDriftActions();
+	const setCommonStore = useCommonDriftStore((s) => s.set);
 	const walletContextState = useWallet();
 
-	const setStore = useAppStore((s) => s.set);
+	const setAppStore = useAppStore((s) => s.set);
 
 	const closeConnectWalletModal = () => {
-		setStore((s) => {
+		setAppStore((s) => {
 			s.modals.showConnectWalletModal = false;
 		});
 	};
 
 	useEffect(() => {
-		walletContextState?.wallet?.adapter?.on('connect', () => {
+		walletContextState?.wallet?.adapter?.on('connect', async () => {
 			console.log('connecting');
 			const authority = walletContextState?.wallet?.adapter?.publicKey;
 
-			set((s) => {
+			setCommonStore((s) => {
 				s.currentSolBalance = {
 					value: new BigNum(0, BASE_PRECISION_EXP),
 					loaded: false,
@@ -39,7 +40,7 @@ const useSyncWalletToStore = () => {
 
 			if (authority && walletContextState.wallet?.adapter) {
 				closeConnectWalletModal();
-				actions.handleWalletConnect(
+				commonActions.handleWalletConnect(
 					authority,
 					walletContextState.wallet?.adapter
 				);
@@ -47,7 +48,7 @@ const useSyncWalletToStore = () => {
 		});
 
 		walletContextState?.wallet?.adapter?.on('disconnect', () => {
-			set((s) => {
+			setCommonStore((s) => {
 				s.currentSolBalance = {
 					value: new BigNum(0, BASE_PRECISION_EXP),
 					loaded: false,
@@ -56,7 +57,7 @@ const useSyncWalletToStore = () => {
 				s.authorityString = '';
 			});
 
-			actions.handleWalletDisconnect();
+			commonActions.handleWalletDisconnect();
 		});
 
 		return () => {
