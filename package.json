@@ -24,9 +24,9 @@
     "inspector": false
   },
   "dependencies": {
-    "@drift-labs/vaults-sdk": "file:./drift-vaults/ts/sdk",
-    "@drift-labs/react": "file:./drift-common/react",
     "@drift-labs/icons": "file:./drift-common/icons",
+    "@drift-labs/react": "file:./drift-common/react",
+    "@drift-labs/vaults-sdk": "file:./drift-vaults/ts/sdk",
     "@drift/common": "file:./drift-common/common-ts",
     "@solana/wallet-adapter-react": "^0.15.32",
     "@solana/web3.js": "^1.78.0",
@@ -41,6 +41,7 @@
     "postcss": "8.4.25",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-singleton-hook": "^4.0.1",
     "react-toastify": "^9.1.3",
     "tailwind-merge": "^1.13.2",
     "tailwindcss": "3.3.2",

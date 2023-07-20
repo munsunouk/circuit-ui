@@ -1,4 +1,4 @@
-import { DriftEnv, Wallet } from '@drift-labs/sdk';
+import { DriftEnv, MainnetSpotMarkets, Wallet } from '@drift-labs/sdk';
 import {
 	EnvironmentConstants,
 	Initialize as InitializeCommon,
@@ -6,6 +6,7 @@ import {
 import { Keypair } from '@solana/web3.js';
 
 export const ARBITRARY_WALLET = new Wallet(new Keypair());
+export const USDC_MARKET = MainnetSpotMarkets[0];
 
 const driftEnv =
 	process.env.NEXT_PUBLIC_DRIFT_ENV === 'mainnet-beta'

@@ -4,6 +4,10 @@ import { twMerge } from 'tailwind-merge';
 
 import ConnectButton from '@/components/ConnectButton';
 
+import useAppStore from '@/hooks/useAppStore';
+
+import { USDC_MARKET } from '@/constants/environment';
+
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 
@@ -147,9 +151,10 @@ const Form = ({
 
 const DepositWithdrawForm = () => {
 	const { connected } = useWallet();
+	const vaultClient = useAppStore((s) => s.vaultClient);
+	const maxAmount = useAppStore((s) => s.balances.usdc);
 
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
-	const [maxAmount, setMaxAmount] = useState<number>(1);
 	const [amount, setAmount] = useState<number>(0);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
 		WithdrawalState.AvailableForWithdrawal
@@ -163,6 +168,23 @@ const DepositWithdrawForm = () => {
 		(isWithdrawTab &&
 			amount === 0 &&
 			withdrawalState !== WithdrawalState.Requested);
+
+	const handleOnValueChange = (newAmount: number) => {
+		const formattedAmount = Number(
+			newAmount.toFixed(USDC_MARKET.precisionExp.toNumber())
+		);
+		setAmount(formattedAmount);
+	};
+
+	const handleOnClick = () => {
+		if (!vaultClient) return;
+
+		// if (isDepositTab) {
+		// 	vaultClient.deposit(amount);
+		// } else {
+		// 	vaultClient.withdraw(amount);
+		// }
+	};
 
 	return (
 		<div className="w-full bg-black border border-container-border">
@@ -193,7 +215,7 @@ const DepositWithdrawForm = () => {
 				<Form
 					tab={selectedTab}
 					maxAmount={maxAmount}
-					setAmount={setAmount}
+					setAmount={handleOnValueChange}
 					amount={amount}
 				/>
 

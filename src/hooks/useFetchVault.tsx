@@ -1,13 +1,14 @@
 import { useDriftClientIsReady } from '@drift-labs/react';
 import { PublicKey } from '@drift-labs/sdk';
 import { useEffect } from 'react';
+import { singletonHook } from 'react-singleton-hook';
 
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
 import { useAppActions } from './useAppActions';
 import usePathToVaultPubKey from './usePathToVaultName';
 
-export default function useFetchVault() {
+function useFetchVault() {
 	const driftClientIsReady = useDriftClientIsReady();
 	const appActions = useAppActions();
 	const vaultPubKey = usePathToVaultPubKey();
@@ -28,3 +29,5 @@ export default function useFetchVault() {
 		}
 	};
 }
+
+export default singletonHook(undefined, useFetchVault);

@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import useAppStore from '@/hooks/useAppStore';
 import useFetchVault from '@/hooks/useFetchVault';
 import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
+import useUsdcBalance from '@/hooks/useUsdcBalance';
 
 import Env from '@/constants/environment';
 
@@ -19,6 +20,7 @@ initializeDriftStore(Env);
 const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useSyncWalletToStore();
 	useFetchVault();
+	useUsdcBalance();
 
 	return <>{children}</>;
 };

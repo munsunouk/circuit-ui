@@ -1,5 +1,3 @@
-import { Vault } from '@drift-labs/vaults-sdk';
-
 import useAppStore from './useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 

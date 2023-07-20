@@ -19,6 +19,9 @@ export interface AppStoreState {
 			  }
 			| undefined;
 	};
+	balances: {
+		usdc: number;
+	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
 }
@@ -29,6 +32,9 @@ const DEFAULT_APP_STORE_STATE = {
 	},
 	vaultClient: undefined,
 	vaults: {},
+	balances: {
+		usdc: 0,
+	},
 };
 
 const useAppStore = create<AppStoreState>((set, get) => {
