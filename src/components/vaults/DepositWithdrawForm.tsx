@@ -1,10 +1,13 @@
+import { BN } from '@drift-labs/sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import ConnectButton from '@/components/ConnectButton';
 
+import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
+import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import { USDC_MARKET } from '@/constants/environment';
 
@@ -153,6 +156,8 @@ const DepositWithdrawForm = () => {
 	const { connected } = useWallet();
 	const vaultClient = useAppStore((s) => s.vaultClient);
 	const maxAmount = useAppStore((s) => s.balances.usdc);
+	const appActions = useAppActions();
+	const vaultPubkey = usePathToVaultPubKey();
 
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
 	const [amount, setAmount] = useState<number>(0);
@@ -177,13 +182,12 @@ const DepositWithdrawForm = () => {
 	};
 
 	const handleOnClick = () => {
-		if (!vaultClient) return;
+		if (!vaultPubkey) return;
 
-		// if (isDepositTab) {
-		// 	vaultClient.deposit(amount);
-		// } else {
-		// 	vaultClient.withdraw(amount);
-		// }
+		const baseAmount = new BN(amount * USDC_MARKET.precision.toNumber());
+		if (isDepositTab) {
+			appActions.depositVault(vaultPubkey, baseAmount);
+		}
 	};
 
 	return (
@@ -242,7 +246,11 @@ const DepositWithdrawForm = () => {
 											: 'available for withdrawal'}
 									</span>
 								)}
-							<Button className="text-xl" disabled={isButtonDisabled}>
+							<Button
+								className="text-xl"
+								disabled={isButtonDisabled}
+								onClick={handleOnClick}
+							>
 								{selectedTab === Tab.Deposit
 									? 'Deposit'
 									: getWithdrawButtonLabel(withdrawalState)}

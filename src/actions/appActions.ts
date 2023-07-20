@@ -1,12 +1,18 @@
 import { CommonDriftStore } from '@drift-labs/react';
 import { BN, IWallet, PublicKey } from '@drift-labs/sdk';
-import { Vault, getVaultClient } from '@drift-labs/vaults-sdk';
+import {
+	VAULT_PROGRAM_ID,
+	Vault,
+	getVaultClient,
+	getVaultDepositorAddressSync,
+} from '@drift-labs/vaults-sdk';
 import { Keypair } from '@solana/web3.js';
 import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
 
 import { ARBITRARY_WALLET } from '@/constants/environment';
+import NOTIFICATION_UTILS from '@/utils/notifications';
 
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
@@ -105,9 +111,57 @@ const createAppActions = (
 		});
 	};
 
+	const fetchVaultDepositor = async (
+		vaultAddress: PublicKey,
+		authority: PublicKey
+	) => {
+		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
+
+		if (!authority || !currentStoredVaultExists) return;
+
+		const vaultDepositorAddress = getVaultDepositorAddressSync(
+			VAULT_PROGRAM_ID,
+			vaultAddress,
+			authority
+		);
+
+		set((s) => {
+			s.vaults[vaultAddress.toString()]!.vaultDepositor = vaultDepositorAddress;
+		});
+	};
+
+	const depositVault = async (
+		vaultAddress: PublicKey,
+		amount: BN,
+	): Promise<string> => {
+		const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
+		const vaultDepositor = get().vaults[vaultAddress.toString()]?.vaultDepositor;
+
+		if (!vaultDepositor && vaultInfo?.permissioned) {
+			NOTIFICATION_UTILS.toast.error('You do not have permission to deposit to this vault.');
+			return '';
+		}
+
+		if (!vaultDepositor) {
+			// TODO: initialize vault depositor for non-permissioned vault
+		}
+
+		const vaultClient = get().vaultClient;
+
+		if (!vaultClient) {
+			throw new Error('No vault client');
+		}
+
+		const tx = await vaultClient.deposit(vaultDepositor!, amount);
+
+		return tx;
+	}
+
 	return {
 		fetchVault,
 		fetchVaultStats,
+		fetchVaultDepositor,
+		depositVault
 	};
 };
 
