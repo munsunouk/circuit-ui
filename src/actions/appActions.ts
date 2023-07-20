@@ -11,8 +11,9 @@ import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
 
-import { ARBITRARY_WALLET } from '@/constants/environment';
 import NOTIFICATION_UTILS from '@/utils/notifications';
+
+import { ARBITRARY_WALLET } from '@/constants/environment';
 
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
@@ -132,13 +133,16 @@ const createAppActions = (
 
 	const depositVault = async (
 		vaultAddress: PublicKey,
-		amount: BN,
+		amount: BN
 	): Promise<string> => {
 		const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
-		const vaultDepositor = get().vaults[vaultAddress.toString()]?.vaultDepositor;
+		const vaultDepositor =
+			get().vaults[vaultAddress.toString()]?.vaultDepositor;
 
 		if (!vaultDepositor && vaultInfo?.permissioned) {
-			NOTIFICATION_UTILS.toast.error('You do not have permission to deposit to this vault.');
+			NOTIFICATION_UTILS.toast.error(
+				'You do not have permission to deposit to this vault.'
+			);
 			return '';
 		}
 
@@ -155,13 +159,13 @@ const createAppActions = (
 		const tx = await vaultClient.deposit(vaultDepositor!, amount);
 
 		return tx;
-	}
+	};
 
 	return {
 		fetchVault,
 		fetchVaultStats,
 		fetchVaultDepositor,
-		depositVault
+		depositVault,
 	};
 };
 
