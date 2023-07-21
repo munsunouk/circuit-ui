@@ -1,5 +1,5 @@
 import { BN, DriftClient, PublicKey } from '@drift-labs/sdk';
-import { Vault, VaultClient } from '@drift-labs/vaults-sdk';
+import { Vault, VaultClient, VaultDepositor } from '@drift-labs/vaults-sdk';
 import { produce } from 'immer';
 import { create } from 'zustand';
 
@@ -14,7 +14,7 @@ export interface AppStoreState {
 		[vaultName: string]:
 			| {
 					info: Vault;
-					vaultDepositor?: PublicKey;
+					vaultDepositor?: VaultDepositor;
 					stats: {
 						netUsdValue: BN;
 					};

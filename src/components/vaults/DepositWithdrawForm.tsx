@@ -7,6 +7,7 @@ import ConnectButton from '@/components/ConnectButton';
 
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
+import useCurrentVault from '@/hooks/useCurrentVault';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import { USDC_MARKET } from '@/constants/environment';
@@ -84,11 +85,13 @@ const Form = ({
 	tab,
 	amount,
 	maxAmount,
+	maxAmountString,
 	setAmount,
 }: {
 	tab: Tab;
 	amount: number;
 	maxAmount: number;
+	maxAmountString: string;
 	setAmount: (amount: number) => void;
 }) => {
 	const [isFocused, setIsFocused] = useState(false);
@@ -103,7 +106,7 @@ const Form = ({
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="flex justify-between">
+			<div className="flex items-center justify-between">
 				<span className="text-lg text-text-emphasis">
 					{tab === Tab.Deposit ? 'Deposit' : 'Withdraw'} Amount
 				</span>
@@ -113,7 +116,7 @@ const Form = ({
 						className="underline cursor-pointer"
 						onClick={() => setAmount(maxAmount)}
 					>
-						{maxAmount.toFixed(2)} USDC
+						{maxAmountString}
 					</span>
 				</span>
 			</div>
@@ -152,26 +155,72 @@ const Form = ({
 	);
 };
 
-const DepositWithdrawForm = () => {
+const DepositForm = () => {
 	const { connected } = useWallet();
 	const maxAmount = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();
 
-	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
+	const [amount, setAmount] = useState<number>(0);
+
+	const isButtonDisabled = amount === 0;
+
+	const handleOnValueChange = (newAmount: number) => {
+		const formattedAmount = Number(
+			newAmount.toFixed(USDC_MARKET.precisionExp.toNumber())
+		);
+		setAmount(formattedAmount);
+	};
+
+	const handleDeposit = () => {
+		if (!vaultPubkey) return;
+
+		const baseAmount = new BN(amount * USDC_MARKET.precision.toNumber());
+		appActions.depositVault(vaultPubkey, baseAmount);
+	};
+
+	return (
+		<div className="flex flex-col justify-between h-full gap-9">
+			<Form
+				tab={Tab.Deposit}
+				maxAmount={maxAmount}
+				maxAmountString={`${maxAmount.toFixed(2)} USDC`}
+				setAmount={handleOnValueChange}
+				amount={amount}
+			/>
+
+			{connected ? (
+				<Button
+					className="text-xl"
+					disabled={isButtonDisabled}
+					onClick={handleDeposit}
+				>
+					Deposit
+				</Button>
+			) : (
+				<ConnectButton />
+			)}
+		</div>
+	);
+};
+
+const WithdrawForm = () => {
+	const { connected } = useWallet();
+	const vaultPubkey = usePathToVaultPubKey();
+	const vault = useCurrentVault();
+	const appActions = useAppActions();
+
 	const [amount, setAmount] = useState<number>(0);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
-		WithdrawalState.AvailableForWithdrawal
+		WithdrawalState.UnRequested
 	);
-	const [amountRequested, setAmountRequested] = useState<number>(1_000_000.98);
 
-	const isWithdrawTab = selectedTab === Tab.Withdraw;
-	const isDepositTab = selectedTab === Tab.Deposit;
+	const userShares = vault?.vaultDepositor?.vaultShares ?? new BN(0);
+	const lastRequestedAmount =
+		vault?.vaultDepositor?.lastWithdrawRequestShares ?? new BN(0);
+
 	const isButtonDisabled =
-		(isDepositTab && amount === 0) ||
-		(isWithdrawTab &&
-			amount === 0 &&
-			withdrawalState !== WithdrawalState.Requested);
+		amount === 0 && withdrawalState !== WithdrawalState.Requested;
 
 	const handleOnValueChange = (newAmount: number) => {
 		const formattedAmount = Number(
@@ -183,11 +232,67 @@ const DepositWithdrawForm = () => {
 	const handleOnClick = () => {
 		if (!vaultPubkey) return;
 
-		const baseAmount = new BN(amount * USDC_MARKET.precision.toNumber());
-		if (isDepositTab) {
-			appActions.depositVault(vaultPubkey, baseAmount);
+		if (withdrawalState === WithdrawalState.UnRequested) {
+			appActions.requestVaultWithdrawal(vaultPubkey, new BN(amount));
 		}
 	};
+
+	return (
+		<div className="flex flex-col justify-between h-full gap-9">
+			<span className="text-text-emphasis">
+				{getWithdrawalDetails(withdrawalState)}
+			</span>
+
+			<Form
+				tab={Tab.Withdraw}
+				maxAmount={userShares.toNumber()}
+				maxAmountString={`${userShares.toNumber()} shares`}
+				setAmount={handleOnValueChange}
+				amount={amount}
+			/>
+
+			{connected ? (
+				<div className="flex flex-col items-center gap-4">
+					<div className="flex flex-col w-full">
+						{(withdrawalState === WithdrawalState.Requested ||
+							withdrawalState === WithdrawalState.AvailableForWithdrawal) && (
+							<span
+								className={twMerge(
+									'w-full text-center py-2 text-text-emphasis',
+									withdrawalState === WithdrawalState.Requested &&
+										'bg-button-bg-disabled',
+									withdrawalState === WithdrawalState.AvailableForWithdrawal &&
+										'bg-success-green-bg font-semibold'
+								)}
+							>
+								{lastRequestedAmount.toNumber()}{' '}
+								{withdrawalState === WithdrawalState.Requested
+									? 'withdrawal requested'
+									: 'available for withdrawal'}
+							</span>
+						)}
+						<Button
+							className="text-xl"
+							disabled={isButtonDisabled}
+							onClick={handleOnClick}
+						>
+							{getWithdrawButtonLabel(withdrawalState)}
+						</Button>
+					</div>
+					{(withdrawalState === WithdrawalState.UnRequested ||
+						withdrawalState === WithdrawalState.Requested) && (
+						<span>Next withdrawal period: July 23-30, 2023</span>
+					)}
+				</div>
+			) : (
+				<ConnectButton />
+			)}
+		</div>
+	);
+};
+
+const DepositWithdrawForm = () => {
+	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
 
 	return (
 		<div className="w-full bg-black border border-container-border">
@@ -203,67 +308,8 @@ const DepositWithdrawForm = () => {
 					onSelect={() => setSelectedTab(Tab.Withdraw)}
 				/>
 			</div>
-			<div
-				className={twMerge(
-					'flex flex-col gap-9 mt-9 mb-7 px-7',
-					isDepositTab && 'justify-between h-[400px]'
-				)}
-			>
-				{isWithdrawTab && (
-					<span className="text-text-emphasis">
-						{getWithdrawalDetails(withdrawalState)}
-					</span>
-				)}
-
-				<Form
-					tab={selectedTab}
-					maxAmount={maxAmount}
-					setAmount={handleOnValueChange}
-					amount={amount}
-				/>
-
-				{connected ? (
-					<div className="flex flex-col items-center gap-4">
-						<div className="flex flex-col w-full">
-							{isWithdrawTab &&
-								(withdrawalState === WithdrawalState.Requested ||
-									withdrawalState ===
-										WithdrawalState.AvailableForWithdrawal) && (
-									<span
-										className={twMerge(
-											'w-full text-center py-2 text-text-emphasis',
-											withdrawalState === WithdrawalState.Requested &&
-												'bg-button-bg-disabled',
-											withdrawalState ===
-												WithdrawalState.AvailableForWithdrawal &&
-												'bg-success-green-bg font-semibold'
-										)}
-									>
-										{amountRequested.toFixed(2)}{' '}
-										{withdrawalState === WithdrawalState.Requested
-											? 'withdrawal requested'
-											: 'available for withdrawal'}
-									</span>
-								)}
-							<Button
-								className="text-xl"
-								disabled={isButtonDisabled}
-								onClick={handleOnClick}
-							>
-								{selectedTab === Tab.Deposit
-									? 'Deposit'
-									: getWithdrawButtonLabel(withdrawalState)}
-							</Button>
-						</div>
-						{isWithdrawTab &&
-							(withdrawalState === WithdrawalState.UnRequested ||
-								withdrawalState === WithdrawalState.Requested) && (
-								<span>Next withdrawal period: July 23-30, 2023</span>
-							)}
-					</div>
-				) : (
-					<ConnectButton />
-				)}
+			<div className={twMerge('mt-9 mb-7 px-7 h-[400px]')}>
+				{selectedTab === Tab.Deposit ? <DepositForm /> : <WithdrawForm />}
 			</div>
 		</div>
 	);

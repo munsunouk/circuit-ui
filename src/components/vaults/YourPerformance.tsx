@@ -1,7 +1,10 @@
+import { BigNum, QUOTE_PRECISION, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
 import { ExternalLink } from '@/components/icons';
+
+import useCurrentVault from '@/hooks/useCurrentVault';
 
 import { sourceCodePro } from '@/constants/fonts';
 
@@ -27,6 +30,17 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 
 export default function YourPerformance() {
 	const { connected } = useWallet();
+	const vault = useCurrentVault();
+	const vaultDepositor = vault?.vaultDepositor;
+
+	if (!vault || !vaultDepositor) return null;
+
+	const totalVaultShares = vault.info.totalShares.toNumber();
+	const userVaultShares = vaultDepositor.vaultShares.toNumber();
+	const userSharesProportion = userVaultShares / totalVaultShares;
+
+	const userNetDeposits = vaultDepositor.netDeposits.toNumber();
+	// const userTotalDeposits = vaultDepositor.totalDeposits.toNumber();
 
 	return (
 		<div className="flex flex-col gap-16">
@@ -47,8 +61,14 @@ export default function YourPerformance() {
 			<div>
 				<SectionHeader className="mb-4">Performance Breakdown</SectionHeader>
 				<BreakdownRow label="Cumulative Earnings" value="$0.00" />
-				<BreakdownRow label="Your Deposits" value="$0.00" />
-				<BreakdownRow label="Vault Share" value="36.88%" />
+				<BreakdownRow
+					label="Your Deposits"
+					value={BigNum.from(userNetDeposits, QUOTE_PRECISION_EXP).toNotional()}
+				/>
+				<BreakdownRow
+					label="Vault Share"
+					value={`${Number(userSharesProportion.toFixed(6))}%`}
+				/>
 				<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
 			</div>
 			<div>

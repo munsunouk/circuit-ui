@@ -12,6 +12,7 @@ import {
 import {
 	VAULT_PROGRAM_ID,
 	Vault,
+	WithdrawUnit,
 	getVaultClient,
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
@@ -23,6 +24,7 @@ import { AppStoreState } from '@/hooks/useAppStore';
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
 import Env, { ARBITRARY_WALLET } from '@/constants/environment';
+import { VaultDepositor } from '@drift-labs/vaults-sdk';
 
 const POLLING_FREQUENCY_MS = 1000;
 const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
@@ -185,9 +187,10 @@ const createAppActions = (
 		vaultAddress: PublicKey,
 		authority: PublicKey
 	) => {
+		const vaultClient = get().vaultClient;
 		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
 
-		if (!authority || !currentStoredVaultExists) return;
+		if (!authority || !currentStoredVaultExists || !vaultClient) return;
 
 		const vaultDepositorAddress = getVaultDepositorAddressSync(
 			VAULT_PROGRAM_ID,
@@ -195,8 +198,12 @@ const createAppActions = (
 			authority
 		);
 
+		const vaultDepositor = (await vaultClient.getVaultDepositor(
+			vaultDepositorAddress
+		)) as VaultDepositor;
+
 		set((s) => {
-			s.vaults[vaultAddress.toString()]!.vaultDepositor = vaultDepositorAddress;
+			s.vaults[vaultAddress.toString()]!.vaultDepositor = vaultDepositor;
 		});
 	};
 
@@ -225,7 +232,28 @@ const createAppActions = (
 			throw new Error('No vault client');
 		}
 
-		const tx = await vaultClient.deposit(vaultDepositor!, amount);
+		const tx = await vaultClient.deposit(vaultDepositor!.pubkey, amount);
+
+		return tx;
+	};
+
+	const requestVaultWithdrawal = async (
+		vaultAddress: PublicKey,
+		sharesAmount: BN
+	): Promise<string> => {
+		const vaultClient = get().vaultClient;
+		const vaultDepositor =
+			get().vaults[vaultAddress.toString()]?.vaultDepositor;
+
+		if (!vaultClient || !vaultDepositor) {
+			throw new Error('No vault client/vault depositor found');
+		}
+
+		const tx = await vaultClient.requestWithdraw(
+			vaultDepositor.pubkey,
+			sharesAmount,
+			WithdrawUnit.SHARES
+		);
 
 		return tx;
 	};
@@ -235,6 +263,7 @@ const createAppActions = (
 		fetchVaultStats,
 		fetchVaultDepositor,
 		depositVault,
+		requestVaultWithdrawal,
 	};
 };
 

@@ -1,4 +1,4 @@
-import { BN, BigNum } from '@drift-labs/sdk';
+import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 
@@ -10,7 +10,7 @@ export default function VaultPerformance() {
 
 	const totalDeposits = vault?.info.netDeposits ?? new BN(0);
 	const currentBalance = vault?.stats.netUsdValue ?? new BN(0);
-	const totalEarnings = currentBalance.sub(totalDeposits);
+	const totalEarnings = currentBalance.sub(totalDeposits); // FIXME: this is not correct, should be a cumulative sum of period earnings, where period = until withdrawal time
 
 	return (
 		<div className="flex flex-col w-full gap-8">
@@ -19,7 +19,7 @@ export default function VaultPerformance() {
 				<div className="flex flex-col w-full gap-2">
 					<BreakdownRow
 						label="Total Earnings (All Time)"
-						value={BigNum.from(totalEarnings).toNotional()}
+						value={BigNum.from(totalEarnings, QUOTE_PRECISION_EXP).toNotional()}
 					/>
 					<BreakdownRow label="Cumulative Return" value="$0.00" />
 					<BreakdownRow label="Max Daily Drawdown" value="$0.00" />
