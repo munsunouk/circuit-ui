@@ -16,6 +16,7 @@ import {
 	getVaultClient,
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
+import { VaultDepositor } from '@drift-labs/vaults-sdk';
 import { Commitment, Keypair } from '@solana/web3.js';
 import { StoreApi } from 'zustand';
 
@@ -24,7 +25,6 @@ import { AppStoreState } from '@/hooks/useAppStore';
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
 import Env, { ARBITRARY_WALLET } from '@/constants/environment';
-import { VaultDepositor } from '@drift-labs/vaults-sdk';
 
 const POLLING_FREQUENCY_MS = 1000;
 const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
