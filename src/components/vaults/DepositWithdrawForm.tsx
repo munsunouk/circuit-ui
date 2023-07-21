@@ -154,7 +154,6 @@ const Form = ({
 
 const DepositWithdrawForm = () => {
 	const { connected } = useWallet();
-	const vaultClient = useAppStore((s) => s.vaultClient);
 	const maxAmount = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();

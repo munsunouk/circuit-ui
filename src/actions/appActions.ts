@@ -1,19 +1,31 @@
 import { CommonDriftStore } from '@drift-labs/react';
-import { BN, IWallet, PublicKey } from '@drift-labs/sdk';
+import {
+	BN,
+	BulkAccountLoader,
+	DRIFT_PROGRAM_ID,
+	DriftClient,
+	DriftClientConfig,
+	IWallet,
+	PublicKey,
+	getMarketsAndOraclesForSubscription,
+} from '@drift-labs/sdk';
 import {
 	VAULT_PROGRAM_ID,
 	Vault,
 	getVaultClient,
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
-import { Keypair } from '@solana/web3.js';
+import { Commitment, Keypair } from '@solana/web3.js';
 import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
 
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
-import { ARBITRARY_WALLET } from '@/constants/environment';
+import Env, { ARBITRARY_WALLET } from '@/constants/environment';
+
+const POLLING_FREQUENCY_MS = 1000;
+const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
 
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
@@ -32,43 +44,14 @@ const createAppActions = (
 			throw new Error('No connection');
 		}
 
-		const arbitraryVaultClient = getVaultClient(
+		const vaultClient = getVaultClient(
 			state.connection,
 			ARBITRARY_WALLET,
 			state.driftClient.client
 		);
-		const vault = (await arbitraryVaultClient.getVault(vaultAddress)) as Vault;
+		const vault = (await vaultClient.getVault(vaultAddress)) as Vault;
 
-		// TODO: abstract this into common-ts
-		const newKeypair = new Keypair({
-			publicKey: vault.pubkey.toBytes(),
-			secretKey: new Keypair().publicKey.toBytes(),
-		});
-		const newWallet: IWallet = {
-			publicKey: newKeypair.publicKey,
-			//@ts-ignore
-			signTransaction: () => {
-				return Promise.resolve();
-			},
-			//@ts-ignore
-			signAllTransactions: () => {
-				return Promise.resolve();
-			},
-		};
-
-		const success = await state.driftClient.client.updateWallet(
-			newWallet as IWallet
-		);
-
-		if (!success) {
-			throw new Error('Unsuccessful update of drift client wallet.');
-		}
-
-		const vaultClient = getVaultClient(
-			state.connection,
-			newWallet,
-			state.driftClient.client
-		);
+		await setupVaultDriftClient(vaultAddress);
 
 		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
 		set((s) => {
@@ -89,14 +72,100 @@ const createAppActions = (
 		return vault;
 	};
 
-	const fetchVaultStats = async (vaultAddress: PublicKey) => {
-		const state = getCommon();
+	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {
+		const commonState = getCommon();
 
-		if (!state.connection || !state.driftClient.client) {
+		if (!commonState.connection) {
 			throw new Error('No connection');
 		}
 
-		const user = state.driftClient.client.getUser(0, vaultAddress);
+		// Create Vault's DriftClient
+		const newKeypair = new Keypair({
+			publicKey: vaultPubKey.toBytes(),
+			secretKey: new Keypair().publicKey.toBytes(),
+		});
+		const newWallet: IWallet = {
+			publicKey: newKeypair.publicKey,
+			//@ts-ignore
+			signTransaction: () => {
+				return Promise.resolve();
+			},
+			//@ts-ignore
+			signAllTransactions: () => {
+				return Promise.resolve();
+			},
+		};
+
+		const accountLoader = new BulkAccountLoader(
+			commonState.connection,
+			DEFAULT_COMMITMENT_LEVEL,
+			POLLING_FREQUENCY_MS
+		);
+		const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
+			getMarketsAndOraclesForSubscription(Env.driftEnv);
+		const vaultDriftClientConfig: DriftClientConfig = {
+			connection: commonState.connection,
+			wallet: newWallet,
+			programID: new PublicKey(DRIFT_PROGRAM_ID),
+			env: Env.driftEnv,
+			txVersion: 0,
+			userStats: true,
+			perpMarketIndexes: perpMarketIndexes,
+			spotMarketIndexes: spotMarketIndexes,
+			oracleInfos: oracleInfos,
+			accountSubscription: {
+				type: 'polling',
+				accountLoader: accountLoader,
+			},
+		};
+
+		const vaultDriftClient = new DriftClient(vaultDriftClientConfig);
+		const userAccounts = await vaultDriftClient.getUserAccountsForAuthority(
+			vaultPubKey
+		);
+
+		if (!userAccounts) {
+			throw new Error(
+				'No user account found for vault:' + vaultPubKey.toString()
+			);
+		}
+
+		await Promise.all(
+			userAccounts.map((account) =>
+				vaultDriftClient.addUser(account.subAccountId, vaultPubKey)
+			)
+		);
+
+		// Subscribe to Vault's DriftClient
+		const subscriptionResult = await vaultDriftClient.subscribe();
+
+		if (!subscriptionResult) {
+			// retry once
+			await vaultDriftClient.subscribe();
+		}
+
+		vaultDriftClient.eventEmitter.on('update', () => {
+			set((s) => {
+				s.vaultDriftClient = vaultDriftClient;
+			});
+		});
+
+		set((s) => {
+			s.vaultDriftClient = vaultDriftClient;
+		});
+
+		return subscriptionResult;
+	};
+
+	const fetchVaultStats = async (vaultAddress: PublicKey) => {
+		const commonState = getCommon();
+		const appState = get();
+
+		if (!commonState.connection || !appState.vaultDriftClient) {
+			throw new Error('No connection');
+		}
+
+		const user = appState.vaultDriftClient.getUser(0, vaultAddress);
 
 		const collateral = user.getNetSpotMarketValue();
 		const unrealizedPNL = user.getUnrealizedPNL();
