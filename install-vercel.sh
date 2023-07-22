@@ -3,6 +3,8 @@
 # Install root modules
 echo "pwd"
 pwd
+echo "ls"
+ls
 
 # Install stuff in drift-common
 
