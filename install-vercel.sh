@@ -11,12 +11,12 @@ ls
 # Install Protocol + SDK
 echo "changing directory to drift-common"
 cd drift-common
-echo "pwd && ls"
-pwd && ls
+# echo "pwd && ls"
+# pwd && ls
 echo "changing directory to protocol"
 cd protocol
-echo "pwd && ls"
-pwd && ls
+# echo "pwd && ls"
+# pwd && ls
 rm -rf cli
 echo "yarn install for protocol"
 yarn install --ignore-scripts

@@ -61,6 +61,9 @@ rm -rf .git
 echo "cd .."
 cd ..
 
+echo "ls drift-common"
+ls
+
 echo "moving UP"
 # move the submodule from tmp to the submodule path
 cd .. # go folder up
