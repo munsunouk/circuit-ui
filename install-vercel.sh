@@ -11,8 +11,8 @@ ls
 # Install Protocol + SDK
 echo "changing directory to drift-common"
 cd drift-common
-echo "pwd"
-pwd
+echo "pwd && ls"
+pwd && ls
 echo "changing directory to protocol"
 cd protocol
 echo "pwd && ls"
