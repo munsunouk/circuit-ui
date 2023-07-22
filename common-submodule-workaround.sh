@@ -58,10 +58,12 @@ echo "git submodule update --init"
 git submodule update --init
 echo "clearing protocol .git"
 rm -rf .git
+echo "ls protocol"
+ls
 echo "cd .."
 cd ..
 
-echo "ls drift-common"
+echo "ls $SUBMODULE_PATH"
 ls
 
 echo "moving UP"
@@ -78,3 +80,6 @@ mv tmp/* $SUBMODULE_PATH/ # move the submodule to the submodule path
 
 # # clean up
 rm -rf tmp # remove the tmp folder
+
+echo "ls $SUBMODULE_PATH"
+ls $SUBMODULE_PATH
