@@ -3,7 +3,6 @@
 # Install root modules
 echo "pwd"
 pwd
-yarn install
 
 # Install stuff in drift-common
 
