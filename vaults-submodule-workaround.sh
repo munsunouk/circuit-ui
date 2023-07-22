@@ -51,16 +51,6 @@ git fetch --depth=1 origin $COMMIT # fetch only the required version
 echo "git checkout $COMMIT"
 git checkout $COMMIT # checkout on the right commit
 
-# pull protocol submodule into drift-common
-echo "pulling protocol submodule into drift-common"
-cd protocol
-echo "git submodule update --init"
-git submodule update --init
-echo "clearing protocol .git"
-rm -rf .git
-echo "cd .."
-cd ..
-
 echo "moving UP"
 # move the submodule from tmp to the submodule path
 cd .. # go folder up
