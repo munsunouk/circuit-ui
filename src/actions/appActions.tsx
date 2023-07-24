@@ -1,12 +1,14 @@
 import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,
+	BigNum,
 	BulkAccountLoader,
 	DRIFT_PROGRAM_ID,
 	DriftClient,
 	DriftClientConfig,
 	IWallet,
 	PublicKey,
+	QUOTE_PRECISION_EXP,
 	getMarketsAndOraclesForSubscription,
 } from '@drift-labs/sdk';
 import {
@@ -22,7 +24,8 @@ import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
 
-import NOTIFICATION_UTILS from '@/utils/notifications';
+import NOTIFICATION_UTILS, { ToastWithMessage } from '@/utils/notifications';
+import { redeemPeriodToString } from '@/utils/utils';
 
 import Env, { ARBITRARY_WALLET } from '@/constants/environment';
 
@@ -207,40 +210,102 @@ const createAppActions = (
 		});
 	};
 
-	const depositVault = async (
-		vaultAddress: PublicKey,
-		amount: BN
-	): Promise<string> => {
-		const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
-		const vaultDepositor =
-			get().vaults[vaultAddress.toString()]?.vaultDepositor;
+	const depositVault = async (vaultAddress: PublicKey, amount: BN) => {
+		try {
+			const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
+			const vaultDepositor =
+				get().vaults[vaultAddress.toString()]?.vaultDepositor;
 
-		if (!vaultDepositor && vaultInfo?.permissioned) {
-			NOTIFICATION_UTILS.toast.error(
-				'You do not have permission to deposit to this vault.'
+			if (!vaultDepositor && vaultInfo?.permissioned) {
+				NOTIFICATION_UTILS.toast.error(
+					'You do not have permission to deposit to this vault.'
+				);
+				return '';
+			}
+
+			if (!vaultDepositor) {
+				// TODO: initialize vault depositor for non-permissioned vault
+			}
+
+			const vaultClient = get().vaultClient;
+
+			if (!vaultClient) {
+				throw new Error('No vault client');
+			}
+
+			const tx = await vaultClient.deposit(vaultDepositor!.pubkey, amount);
+
+			NOTIFICATION_UTILS.toast.success(
+				`You have successfully deposited ${BigNum.from(
+					amount,
+					QUOTE_PRECISION_EXP
+				).prettyPrint()} USDC`
 			);
-			return '';
+
+			return tx;
+		} catch (err) {
+			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
 		}
-
-		if (!vaultDepositor) {
-			// TODO: initialize vault depositor for non-permissioned vault
-		}
-
-		const vaultClient = get().vaultClient;
-
-		if (!vaultClient) {
-			throw new Error('No vault client');
-		}
-
-		const tx = await vaultClient.deposit(vaultDepositor!.pubkey, amount);
-
-		return tx;
 	};
 
 	const requestVaultWithdrawal = async (
 		vaultAddress: PublicKey,
 		sharesAmount: BN
-	): Promise<string> => {
+	) => {
+		try {
+			const vaultClient = get().vaultClient;
+			const vaultDepositor =
+				get().vaults[vaultAddress.toString()]?.vaultDepositor;
+			const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
+
+			if (!vaultClient || !vaultDepositor) {
+				throw new Error('No vault client/vault depositor found');
+			}
+
+			const tx = await vaultClient.requestWithdraw(
+				vaultDepositor.pubkey,
+				sharesAmount,
+				WithdrawUnit.SHARES
+			);
+
+			NOTIFICATION_UTILS.toast.success(
+				<ToastWithMessage
+					title="Withdrawal Requested"
+					message={`You may make your withdrawal in ${redeemPeriodToString(
+						vaultInfo?.redeemPeriod
+					)}`}
+				/>
+			);
+
+			return tx;
+		} catch (err) {
+			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
+		}
+	};
+
+	const cancelRequestWithdraw = async (vaultAddress: PublicKey) => {
+		try {
+			const vaultClient = get().vaultClient;
+			const vaultDepositor =
+				get().vaults[vaultAddress.toString()]?.vaultDepositor;
+
+			if (!vaultClient || !vaultDepositor) {
+				throw new Error('No vault client/vault depositor found');
+			}
+
+			const tx = await vaultClient.cancelRequestWithdraw(vaultDepositor.pubkey);
+
+			NOTIFICATION_UTILS.toast.success(
+				'You have successfully cancelled your withdrawal request'
+			);
+
+			return tx;
+		} catch (err) {
+			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
+		}
+	};
+
+	const executeVaultWithdrawal = async (vaultAddress: PublicKey) => {
 		const vaultClient = get().vaultClient;
 		const vaultDepositor =
 			get().vaults[vaultAddress.toString()]?.vaultDepositor;
@@ -249,11 +314,7 @@ const createAppActions = (
 			throw new Error('No vault client/vault depositor found');
 		}
 
-		const tx = await vaultClient.requestWithdraw(
-			vaultDepositor.pubkey,
-			sharesAmount,
-			WithdrawUnit.SHARES
-		);
+		const tx = await vaultClient.withdraw(vaultDepositor.pubkey);
 
 		return tx;
 	};
@@ -264,6 +325,8 @@ const createAppActions = (
 		fetchVaultDepositor,
 		depositVault,
 		requestVaultWithdrawal,
+		cancelRequestWithdraw,
+		executeVaultWithdrawal,
 	};
 };
 

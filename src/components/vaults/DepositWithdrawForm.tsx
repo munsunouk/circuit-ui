@@ -1,6 +1,7 @@
 import { BN } from '@drift-labs/sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { useState } from 'react';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import ConnectButton from '@/components/ConnectButton';
@@ -9,6 +10,8 @@ import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
 import useCurrentVault from '@/hooks/useCurrentVault';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+
+import { redeemPeriodToString } from '@/utils/utils';
 
 import { USDC_MARKET } from '@/constants/environment';
 
@@ -148,7 +151,10 @@ const Form = ({
 				tabs={PERCENTAGE_SELECTOR_OPTIONS.map((option) => ({
 					label: option.label,
 					onSelect: () => setAmount(maxAmount * option.value),
-					selected: amount === maxAmount * option.value,
+					selected:
+						amount.toFixed(USDC_MARKET.precisionExp) ===
+							(maxAmount * option.value).toFixed(USDC_MARKET.precisionExp) &&
+						amount !== 0,
 				}))}
 			/>
 		</div>
@@ -172,11 +178,17 @@ const DepositForm = () => {
 		setAmount(formattedAmount);
 	};
 
-	const handleDeposit = () => {
+	const handleDeposit = async () => {
 		if (!vaultPubkey) return;
 
 		const baseAmount = new BN(amount * USDC_MARKET.precision.toNumber());
-		appActions.depositVault(vaultPubkey, baseAmount);
+		await appActions.depositVault(vaultPubkey, baseAmount);
+
+		resetForm();
+	};
+
+	const resetForm = () => {
+		setAmount(0);
 	};
 
 	return (
@@ -211,9 +223,17 @@ const WithdrawForm = () => {
 	const appActions = useAppActions();
 
 	const [amount, setAmount] = useState<number>(0);
+	const [maxAmount, setMaxAmount] = useState<number>(0);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
-		WithdrawalState.UnRequested
+		WithdrawalState.Requested
 	);
+
+	const withdrawalWaitingPeriod = redeemPeriodToString(
+		vault?.info?.redeemPeriod.toNumber()
+	);
+	const withdrawalAvailableTs =
+		vault?.vaultDepositor?.lastWithdrawRequestTs.toNumber() +
+		vault?.info?.redeemPeriod.toNumber();
 
 	const userShares = vault?.vaultDepositor?.vaultShares ?? new BN(0);
 	const lastRequestedAmount =
@@ -221,6 +241,31 @@ const WithdrawForm = () => {
 
 	const isButtonDisabled =
 		amount === 0 && withdrawalState !== WithdrawalState.Requested;
+
+	useEffect(() => {
+		const hasRequestedWithdrawal = lastRequestedAmount.toNumber() > 0;
+		const isBeforeWithdrawalAvailableDate = dayjs().isBefore(
+			dayjs.unix(withdrawalAvailableTs)
+		);
+
+		if (hasRequestedWithdrawal) {
+			if (isBeforeWithdrawalAvailableDate) {
+				setWithdrawalState(WithdrawalState.Requested);
+			} else {
+				setWithdrawalState(WithdrawalState.AvailableForWithdrawal);
+			}
+		} else {
+			setWithdrawalState(WithdrawalState.UnRequested);
+		}
+	}, [withdrawalAvailableTs, lastRequestedAmount.toNumber()]);
+
+	useEffect(() => {
+		if (withdrawalState === WithdrawalState.AvailableForWithdrawal) {
+			setMaxAmount(lastRequestedAmount.toNumber());
+		} else {
+			setMaxAmount(userShares.toNumber());
+		}
+	}, [withdrawalState, lastRequestedAmount.toNumber(), userShares.toNumber()]);
 
 	const handleOnValueChange = (newAmount: number) => {
 		const formattedAmount = Number(
@@ -234,6 +279,10 @@ const WithdrawForm = () => {
 
 		if (withdrawalState === WithdrawalState.UnRequested) {
 			appActions.requestVaultWithdrawal(vaultPubkey, new BN(amount));
+		} else if (withdrawalState === WithdrawalState.Requested) {
+			appActions.cancelRequestWithdraw(vaultPubkey);
+		} else {
+			appActions.executeVaultWithdrawal(vaultPubkey);
 		}
 	};
 
@@ -245,8 +294,8 @@ const WithdrawForm = () => {
 
 			<Form
 				tab={Tab.Withdraw}
-				maxAmount={userShares.toNumber()}
-				maxAmountString={`${userShares.toNumber()} shares`}
+				maxAmount={maxAmount}
+				maxAmountString={`${maxAmount} shares`}
 				setAmount={handleOnValueChange}
 				amount={amount}
 			/>
@@ -279,9 +328,16 @@ const WithdrawForm = () => {
 							{getWithdrawButtonLabel(withdrawalState)}
 						</Button>
 					</div>
-					{(withdrawalState === WithdrawalState.UnRequested ||
-						withdrawalState === WithdrawalState.Requested) && (
-						<span>Next withdrawal period: July 23-30, 2023</span>
+					{withdrawalState === WithdrawalState.UnRequested && (
+						<span>Withdrawal waiting period: {withdrawalWaitingPeriod}</span>
+					)}
+					{withdrawalState === WithdrawalState.Requested && (
+						<span className="text-center">
+							Withdrawal available on:{' '}
+							{dayjs(withdrawalAvailableTs * 1000).format(
+								'ddd, DD MMM YYYY HH:mm (Z)'
+							)}
+						</span>
 					)}
 				</div>
 			) : (
@@ -308,7 +364,7 @@ const DepositWithdrawForm = () => {
 					onSelect={() => setSelectedTab(Tab.Withdraw)}
 				/>
 			</div>
-			<div className={twMerge('mt-9 mb-7 px-7 h-[400px]')}>
+			<div className={twMerge('mt-9 mb-7 px-7 min-h-[400px] h-1')}>
 				{selectedTab === Tab.Deposit ? <DepositForm /> : <WithdrawForm />}
 			</div>
 		</div>

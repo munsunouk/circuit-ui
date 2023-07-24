@@ -7,7 +7,7 @@ type ToastWithMessageProps = {
 	message: string;
 };
 
-const ToastWithMessage = ({ title, message }: ToastWithMessageProps) => {
+export const ToastWithMessage = ({ title, message }: ToastWithMessageProps) => {
 	return (
 		<div className="flex flex-col gap-1">
 			<span className="font-medium text-text-emphasis">{title}</span>
@@ -21,7 +21,6 @@ const ToastWithMessage = ({ title, message }: ToastWithMessageProps) => {
 
 const NOTIFICATION_UTILS = {
 	toast,
-	ToastWithMessage,
 };
 
 export default NOTIFICATION_UTILS;

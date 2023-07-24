@@ -19,6 +19,7 @@ export default function ToastContainer() {
 				)
 			}
 			hideProgressBar
+			autoClose={5000}
 		/>
 	);
 }
