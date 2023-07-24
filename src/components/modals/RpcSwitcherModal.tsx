@@ -86,14 +86,14 @@ export default function RpcSwitcherModal() {
 			return;
 		}
 
-		let rpcToUse = rpcOptions.find((rpc) => rpc.label === selectedRpcLabel);
-		rpcToUse = rpcToUse
-			? rpcToUse
-			: {
-					label: CUSTOM_LABEL,
-					value: customRpcValue,
-					allowAdditionalConnection: false,
-			  };
+		const rpcToUse =
+			selectedRpcLabel === CUSTOM_LABEL
+				? {
+						label: CUSTOM_LABEL,
+						value: customRpcValue,
+						allowAdditionalConnection: false,
+				  }
+				: rpcOptions.find((rpc) => rpc.label === selectedRpcLabel);
 
 		const responseTime = await getResponseTime(rpcToUse.value);
 
