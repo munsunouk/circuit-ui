@@ -31,8 +31,6 @@ echo "no_prefix = $no_prefix"
 COMMIT=${no_prefix} # get rid of the suffix
 
 echo "TRYING TO USE SUBMODULE COMMIT: $COMMIT"
-echo "cd .."
-cd ..
 
 # set up an empty temporary work directory
 rm -rf tmp || true # remove the tmp folder if exists
@@ -58,8 +56,13 @@ echo "git submodule update --init"
 git submodule update --init
 echo "clearing protocol .git"
 rm -rf .git
+echo "ls protocol"
+ls
 echo "cd .."
 cd ..
+
+echo "ls $SUBMODULE_PATH"
+ls
 
 echo "moving UP"
 # move the submodule from tmp to the submodule path
@@ -75,3 +78,6 @@ mv tmp/* $SUBMODULE_PATH/ # move the submodule to the submodule path
 
 # # clean up
 rm -rf tmp # remove the tmp folder
+
+echo "ls $SUBMODULE_PATH"
+ls $SUBMODULE_PATH
