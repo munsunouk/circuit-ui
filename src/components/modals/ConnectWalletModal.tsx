@@ -20,7 +20,7 @@ const WalletOption = ({
 			className={twMerge(
 				'flex justify-between p-4 min-w-[360px] font-normal',
 				wallet.adapter.connected &&
-					'bg-container-bg-selected border-container-border-selected'
+					'bg-container-bg-selected border-container-border-selected text-text-selected'
 			)}
 			secondary
 		>

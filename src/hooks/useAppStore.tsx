@@ -6,6 +6,7 @@ import { create } from 'zustand';
 export interface AppStoreState {
 	modals: {
 		showConnectWalletModal: boolean;
+		showRpcSwitcherModal: boolean;
 	};
 	vaultClient: VaultClient | undefined;
 	vaultDriftClient: DriftClient | undefined; // used to get vault's drift account data
@@ -31,6 +32,7 @@ export interface AppStoreState {
 const DEFAULT_APP_STORE_STATE = {
 	modals: {
 		showConnectWalletModal: false,
+		showRpcSwitcherModal: false,
 	},
 	vaultClient: undefined,
 	vaultDriftClient: undefined,

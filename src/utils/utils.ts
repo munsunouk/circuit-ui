@@ -6,3 +6,11 @@ export const redeemPeriodToString = (seconds = 0) => {
 		return `${hours / 24} days ${hours % 24} hours`;
 	}
 };
+
+export const getRpcLatencyColor = (latency: number | undefined) => {
+	return !latency || latency < 0
+		? 'bg-container-border-light'
+		: latency < 250
+		? 'bg-success-green-border'
+		: 'bg-error-red-border';
+};

@@ -17,6 +17,7 @@ import { USDC_MARKET } from '@/constants/environment';
 
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
+import Input from '../elements/Input';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
 	{ label: '25%', value: 0.25 },
@@ -129,9 +130,9 @@ const Form = ({
 					isFocused && 'border-container-border-selected'
 				)}
 			>
-				<input
+				<Input
 					type="number"
-					className="w-full h-12 px-4 text-lg font-semibold bg-black focus:outline-none focus:border-container-border-selected text-text-emphasis"
+					className="border-0"
 					value={amount}
 					onChange={(e) => setAmount(Number(e.target.value))}
 					onFocus={handleFocus}
