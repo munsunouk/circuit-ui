@@ -95,6 +95,11 @@ export default function RpcSwitcherModal() {
 				  }
 				: rpcOptions.find((rpc) => rpc.label === selectedRpcLabel);
 
+		if (!rpcToUse) {
+			NOTIFICATION_UTILS.toast.error('Please select a valid RPC');
+			return;
+		}
+
 		const responseTime = await getResponseTime(rpcToUse.value);
 
 		if (responseTime < 1) {
