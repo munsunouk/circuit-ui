@@ -6,6 +6,9 @@ pwd
 echo "ls"
 ls
 
+echo "check drift-common content"
+ls
+
 # Install stuff in drift-common
 
 # Install Protocol + SDK

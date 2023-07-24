@@ -31,8 +31,6 @@ echo "no_prefix = $no_prefix"
 COMMIT=${no_prefix} # get rid of the suffix
 
 echo "TRYING TO USE SUBMODULE COMMIT: $COMMIT"
-echo "cd .."
-cd ..
 
 # set up an empty temporary work directory
 rm -rf tmp || true # remove the tmp folder if exists
