@@ -11,7 +11,7 @@ export default function GradientBorderBox({
 	color = 'blue',
 	children,
 	className,
-	borderWidth = 0.5,
+	borderWidth = 1,
 	...rest
 }: GradientBorderBoxProps) {
 	return (
