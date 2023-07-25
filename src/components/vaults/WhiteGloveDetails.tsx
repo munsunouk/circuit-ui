@@ -1,3 +1,4 @@
+import GradientBorderBox from '../elements/GradientBorderBox';
 import { Email, Telegram } from '../icons';
 
 const ContactOption = ({
@@ -17,7 +18,7 @@ const ContactOption = ({
 
 export default function WhiteGloveDetails() {
 	return (
-		<div className="flex flex-col gap-2 px-6 py-5 border border-container-border">
+		<GradientBorderBox className="flex flex-col gap-2 px-6 py-5" color="yellow">
 			<span>
 				For deposits over <span className="font-bold">$250,000</span> contact us
 				to learn more about our white glove service.
@@ -26,6 +27,6 @@ export default function WhiteGloveDetails() {
 				<ContactOption Icon={Email} label="Email" />
 				<ContactOption Icon={Telegram} label="Telegram" />
 			</div>
-		</div>
+		</GradientBorderBox>
 	);
 }

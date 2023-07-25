@@ -17,6 +17,7 @@ import { USDC_MARKET } from '@/constants/environment';
 
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
+import GradientBorderBox from '../elements/GradientBorderBox';
 import Input from '../elements/Input';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
@@ -352,7 +353,7 @@ const DepositWithdrawForm = () => {
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
 
 	return (
-		<div className="w-full bg-black border border-container-border">
+		<GradientBorderBox className="w-full bg-black">
 			<div className="flex">
 				<FormTab
 					selected={selectedTab === Tab.Deposit}
@@ -368,7 +369,7 @@ const DepositWithdrawForm = () => {
 			<div className={twMerge('mt-9 mb-7 px-7 min-h-[400px] h-1')}>
 				{selectedTab === Tab.Deposit ? <DepositForm /> : <WithdrawForm />}
 			</div>
-		</div>
+		</GradientBorderBox>
 	);
 };
 

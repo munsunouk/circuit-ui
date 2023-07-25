@@ -80,3 +80,29 @@ body::-webkit-scrollbar {
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
+
+.gradient-container-blue {
+	background: linear-gradient(
+		69deg,
+		#88c9ff 17.79%,
+		#3551b4 22.25%,
+		#000b31 31.82%,
+		#000000 47.7%,
+		#000b31 62.95%,
+		#3551b4 73.24%,
+		#88c9ff 77.56%
+	);
+}
+
+.gradient-container-yellow {
+	background: linear-gradient(
+		10deg,
+		#e9b735 17.79%,
+		#dac761 22.25%,
+		#312600 31.82%,
+		#646363 47.7%,
+		#312600 62.95%,
+		#dac761 73.24%,
+		#e9b735 77.56%
+	);
+}
