@@ -1,5 +1,6 @@
 import { BN, DriftClient, PublicKey } from '@drift-labs/sdk';
 import { Vault, VaultClient, VaultDepositor } from '@drift-labs/vaults-sdk';
+import { UISnapshotHistory } from '@drift/common';
 import { produce } from 'immer';
 import { create } from 'zustand';
 
@@ -19,6 +20,7 @@ export interface AppStoreState {
 					stats: {
 						netUsdValue: BN;
 					};
+					pnlHistory: UISnapshotHistory;
 			  }
 			| undefined;
 	};

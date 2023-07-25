@@ -19,6 +19,7 @@ import {
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
 import { VaultDepositor } from '@drift-labs/vaults-sdk';
+import { HistoryResolution } from '@drift/common';
 import { Commitment, Keypair } from '@solana/web3.js';
 import { StoreApi } from 'zustand';
 
@@ -69,6 +70,13 @@ const createAppActions = (
 					info: vault,
 					stats: {
 						netUsdValue: new BN(0),
+					},
+					pnlHistory: {
+						[HistoryResolution.DAY]: [],
+						[HistoryResolution.WEEK]: [],
+						[HistoryResolution.MONTH]: [],
+						[HistoryResolution.ALL]: [],
+						dailyAllTimePnls: [],
 					},
 				};
 			}
