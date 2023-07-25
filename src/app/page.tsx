@@ -32,7 +32,9 @@ export default function PrivateVaultPage() {
 			<VaultHero />
 			<VaultTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
 			<div className="flex justify-between w-full gap-10 md:gap-16 mt-16 lg:gap-[130px]">
-				<div className="max-w-[580px] w-full">{renderLeftPanel()}</div>
+				<div className="max-w-[580px] w-full [&>div]:p-1">
+					{renderLeftPanel()}
+				</div>
 				<div className="flex flex-col gap-7 max-w-[456px] min-w-[340px]">
 					<DepositWithdrawForm />
 					<WhiteGloveDetails />

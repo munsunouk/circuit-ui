@@ -3,6 +3,8 @@ import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import useCurrentVault from '@/hooks/useCurrentVault';
 
 import SectionHeader from '../SectionHeader';
+import Button from '../elements/Button';
+import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 
 export default function VaultPerformance() {
@@ -28,6 +30,26 @@ export default function VaultPerformance() {
 
 			<div>
 				<SectionHeader>Cumulative Performance</SectionHeader>
+			</div>
+
+			<div>
+				<SectionHeader className="mb-4">Vault Activity</SectionHeader>
+				<div>
+					View this Vault’s activity from open positions, recent trades, to open
+					orders any time. In the Overview page, you can download the activity
+					history for your records.
+				</div>
+			</div>
+			<div>
+				<a
+					href={`https://app.drift.trade/?authority=${vault?.info.pubkey.toString()}`}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<Button secondary Icon={ExternalLink}>
+						View Vault Activity on Drift
+					</Button>
+				</a>
 			</div>
 		</div>
 	);

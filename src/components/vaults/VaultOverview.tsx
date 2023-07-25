@@ -45,7 +45,6 @@ export default function VaultOverview() {
 						suffer financial losses.
 					</div>
 				</div>
-				<div></div>
 			</div>
 			<div className="flex flex-col w-full gap-4">
 				<SectionHeader>Lock Up Period & Withdrawals</SectionHeader>

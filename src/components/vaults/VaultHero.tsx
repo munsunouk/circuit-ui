@@ -27,6 +27,7 @@ export default function VaultHero() {
 
 	const name = decodeName(vault?.info.name ?? []);
 	const tvl = vault?.stats.netUsdValue ?? new BN(0);
+	const maxCapacity = vault?.info.maxTokens;
 
 	return (
 		<div className="flex flex-col items-center">
@@ -49,7 +50,10 @@ export default function VaultHero() {
 					value={BigNum.from(tvl, QUOTE_PRECISION_EXP).toNotional()}
 				/>
 				<div className="h-12 border-r border-container-border" />
-				<StatsBox label="Max Capacity" value="4,863,718.00" />
+				<StatsBox
+					label="Max Capacity"
+					value={BigNum.from(maxCapacity, QUOTE_PRECISION_EXP).toNotional()}
+				/>
 			</div>
 		</div>
 	);
