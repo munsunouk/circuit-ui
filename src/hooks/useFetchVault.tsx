@@ -67,16 +67,16 @@ export default function useFetchVault() {
 		userAccount: PublicKey,
 		vaultPubKey: PublicKey
 	) => {
-		const res = await axios.get<UISnapshotHistory>(
+		const res = await axios.get<{ data: UISnapshotHistory[] }>(
 			`${
 				Env.historyServerUrl
 			}/userSnapshots/?userPubKeys=${userAccount.toString()}`
 		);
 
-		const snapshots = res.data;
+		const snapshots = res.data.data;
 
 		setAppStore((s) => {
-			s.vaults[vaultPubKey.toString()]!.pnlHistory = snapshots;
+			s.vaults[vaultPubKey.toString()]!.pnlHistory = snapshots[0];
 		});
 	};
 }

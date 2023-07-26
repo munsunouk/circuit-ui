@@ -1,4 +1,8 @@
 import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import {
+	HistoryResolution,
+	UISerializableAccountSnapshot,
+} from '@drift/common';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 
@@ -6,6 +10,7 @@ import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
+import PerformanceGraph from './PerformanceGraph';
 
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
@@ -13,6 +18,35 @@ export default function VaultPerformance() {
 	const totalDeposits = vault?.info.netDeposits ?? new BN(0);
 	const currentBalance = vault?.stats.netUsdValue ?? new BN(0);
 	const totalEarnings = currentBalance.sub(totalDeposits); // FIXME: this is not correct, should be a cumulative sum of period earnings, where period = until withdrawal time
+
+	const formatPnlHistory = (pnlHistory: UISerializableAccountSnapshot[]) => {
+		const formattedHistory = pnlHistory.map((snapshot) => ({
+			x: snapshot.epochTs,
+			// @ts-ignore
+			y: snapshot.allTimeTotalPnl as number,
+		}));
+
+		// find the last index of the leading numbers where the numbers are intangible
+		// we define intangible as a number that is less than 1% of the next number
+		let intangibleIndex = -1;
+		for (let i = 0; i < formattedHistory.length; i++) {
+			if (i === formattedHistory.length - 1) {
+				continue;
+			}
+
+			const isIntangible =
+				formattedHistory[i].y === 0 ||
+				formattedHistory[i].y < Math.abs(formattedHistory[i + 1].y) * 0.01;
+
+			if (!isIntangible && intangibleIndex > -1) {
+				break;
+			} else {
+				intangibleIndex = i;
+			}
+		}
+
+		return formattedHistory.slice(intangibleIndex + 1);
+	};
 
 	return (
 		<div className="flex flex-col w-full gap-8">
@@ -28,8 +62,13 @@ export default function VaultPerformance() {
 				</div>
 			</div>
 
-			<div>
+			<div className="flex flex-col gap-4">
 				<SectionHeader>Cumulative Performance</SectionHeader>
+				<PerformanceGraph
+					data={formatPnlHistory(
+						vault?.pnlHistory[HistoryResolution.ALL] ?? []
+					)}
+				/>
 			</div>
 
 			<div>
