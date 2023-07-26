@@ -9,6 +9,7 @@ import ConnectButton from '@/components/ConnectButton';
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
 import useCurrentVault from '@/hooks/useCurrentVault';
+import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import { redeemPeriodToString } from '@/utils/utils';
@@ -222,6 +223,7 @@ const WithdrawForm = () => {
 	const { connected } = useWallet();
 	const vaultPubkey = usePathToVaultPubKey();
 	const vault = useCurrentVault();
+	const vaultDepositor = useCurrentVaultDepositor();
 	const appActions = useAppActions();
 
 	const [amount, setAmount] = useState<number>(0);
@@ -234,12 +236,12 @@ const WithdrawForm = () => {
 		vault?.info?.redeemPeriod.toNumber()
 	);
 	const withdrawalAvailableTs =
-		vault?.vaultDepositor?.lastWithdrawRequestTs.toNumber() +
+		vaultDepositor?.lastWithdrawRequestTs.toNumber() +
 		vault?.info?.redeemPeriod.toNumber();
 
-	const userShares = vault?.vaultDepositor?.vaultShares ?? new BN(0);
+	const userShares = vaultDepositor?.vaultShares ?? new BN(0);
 	const lastRequestedAmount =
-		vault?.vaultDepositor?.lastWithdrawRequestShares ?? new BN(0);
+		vaultDepositor?.lastWithdrawRequestShares ?? new BN(0);
 
 	const isButtonDisabled =
 		amount === 0 && withdrawalState !== WithdrawalState.Requested;

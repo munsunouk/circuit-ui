@@ -7,7 +7,7 @@ const getVaultName = (pathname: string) => {
 		case '/':
 			return DEFAULT_VAULT_PUBKEY;
 		default:
-			return null;
+			return undefined;
 	}
 };
 

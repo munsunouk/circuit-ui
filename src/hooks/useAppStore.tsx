@@ -1,5 +1,10 @@
 import { BN, DriftClient, PublicKey } from '@drift-labs/sdk';
-import { Vault, VaultClient, VaultDepositor } from '@drift-labs/vaults-sdk';
+import {
+	Vault,
+	VaultClient,
+	VaultDepositor,
+	VaultDepositorSubscriber,
+} from '@drift-labs/vaults-sdk';
 import { UISnapshotHistory } from '@drift/common';
 import { produce } from 'immer';
 import { create } from 'zustand';
@@ -16,7 +21,7 @@ export interface AppStoreState {
 		[vaultName: string]:
 			| {
 					info: Vault;
-					vaultDepositor?: VaultDepositor;
+					vaultDepositorSubscriber?: VaultDepositorSubscriber;
 					stats: {
 						netUsdValue: BN;
 					};
@@ -29,6 +34,9 @@ export interface AppStoreState {
 	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
+	getVaultDepositor: (
+		vaultAddress: PublicKey | undefined
+	) => VaultDepositor | undefined;
 }
 
 const DEFAULT_APP_STORE_STATE = {
@@ -50,6 +58,12 @@ const useAppStore = create<AppStoreState>((set, get) => {
 		...DEFAULT_APP_STORE_STATE,
 		set: setProducerFn,
 		get: () => get(),
+		getVaultDepositor: (vaultAddress: PublicKey | undefined) => {
+			if (!vaultAddress) return undefined;
+
+			const vault = get().vaults[vaultAddress.toString()];
+			return vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
+		},
 	};
 });
 

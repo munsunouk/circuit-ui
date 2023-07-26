@@ -3,6 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
+import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
 
 import { sourceCodePro } from '@/constants/fonts';
 
@@ -29,7 +30,7 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 export default function YourPerformance() {
 	const { connected } = useWallet();
 	const vault = useCurrentVault();
-	const vaultDepositor = vault?.vaultDepositor;
+	const vaultDepositor = useCurrentVaultDepositor();
 
 	// if (!vault || !vaultDepositor) return null;
 
