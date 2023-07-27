@@ -9,6 +9,7 @@ import ConnectButton from '@/components/ConnectButton';
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
 import useCurrentVault from '@/hooks/useCurrentVault';
+import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
@@ -224,6 +225,7 @@ const WithdrawForm = () => {
 	const vaultPubkey = usePathToVaultPubKey();
 	const vault = useCurrentVault();
 	const vaultDepositor = useCurrentVaultDepositor();
+	const vaultAccount = useCurrentVaultAccount();
 	const appActions = useAppActions();
 
 	const [amount, setAmount] = useState<number>(0);
@@ -233,11 +235,11 @@ const WithdrawForm = () => {
 	);
 
 	const withdrawalWaitingPeriod = redeemPeriodToString(
-		vault?.info?.redeemPeriod.toNumber()
+		vaultAccount?.redeemPeriod.toNumber()
 	);
 	const withdrawalAvailableTs =
 		vaultDepositor?.lastWithdrawRequestTs.toNumber() +
-		vault?.info?.redeemPeriod.toNumber();
+		vaultAccount?.redeemPeriod.toNumber();
 
 	const userShares = vaultDepositor?.vaultShares ?? new BN(0);
 	const lastRequestedAmount =

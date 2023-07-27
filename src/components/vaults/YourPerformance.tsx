@@ -3,6 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
+import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
 
 import { sourceCodePro } from '@/constants/fonts';
@@ -31,10 +32,11 @@ export default function YourPerformance() {
 	const { connected } = useWallet();
 	const vault = useCurrentVault();
 	const vaultDepositor = useCurrentVaultDepositor();
+	const vaultAccount = useCurrentVaultAccount();
 
 	// if (!vault || !vaultDepositor) return null;
 
-	const totalVaultShares = vault?.info.totalShares.toNumber();
+	const totalVaultShares = vaultAccount?.totalShares.toNumber();
 	const userVaultShares = vaultDepositor?.vaultShares.toNumber();
 	const userSharesProportion = userVaultShares / totalVaultShares;
 

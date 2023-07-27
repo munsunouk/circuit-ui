@@ -47,7 +47,6 @@ export default function useSPLTokenBalance(
 			tokenAccountListener.current = connection.onAccountChange(
 				tokenAccount.pubkey,
 				() => {
-					console.log('running on account change');
 					getBalance();
 				},
 				'confirmed'

@@ -6,22 +6,21 @@ import {
 	DRIFT_PROGRAM_ID,
 	DriftClient,
 	DriftClientConfig,
-	IWallet,
 	PublicKey,
 	QUOTE_PRECISION_EXP,
 	getMarketsAndOraclesForSubscription,
 } from '@drift-labs/sdk';
 import {
 	VAULT_PROGRAM_ID,
-	Vault,
 	VaultDepositorSubscriber,
+	VaultSubscriber,
 	WithdrawUnit,
 	getDriftVaultProgram,
 	getVaultClient,
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
-import { HistoryResolution } from '@drift/common';
-import { Commitment, Keypair } from '@solana/web3.js';
+import { COMMON_UI_UTILS, HistoryResolution } from '@drift/common';
+import { Commitment } from '@solana/web3.js';
 import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
@@ -56,34 +55,30 @@ const createAppActions = (
 			ARBITRARY_WALLET,
 			state.driftClient.client
 		);
-		const vault = (await vaultClient.getVault(vaultAddress)) as Vault;
 
-		await setupVaultDriftClient(vaultAddress);
+		const [vaultDriftClient, vaultSubscriber] = await Promise.all([
+			setupVaultDriftClient(vaultAddress),
+			initVaultSubscriber(vaultAddress),
+		]);
 
-		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
 		set((s) => {
+			s.vaultDriftClient = vaultDriftClient;
 			s.vaultClient = vaultClient;
 
-			if (currentStoredVaultExists) {
-				s.vaults[vaultAddress.toString()]!.info = vault;
-			} else {
-				s.vaults[vaultAddress.toString()] = {
-					info: vault,
-					stats: {
-						netUsdValue: new BN(0),
-					},
-					pnlHistory: {
-						[HistoryResolution.DAY]: [],
-						[HistoryResolution.WEEK]: [],
-						[HistoryResolution.MONTH]: [],
-						[HistoryResolution.ALL]: [],
-						dailyAllTimePnls: [],
-					},
-				};
-			}
+			s.vaults[vaultAddress.toString()] = {
+				vaultSubscriber: vaultSubscriber,
+				stats: {
+					netUsdValue: new BN(0),
+				},
+				pnlHistory: {
+					[HistoryResolution.DAY]: [],
+					[HistoryResolution.WEEK]: [],
+					[HistoryResolution.MONTH]: [],
+					[HistoryResolution.ALL]: [],
+					dailyAllTimePnls: [],
+				},
+			};
 		});
-
-		return vault;
 	};
 
 	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {
@@ -94,21 +89,7 @@ const createAppActions = (
 		}
 
 		// Create Vault's DriftClient
-		const newKeypair = new Keypair({
-			publicKey: vaultPubKey.toBytes(),
-			secretKey: new Keypair().publicKey.toBytes(),
-		});
-		const newWallet: IWallet = {
-			publicKey: newKeypair.publicKey,
-			//@ts-ignore
-			signTransaction: () => {
-				return Promise.resolve();
-			},
-			//@ts-ignore
-			signAllTransactions: () => {
-				return Promise.resolve();
-			},
-		};
+		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultPubKey);
 
 		const accountLoader = new BulkAccountLoader(
 			commonState.connection,
@@ -164,11 +145,7 @@ const createAppActions = (
 			});
 		});
 
-		set((s) => {
-			s.vaultDriftClient = vaultDriftClient;
-		});
-
-		return subscriptionResult;
+		return vaultDriftClient;
 	};
 
 	const fetchVaultStats = async (vaultAddress: PublicKey) => {
@@ -195,16 +172,44 @@ const createAppActions = (
 		});
 	};
 
-	const fetchVaultDepositor = async (
+	const initVaultSubscriber = async (vaultAddress: PublicKey) => {
+		const connection = getCommon().connection;
+
+		if (!connection) return;
+
+		const accountLoader = new BulkAccountLoader(
+			connection,
+			DEFAULT_COMMITMENT_LEVEL,
+			POLLING_FREQUENCY_MS
+		);
+		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultAddress);
+
+		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
+
+		const vaultSubscriber = new VaultSubscriber(
+			driftVaultsProgram,
+			vaultAddress,
+			accountLoader
+		);
+		await vaultSubscriber.subscribe();
+
+		vaultSubscriber.eventEmitter.on('update', () => {
+			set((s) => {
+				s.vaults[vaultAddress.toString()]!.vaultSubscriber = vaultSubscriber;
+			});
+		});
+
+		return vaultSubscriber;
+	};
+
+	const initVaultDepositorSubscriber = async (
 		vaultAddress: PublicKey,
 		authority: PublicKey
 	) => {
 		const connection = getCommon().connection;
-		const vaultClient = get().vaultClient;
 		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
 
-		if (!authority || !currentStoredVaultExists || !vaultClient || !connection)
-			return;
+		if (!authority || !currentStoredVaultExists || !connection) return;
 
 		const vaultDepositorAddress = getVaultDepositorAddressSync(
 			VAULT_PROGRAM_ID,
@@ -217,21 +222,9 @@ const createAppActions = (
 			DEFAULT_COMMITMENT_LEVEL,
 			POLLING_FREQUENCY_MS
 		);
-		const newKeypair = new Keypair({
-			publicKey: vaultDepositorAddress.toBytes(),
-			secretKey: new Keypair().publicKey.toBytes(),
-		});
-		const newWallet: IWallet = {
-			publicKey: newKeypair.publicKey,
-			//@ts-ignore
-			signTransaction: () => {
-				return Promise.resolve();
-			},
-			//@ts-ignore
-			signAllTransactions: () => {
-				return Promise.resolve();
-			},
-		};
+		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(
+			vaultDepositorAddress
+		);
 
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
 
@@ -257,7 +250,7 @@ const createAppActions = (
 
 	const depositVault = async (vaultAddress: PublicKey, amount: BN) => {
 		try {
-			const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
+			const vaultInfo = get().getVaultAccount(vaultAddress);
 			const vaultDepositor = get().getVaultDepositor(vaultAddress);
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
@@ -299,7 +292,7 @@ const createAppActions = (
 		try {
 			const vaultClient = get().vaultClient;
 			const vaultDepositor = get().getVaultDepositor(vaultAddress);
-			const vaultInfo = get().vaults[vaultAddress.toString()]?.info;
+			const vaultInfo = get().getVaultAccount(vaultAddress);
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -363,7 +356,8 @@ const createAppActions = (
 	return {
 		fetchVault,
 		fetchVaultStats,
-		fetchVaultDepositor,
+		initVaultSubscriber,
+		initVaultDepositorSubscriber,
 		depositVault,
 		requestVaultWithdrawal,
 		cancelRequestWithdraw,

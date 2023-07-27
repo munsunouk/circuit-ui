@@ -3,6 +3,7 @@ import { decodeName } from '@drift-labs/vaults-sdk';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
+import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 
@@ -24,10 +25,11 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 
 export default function VaultHero() {
 	const vault = useCurrentVault();
+	const vaultAccount = useCurrentVaultAccount();
 
-	const name = decodeName(vault?.info.name ?? []);
+	const name = decodeName(vaultAccount?.name ?? []);
 	const tvl = vault?.stats.netUsdValue ?? new BN(0);
-	const maxCapacity = vault?.info.maxTokens;
+	const maxCapacity = vaultAccount?.maxTokens;
 
 	return (
 		<div className="flex flex-col items-center">

@@ -5,6 +5,7 @@ import {
 } from '@drift/common';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
+import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
@@ -14,8 +15,9 @@ import PerformanceGraph from './PerformanceGraph';
 
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
+	const vaultAccount = useCurrentVaultAccount();
 
-	const totalDeposits = vault?.info.netDeposits ?? new BN(0);
+	const totalDeposits = vaultAccount?.netDeposits ?? new BN(0);
 	const currentBalance = vault?.stats.netUsdValue ?? new BN(0);
 	const totalEarnings = currentBalance.sub(totalDeposits); // FIXME: this is not correct, should be a cumulative sum of period earnings, where period = until withdrawal time
 
@@ -81,7 +83,7 @@ export default function VaultPerformance() {
 			</div>
 			<div>
 				<a
-					href={`https://app.drift.trade/?authority=${vault?.info.pubkey.toString()}`}
+					href={`https://app.drift.trade/?authority=${vaultAccount?.pubkey.toString()}`}
 					target="_blank"
 					rel="noopener noreferrer"
 				>

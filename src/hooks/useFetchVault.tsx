@@ -10,7 +10,7 @@ import Env from '@/constants/environment';
 
 import { useAppActions } from './useAppActions';
 import useAppStore from './useAppStore';
-import useCurrentVault from './useCurrentVault';
+import useCurrentVaultAccount from './useCurrentVaultAccount';
 import usePathToVaultPubKey from './usePathToVaultName';
 
 /**
@@ -25,21 +25,17 @@ export default function useFetchVault() {
 	const vaultPubKey = usePathToVaultPubKey();
 	const authority = useCommonDriftStore((s) => s.authority);
 	const setAppStore = useAppStore((s) => s.set);
-	const currentVault = useCurrentVault();
+	const vaultAccount = useCurrentVaultAccount();
 
 	const initialVaultSnapshotFetched = useRef(false);
 
 	useEffect(() => {
-		if (
-			!initialVaultSnapshotFetched.current &&
-			currentVault?.info &&
-			vaultPubKey
-		) {
-			fetchVaultSnapshots(currentVault.info.user, vaultPubKey).then(() => {
+		if (!initialVaultSnapshotFetched.current && vaultAccount && vaultPubKey) {
+			fetchVaultSnapshots(vaultAccount.user, vaultPubKey).then(() => {
 				initialVaultSnapshotFetched.current = true;
 			});
 		}
-	}, [currentVault?.info, vaultPubKey]);
+	}, [!!vaultAccount, vaultPubKey]);
 
 	useEffect(() => {
 		if (driftClientIsReady && vaultPubKey) {
@@ -48,10 +44,10 @@ export default function useFetchVault() {
 	}, [driftClientIsReady, vaultPubKey]);
 
 	useEffect(() => {
-		if (vaultPubKey && authority && currentVault?.info) {
-			appActions.fetchVaultDepositor(vaultPubKey, authority);
+		if (vaultPubKey && authority && vaultAccount) {
+			appActions.initVaultDepositorSubscriber(vaultPubKey, authority);
 		}
-	}, [vaultPubKey, authority, currentVault?.info]);
+	}, [vaultPubKey, authority, !!vaultAccount]);
 
 	const fetchAllVaultInformation = async (vaultPubKey: PublicKey) => {
 		try {
