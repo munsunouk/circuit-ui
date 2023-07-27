@@ -1,4 +1,4 @@
-import { DriftClient, User, UserAccount } from '@drift-labs/sdk';
+import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
 	Vault,
 	VaultClient,
@@ -20,12 +20,12 @@ export interface AppStoreState {
 		[vaultPubKey: string]:
 			| {
 					vaultDriftClient: DriftClient;
-					vaultDriftUser: User; // used to get vault's drift account data
-					vaultDriftUserAccount: UserAccount | undefined;
+					vaultDriftUser: User; // used to get vault's drift account data (e.g. vault balance)
+					vaultDriftUserAccount: UserAccount | undefined; // we store the actual account so we know when it updates
 					vaultSubscriber: VaultSubscriber;
-					vaultAccount: Vault;
+					vaultAccount: Vault; // we store the actual account so we know when it updates
 					vaultDepositorSubscriber?: VaultDepositorSubscriber;
-					vaultDepositorAccount?: VaultDepositor;
+					vaultDepositorAccount?: VaultDepositor; // we store the actual account so we know when it updates
 					pnlHistory: UISnapshotHistory;
 			  }
 			| undefined;
@@ -35,6 +35,13 @@ export interface AppStoreState {
 	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
+	getVaultAccount: (vaultAddress: PublicKey | undefined) => Vault | undefined;
+	getVaultDepositor: (
+		vaultAddress: PublicKey | undefined
+	) => VaultDepositor | undefined;
+	getVaultDriftUserAccount: (
+		vaultAddress: PublicKey | undefined
+	) => UserAccount | undefined;
 }
 
 const DEFAULT_APP_STORE_STATE = {
@@ -56,6 +63,24 @@ const useAppStore = create<AppStoreState>((set, get) => {
 		...DEFAULT_APP_STORE_STATE,
 		set: setProducerFn,
 		get: () => get(),
+		getVaultAccount: (vaultAddress: PublicKey | undefined) => {
+			if (!vaultAddress) return undefined;
+
+			const vault = get().vaults[vaultAddress.toString()];
+			return vault?.vaultAccount;
+		},
+		getVaultDepositor: (vaultAddress: PublicKey | undefined) => {
+			if (!vaultAddress) return undefined;
+
+			const vault = get().vaults[vaultAddress.toString()];
+			return vault?.vaultDepositorAccount;
+		},
+		getVaultDriftUserAccount: (vaultAddress: PublicKey | undefined) => {
+			if (!vaultAddress) return undefined;
+
+			const vault = get().vaults[vaultAddress.toString()];
+			return vault?.vaultDriftUserAccount;
+		},
 	};
 });
 

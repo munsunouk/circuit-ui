@@ -261,10 +261,8 @@ const createAppActions = (
 
 	const depositVault = async (vaultAddress: PublicKey, amount: BN) => {
 		try {
-			const vault = get().vaults[vaultAddress.toString()];
-			const vaultInfo = vault?.vaultSubscriber.getUserAccountAndSlot().data;
-			const vaultDepositor =
-				vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
+			const vaultInfo = get().getVaultAccount(vaultAddress);
+			const vaultDepositor = get().getVaultDepositor(vaultAddress);
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
 				NOTIFICATION_UTILS.toast.error(
@@ -304,10 +302,8 @@ const createAppActions = (
 	) => {
 		try {
 			const vaultClient = get().vaultClient;
-			const vault = get().vaults[vaultAddress.toString()];
-			const vaultInfo = vault?.vaultSubscriber.getUserAccountAndSlot().data;
-			const vaultDepositor =
-				vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
+			const vaultInfo = get().getVaultAccount(vaultAddress);
+			const vaultDepositor = get().getVaultDepositor(vaultAddress);
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -337,9 +333,7 @@ const createAppActions = (
 	const cancelRequestWithdraw = async (vaultAddress: PublicKey) => {
 		try {
 			const vaultClient = get().vaultClient;
-			const vault = get().vaults[vaultAddress.toString()];
-			const vaultDepositor =
-				vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
+			const vaultDepositor = get().getVaultDepositor(vaultAddress);
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -359,9 +353,7 @@ const createAppActions = (
 
 	const executeVaultWithdrawal = async (vaultAddress: PublicKey) => {
 		const vaultClient = get().vaultClient;
-		const vault = get().vaults[vaultAddress.toString()];
-		const vaultDepositor =
-			vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
+		const vaultDepositor = get().getVaultDepositor(vaultAddress);
 
 		if (!vaultClient || !vaultDepositor) {
 			throw new Error('No vault client/vault depositor found');
