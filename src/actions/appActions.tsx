@@ -12,6 +12,8 @@ import {
 } from '@drift-labs/sdk';
 import {
 	VAULT_PROGRAM_ID,
+	Vault,
+	VaultDepositor,
 	VaultDepositorSubscriber,
 	VaultSubscriber,
 	WithdrawUnit,
@@ -40,8 +42,8 @@ const createAppActions = (
 	set: (x: (s: AppStoreState) => void) => void
 ) => {
 	/**
-	 * Gets on-chain data of the given vault name
-	 * @param vaultAddress The name of the vault
+	 * Gets on-chain data of the given vault address
+	 * @param vaultAddress The address of the vault
 	 */
 	const fetchVault = async (vaultAddress: PublicKey) => {
 		const state = getCommon();
@@ -56,20 +58,23 @@ const createAppActions = (
 			state.driftClient.client
 		);
 
-		const [vaultDriftClient, vaultSubscriber] = await Promise.all([
+		const [
+			{ vaultDriftClient, vaultDriftUser, vaultDriftUserAccount },
+			{ vaultSubscriber, vaultAccount },
+		] = await Promise.all([
 			setupVaultDriftClient(vaultAddress),
 			initVaultSubscriber(vaultAddress),
 		]);
 
 		set((s) => {
-			s.vaultDriftClient = vaultDriftClient;
 			s.vaultClient = vaultClient;
 
 			s.vaults[vaultAddress.toString()] = {
-				vaultSubscriber: vaultSubscriber,
-				stats: {
-					netUsdValue: new BN(0),
-				},
+				vaultDriftClient,
+				vaultDriftUser,
+				vaultDriftUserAccount,
+				vaultSubscriber,
+				vaultAccount,
 				pnlHistory: {
 					[HistoryResolution.DAY]: [],
 					[HistoryResolution.WEEK]: [],
@@ -138,44 +143,32 @@ const createAppActions = (
 			// retry once
 			await vaultDriftClient.subscribe();
 		}
+		const vaultDriftUser = vaultDriftClient.getUser(0, vaultPubKey);
+		const vaultDriftUserAccount = vaultDriftClient.getUserAccount(
+			0,
+			vaultPubKey
+		);
 
 		vaultDriftClient.eventEmitter.on('update', () => {
 			set((s) => {
-				s.vaultDriftClient = vaultDriftClient;
+				s.vaults[vaultPubKey.toString()]!.vaultDriftClient = vaultDriftClient;
+				s.vaults[vaultPubKey.toString()]!.vaultDriftUser = vaultDriftUser;
 			});
 		});
 
-		return vaultDriftClient;
-	};
-
-	const fetchVaultStats = async (vaultAddress: PublicKey) => {
-		const commonState = getCommon();
-		const appState = get();
-
-		if (!commonState.connection || !appState.vaultDriftClient) {
-			throw new Error('No connection');
-		}
-
-		const user = appState.vaultDriftClient.getUser(0, vaultAddress);
-
-		const collateral = user.getNetSpotMarketValue();
-		const unrealizedPNL = user.getUnrealizedPNL();
-		const netUsdValue = collateral.add(unrealizedPNL);
-
-		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
-		set((s) => {
-			if (currentStoredVaultExists) {
-				s.vaults[vaultAddress.toString()]!.stats = {
-					netUsdValue,
-				};
-			}
+		vaultDriftUser.eventEmitter.on('userAccountUpdate', (userAccount) => {
+			set((s) => {
+				s.vaults[vaultPubKey.toString()]!.vaultDriftUserAccount = userAccount;
+			});
 		});
+
+		return { vaultDriftClient, vaultDriftUser, vaultDriftUserAccount };
 	};
 
 	const initVaultSubscriber = async (vaultAddress: PublicKey) => {
 		const connection = getCommon().connection;
 
-		if (!connection) return;
+		if (!connection) throw new Error('No connection');
 
 		const accountLoader = new BulkAccountLoader(
 			connection,
@@ -192,6 +185,7 @@ const createAppActions = (
 			accountLoader
 		);
 		await vaultSubscriber.subscribe();
+		const vaultAccount = vaultSubscriber.getUserAccountAndSlot().data;
 
 		vaultSubscriber.eventEmitter.on('update', () => {
 			set((s) => {
@@ -199,7 +193,13 @@ const createAppActions = (
 			});
 		});
 
-		return vaultSubscriber;
+		vaultSubscriber.eventEmitter.on('vaultUpdate', (newVault) => {
+			set((s) => {
+				s.vaults[vaultAddress.toString()]!.vaultAccount = newVault as Vault;
+			});
+		});
+
+		return { vaultSubscriber, vaultAccount };
 	};
 
 	const initVaultDepositorSubscriber = async (
@@ -207,16 +207,14 @@ const createAppActions = (
 		authority: PublicKey
 	) => {
 		const connection = getCommon().connection;
-		const currentStoredVaultExists = !!get().vaults[vaultAddress.toString()];
 
-		if (!authority || !currentStoredVaultExists || !connection) return;
+		if (!authority || !connection) return;
 
 		const vaultDepositorAddress = getVaultDepositorAddressSync(
 			VAULT_PROGRAM_ID,
 			vaultAddress,
 			authority
 		);
-
 		const accountLoader = new BulkAccountLoader(
 			connection,
 			DEFAULT_COMMITMENT_LEVEL,
@@ -225,7 +223,6 @@ const createAppActions = (
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(
 			vaultDepositorAddress
 		);
-
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
 
 		const vaultDepositorSubscriber = new VaultDepositorSubscriber(
@@ -234,6 +231,8 @@ const createAppActions = (
 			accountLoader
 		);
 		await vaultDepositorSubscriber.subscribe();
+		const vaultDepositorAccount =
+			vaultDepositorSubscriber.getUserAccountAndSlot().data;
 
 		vaultDepositorSubscriber.eventEmitter.on('update', () => {
 			set((s) => {
@@ -242,16 +241,30 @@ const createAppActions = (
 			});
 		});
 
+		vaultDepositorSubscriber.eventEmitter.on(
+			'vaultDepositorUpdate',
+			(newVaultDepositor) => {
+				set((s) => {
+					s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
+						newVaultDepositor as VaultDepositor;
+				});
+			}
+		);
+
 		set((s) => {
 			s.vaults[vaultAddress.toString()]!.vaultDepositorSubscriber =
 				vaultDepositorSubscriber;
+			s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
+				vaultDepositorAccount;
 		});
 	};
 
 	const depositVault = async (vaultAddress: PublicKey, amount: BN) => {
 		try {
-			const vaultInfo = get().getVaultAccount(vaultAddress);
-			const vaultDepositor = get().getVaultDepositor(vaultAddress);
+			const vault = get().vaults[vaultAddress.toString()];
+			const vaultInfo = vault?.vaultSubscriber.getUserAccountAndSlot().data;
+			const vaultDepositor =
+				vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
 				NOTIFICATION_UTILS.toast.error(
@@ -291,8 +304,10 @@ const createAppActions = (
 	) => {
 		try {
 			const vaultClient = get().vaultClient;
-			const vaultDepositor = get().getVaultDepositor(vaultAddress);
-			const vaultInfo = get().getVaultAccount(vaultAddress);
+			const vault = get().vaults[vaultAddress.toString()];
+			const vaultInfo = vault?.vaultSubscriber.getUserAccountAndSlot().data;
+			const vaultDepositor =
+				vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -322,7 +337,9 @@ const createAppActions = (
 	const cancelRequestWithdraw = async (vaultAddress: PublicKey) => {
 		try {
 			const vaultClient = get().vaultClient;
-			const vaultDepositor = get().getVaultDepositor(vaultAddress);
+			const vault = get().vaults[vaultAddress.toString()];
+			const vaultDepositor =
+				vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -342,7 +359,9 @@ const createAppActions = (
 
 	const executeVaultWithdrawal = async (vaultAddress: PublicKey) => {
 		const vaultClient = get().vaultClient;
-		const vaultDepositor = get().getVaultDepositor(vaultAddress);
+		const vault = get().vaults[vaultAddress.toString()];
+		const vaultDepositor =
+			vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
 
 		if (!vaultClient || !vaultDepositor) {
 			throw new Error('No vault client/vault depositor found');
@@ -355,8 +374,6 @@ const createAppActions = (
 
 	return {
 		fetchVault,
-		fetchVaultStats,
-		initVaultSubscriber,
 		initVaultDepositorSubscriber,
 		depositVault,
 		requestVaultWithdrawal,

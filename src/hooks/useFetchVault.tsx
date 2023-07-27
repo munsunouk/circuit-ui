@@ -2,7 +2,7 @@ import { useCommonDriftStore, useDriftClientIsReady } from '@drift-labs/react';
 import { PublicKey } from '@drift-labs/sdk';
 import { UISnapshotHistory } from '@drift/common';
 import axios from 'axios';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
@@ -18,6 +18,7 @@ import usePathToVaultPubKey from './usePathToVaultName';
  * - Vault account
  * - Vault's Drift User account
  * - Vault Depositor
+ * - Vault PnL History
  */
 export default function useFetchVault() {
 	const driftClientIsReady = useDriftClientIsReady();
@@ -27,32 +28,31 @@ export default function useFetchVault() {
 	const setAppStore = useAppStore((s) => s.set);
 	const vaultAccount = useCurrentVaultAccount();
 
-	const initialVaultSnapshotFetched = useRef(false);
-
-	useEffect(() => {
-		if (!initialVaultSnapshotFetched.current && vaultAccount && vaultPubKey) {
-			fetchVaultSnapshots(vaultAccount.user, vaultPubKey).then(() => {
-				initialVaultSnapshotFetched.current = true;
-			});
-		}
-	}, [!!vaultAccount, vaultPubKey]);
-
+	// fetch vault account, vault drift account
 	useEffect(() => {
 		if (driftClientIsReady && vaultPubKey) {
 			fetchAllVaultInformation(vaultPubKey);
 		}
 	}, [driftClientIsReady, vaultPubKey]);
 
+	// fetch vault depositor
 	useEffect(() => {
 		if (vaultPubKey && authority && vaultAccount) {
 			appActions.initVaultDepositorSubscriber(vaultPubKey, authority);
 		}
 	}, [vaultPubKey, authority, !!vaultAccount]);
 
+	// fetch vault pnl history
+	useEffect(() => {
+		console.log('fetching vault pnl history');
+		if (vaultAccount && vaultPubKey) {
+			fetchVaultSnapshots(vaultAccount.user, vaultPubKey).then(() => {});
+		}
+	}, [!!vaultAccount, vaultPubKey]);
+
 	const fetchAllVaultInformation = async (vaultPubKey: PublicKey) => {
 		try {
 			await appActions.fetchVault(vaultPubKey);
-			appActions.fetchVaultStats(vaultPubKey);
 		} catch (err) {
 			console.error(err);
 			NOTIFICATION_UTILS.toast.error('Error fetching vault data');

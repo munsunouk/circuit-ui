@@ -1,4 +1,4 @@
-import { BN, DriftClient, PublicKey } from '@drift-labs/sdk';
+import { DriftClient, User, UserAccount } from '@drift-labs/sdk';
 import {
 	Vault,
 	VaultClient,
@@ -16,16 +16,16 @@ export interface AppStoreState {
 		showRpcSwitcherModal: boolean;
 	};
 	vaultClient: VaultClient | undefined;
-	vaultDriftClient: DriftClient | undefined; // used to get vault's drift account data
 	vaults: {
-		// vault names are unique
-		[vaultName: string]:
+		[vaultPubKey: string]:
 			| {
+					vaultDriftClient: DriftClient;
+					vaultDriftUser: User; // used to get vault's drift account data
+					vaultDriftUserAccount: UserAccount | undefined;
+					vaultSubscriber: VaultSubscriber;
+					vaultAccount: Vault;
 					vaultDepositorSubscriber?: VaultDepositorSubscriber;
-					vaultSubscriber?: VaultSubscriber;
-					stats: {
-						netUsdValue: BN;
-					};
+					vaultDepositorAccount?: VaultDepositor;
 					pnlHistory: UISnapshotHistory;
 			  }
 			| undefined;
@@ -35,10 +35,6 @@ export interface AppStoreState {
 	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
-	getVaultAccount: (vaultAddress: PublicKey | undefined) => Vault | undefined;
-	getVaultDepositor: (
-		vaultAddress: PublicKey | undefined
-	) => VaultDepositor | undefined;
 }
 
 const DEFAULT_APP_STORE_STATE = {
@@ -60,18 +56,6 @@ const useAppStore = create<AppStoreState>((set, get) => {
 		...DEFAULT_APP_STORE_STATE,
 		set: setProducerFn,
 		get: () => get(),
-		getVaultAccount: (vaultAddress: PublicKey | undefined) => {
-			if (!vaultAddress) return undefined;
-
-			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultSubscriber?.getUserAccountAndSlot().data;
-		},
-		getVaultDepositor: (vaultAddress: PublicKey | undefined) => {
-			if (!vaultAddress) return undefined;
-
-			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultDepositorSubscriber?.getUserAccountAndSlot().data;
-		},
 	};
 });
 

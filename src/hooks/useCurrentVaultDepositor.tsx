@@ -3,8 +3,8 @@ import usePathToVaultPubKey from './usePathToVaultName';
 
 export default function useCurrentVaultDepositor() {
 	const currentVaultPubKey = usePathToVaultPubKey();
-	const vaultDepositor = useAppStore((s) =>
-		s.getVaultDepositor(currentVaultPubKey)
+	const vaultDepositor = useAppStore(
+		(s) => s.vaults[currentVaultPubKey?.toString() ?? '']?.vaultDepositorAccount
 	);
 	return vaultDepositor;
 }

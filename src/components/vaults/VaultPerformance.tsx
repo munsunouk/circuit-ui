@@ -6,6 +6,7 @@ import {
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
+import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
@@ -16,9 +17,10 @@ import PerformanceGraph from './PerformanceGraph';
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultAccount = useCurrentVaultAccount();
+	const vaultStats = useCurrentVaultStats();
 
 	const totalDeposits = vaultAccount?.netDeposits ?? new BN(0);
-	const currentBalance = vault?.stats.netUsdValue ?? new BN(0);
+	const currentBalance = vaultStats.netUsdValue;
 	const totalEarnings = currentBalance.sub(totalDeposits); // FIXME: this is not correct, should be a cumulative sum of period earnings, where period = until withdrawal time
 
 	const formatPnlHistory = (pnlHistory: UISerializableAccountSnapshot[]) => {

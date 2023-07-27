@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
+import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import { sourceCodePro } from '@/constants/fonts';
 
@@ -30,15 +31,13 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 
 export default function YourPerformance() {
 	const { connected } = useWallet();
-	const vault = useCurrentVault();
 	const vaultDepositor = useCurrentVaultDepositor();
 	const vaultAccount = useCurrentVaultAccount();
-
-	// if (!vault || !vaultDepositor) return null;
+	const vaultStats = useCurrentVaultStats();
 
 	const totalVaultShares = vaultAccount?.totalShares.toNumber();
 	const userVaultShares = vaultDepositor?.vaultShares.toNumber();
-	const userSharesProportion = userVaultShares / totalVaultShares;
+	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
 	const userNetDeposits = vaultDepositor?.netDeposits.toNumber();
 	const userNetDepositsString = BigNum.from(
@@ -48,7 +47,7 @@ export default function YourPerformance() {
 
 	const userTotalDeposits = vaultDepositor?.totalDeposits.toNumber();
 	const userTotalWithdraws = vaultDepositor?.totalWithdraws.toNumber();
-	const vaultAccountBalance = vault?.stats.netUsdValue.toNumber();
+	const vaultAccountBalance = vaultStats.netUsdValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
 	const cumulativeEarnings =

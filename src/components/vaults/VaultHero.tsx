@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
+import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 
@@ -24,11 +25,11 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 };
 
 export default function VaultHero() {
-	const vault = useCurrentVault();
 	const vaultAccount = useCurrentVaultAccount();
+	const vaultStats = useCurrentVaultStats();
 
 	const name = decodeName(vaultAccount?.name ?? []);
-	const tvl = vault?.stats.netUsdValue ?? new BN(0);
+	const tvl = vaultStats.netUsdValue;
 	const maxCapacity = vaultAccount?.maxTokens;
 
 	return (
