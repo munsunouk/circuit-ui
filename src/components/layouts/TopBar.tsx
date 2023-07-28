@@ -137,7 +137,7 @@ const TopBar = () => {
 						{
 							<div
 								className={twMerge(
-									'absolute left-[-1px] right-[-1px] flex flex-col px-8 py-3 font-normal bg-black border border-t-0 top-full transition-[height] transition-[border] duration-300 overflow-hidden',
+									'absolute left-[-1px] right-[-1px] flex flex-col px-8 py-3 font-normal bg-black border border-t-0 top-full transition-[border] duration-300 overflow-hidden',
 									isManageWalletsOpen
 										? 'h-auto border-container-border-selected'
 										: 'h-0 p-0 border-container-border'
@@ -150,16 +150,20 @@ const TopBar = () => {
 									)}
 									onClick={openConnectWalletModal}
 								>
-									Switch wallets
+									<span className="transition-opacity duration-300 hover:opacity-80">
+										Switch wallets
+									</span>
 								</div>
 								<div
 									className={twMerge(
-										'py-3 hover:opacity-80 transition-[opacity] duration-300 delay-200',
+										'py-3 transition-opacity duration-300 delay-200',
 										isManageWalletsOpen ? 'opacity-100' : 'opacity-0'
 									)}
 									onClick={disconnect}
 								>
-									Disconnect
+									<span className="transition-opacity duration-300 hover:opacity-80">
+										Disconnect
+									</span>
 								</div>
 							</div>
 						}

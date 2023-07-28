@@ -1,6 +1,5 @@
 'use client';
 
-import { Close } from '@drift-labs/icons';
 import {
 	MutableRefObject,
 	PropsWithChildren,
@@ -11,6 +10,7 @@ import {
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import { Close } from '../icons';
 import ModalPortal from './ModalPortal';
 
 const clickedInsideElement = (
@@ -123,23 +123,18 @@ export const Modal = ({
 			<ModalBackground onClose={onClose} contentRef={contentRef}>
 				<div
 					ref={contentRef}
-					className={twMerge(
-						'p-4 border bg-container-bg border-container-border md:p-6 md:pt-4',
-						className
-					)}
+					className={twMerge('border bg-container-bg border-white', className)}
 				>
-					<div className="flex justify-between w-full gap-2 mb-4">
-						<span className="text-2xl font-medium text-text-emphasis">
-							{header}
-						</span>
+					<div className="flex items-center justify-between w-full gap-2 px-4 py-3 border-b border-white">
+						<span className="text-xl">{header}</span>
 						<button
 							onClick={onClose}
 							className="flex items-center justify-around transition-opacity duration-300 hover:opacity-80"
 						>
-							<Close size={24} />
+							<Close className="w-6 h-6" />
 						</button>
 					</div>
-					{children}
+					<div className="px-4 py-3">{children}</div>
 				</div>
 			</ModalBackground>
 		</ModalPortal>

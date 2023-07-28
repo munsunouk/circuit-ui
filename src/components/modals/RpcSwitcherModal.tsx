@@ -16,8 +16,8 @@ import { getRpcLatencyColor } from '@/utils/utils';
 
 import Env from '@/constants/environment';
 
-import Button from '../elements/Button';
 import Input from '../elements/Input';
+import { Checkmark } from '../icons';
 import { Modal } from './Modal';
 
 const CUSTOM_LABEL = 'Custom';
@@ -36,21 +36,19 @@ const RpcOption = ({
 	const rpcLatencyColor = getRpcLatencyColor(latency);
 
 	return (
-		<Button
+		<div
 			onClick={onClick}
-			className={twMerge(
-				'flex justify-between p-4 min-w-[360px]',
-				selected &&
-					'bg-container-bg-selected border-container-border-selected text-text-selected'
-			)}
-			secondary
+			className="flex items-center gap-3 cursor-pointer hover:opacity-80"
 		>
-			<div>{label}</div>
-			<div className="flex items-center justify-center gap-2">
-				<span>{latency} ms</span>
-				<div className={`w-2 h-2 ${rpcLatencyColor} rounded-full`} />
+			<div className="flex items-center justify-center w-4 h-4">
+				{selected && <Checkmark className="w-4 h-4" />}
 			</div>
-		</Button>
+			<div className="grow">{label}</div>
+			<div className="flex items-center gap-2 min-w-[80px]">
+				<div className={`w-2 h-2 ${rpcLatencyColor} rounded-full`} />
+				<span>{latency} ms</span>
+			</div>
+		</div>
 	);
 };
 
@@ -75,14 +73,24 @@ export default function RpcSwitcherModal() {
 		setAppStore((s) => {
 			s.modals.showRpcSwitcherModal = false;
 		});
+		handleSave();
 	};
 
 	const handleSave = async () => {
+		if (selectedRpcLabel === currentRpc.label) return;
+
+		const handleInvalidRpc = () => {
+			NOTIFICATION_UTILS.toast.error('Please select a valid RPC');
+			setAppStore((s) => {
+				s.modals.showRpcSwitcherModal = true;
+			});
+		};
+
 		if (
 			!selectedRpcLabel ||
 			(selectedRpcLabel === CUSTOM_LABEL && !customRpcValue)
 		) {
-			NOTIFICATION_UTILS.toast.error('Please select a valid RPC');
+			handleInvalidRpc();
 			return;
 		}
 
@@ -96,7 +104,7 @@ export default function RpcSwitcherModal() {
 				: rpcOptions.find((rpc) => rpc.label === selectedRpcLabel);
 
 		if (!rpcToUse) {
-			NOTIFICATION_UTILS.toast.error('Please select a valid RPC');
+			handleInvalidRpc();
 			return;
 		}
 
@@ -110,13 +118,12 @@ export default function RpcSwitcherModal() {
 		}
 
 		setCurrentRpc(rpcToUse);
-		handleOnClose();
 		NOTIFICATION_UTILS.toast.success('Successfully changed RPC');
 	};
 
 	return (
-		<Modal onClose={handleOnClose} header="Select RPC">
-			<div className="flex flex-col gap-2">
+		<Modal onClose={handleOnClose} header="Switch RPCs">
+			<div className="flex flex-col gap-3 min-w-[300px]">
 				{rpcOptions.map((rpc) => {
 					return (
 						<RpcOption
@@ -137,15 +144,27 @@ export default function RpcSwitcherModal() {
 					selected={selectedRpcLabel === CUSTOM_LABEL}
 				/>
 
-				<Input
-					className=""
-					value={customRpcValue}
-					onChange={(e) => setCustomRpcValue(e.target.value)}
-				/>
-
-				<Button onClick={handleSave} className="py-3">
-					Save
-				</Button>
+				<div
+					className={twMerge(
+						'flex transition-[all] duration-300 overflow-hidden',
+						selectedRpcLabel === CUSTOM_LABEL
+							? 'h-[44px] mt-0 pb-1'
+							: 'h-0 -mt-2 delay-300'
+					)}
+				>
+					<div className="h-1 w-7" />
+					<Input
+						className={twMerge(
+							'h-10 text-sm transition-opacity duration-300',
+							selectedRpcLabel === CUSTOM_LABEL
+								? 'opacity-100 delay-300'
+								: 'opacity-0'
+						)}
+						placeholder="Enter RPC URL"
+						value={customRpcValue}
+						onChange={(e) => setCustomRpcValue(e.target.value)}
+					/>
+				</div>
 			</div>
 		</Modal>
 	);

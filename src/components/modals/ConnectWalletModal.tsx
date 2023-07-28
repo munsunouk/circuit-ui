@@ -15,14 +15,9 @@ const WalletOption = ({
 	wallet: Wallet;
 }) => {
 	return (
-		<Button
+		<div
 			onClick={onClick}
-			className={twMerge(
-				'flex justify-between p-4 min-w-[360px] font-normal',
-				wallet.adapter.connected &&
-					'bg-container-bg-selected border-container-border-selected text-text-selected'
-			)}
-			secondary
+			className="flex justify-between transition-opacity duration-300 cursor-pointer hover:opacity-80"
 		>
 			<div className="flex gap-2">
 				<Image
@@ -33,14 +28,18 @@ const WalletOption = ({
 				/>
 				<span>{wallet.adapter.name}</span>
 			</div>
-			<div className={twMerge(wallet.adapter.connected && 'font-semibold')}>
+			<div
+				className={twMerge(
+					wallet.adapter.connected && 'font-semibold text-text-selected'
+				)}
+			>
 				{wallet.adapter.connected
 					? 'Connected'
 					: wallet.adapter.readyState === 'Installed'
 					? 'Detected'
 					: ''}
 			</div>
-		</Button>
+		</div>
 	);
 };
 
@@ -60,7 +59,7 @@ export default function ConnectWalletModal() {
 
 	return (
 		<Modal onClose={handleOnClose} header="Connect Wallet">
-			<div className="flex flex-col gap-2">
+			<div className="flex flex-col gap-3 min-w-[300px]">
 				{walletContext?.wallets?.map((wallet) => (
 					<WalletOption
 						key={wallet.adapter.name.toString()}

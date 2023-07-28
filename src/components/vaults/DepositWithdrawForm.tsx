@@ -223,7 +223,6 @@ const DepositForm = () => {
 const WithdrawForm = () => {
 	const { connected } = useWallet();
 	const vaultPubkey = usePathToVaultPubKey();
-	const vault = useCurrentVault();
 	const vaultDepositor = useCurrentVaultDepositor();
 	const vaultAccount = useCurrentVaultAccount();
 	const appActions = useAppActions();
