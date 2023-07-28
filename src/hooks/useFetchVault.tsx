@@ -44,7 +44,6 @@ export default function useFetchVault() {
 
 	// fetch vault pnl history
 	useEffect(() => {
-		console.log('fetching vault pnl history');
 		if (vaultAccount && vaultPubKey) {
 			fetchVaultSnapshots(vaultAccount.user, vaultPubKey).then(() => {});
 		}
