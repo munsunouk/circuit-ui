@@ -3,6 +3,7 @@
 import {
 	DriftProvider,
 	initializeDriftStore,
+	useAllRpcLatencies,
 	useCommonDriftStore,
 } from '@drift-labs/react';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
@@ -21,6 +22,7 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useSyncWalletToStore();
 	useFetchVault();
 	useUsdcBalance();
+	useAllRpcLatencies();
 
 	return <>{children}</>;
 };
