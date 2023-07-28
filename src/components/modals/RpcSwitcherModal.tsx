@@ -130,7 +130,7 @@ export default function RpcSwitcherModal() {
 							key={rpc.label}
 							onClick={() => setSelectedRpcLabel(rpc.label)}
 							label={rpc.label}
-							latency={allRpcLatencies[rpc.label]?.avg ?? 0}
+							latency={allRpcLatencies[rpc.value]?.avg ?? 0}
 							selected={selectedRpcLabel === rpc.label}
 						/>
 					);

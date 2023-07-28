@@ -12,5 +12,7 @@ export const getRpcLatencyColor = (latency: number | undefined) => {
 		? 'bg-container-border-light'
 		: latency < 250
 		? 'bg-success-green-border'
+		: latency < 500
+		? 'bg-warning-yellow-border'
 		: 'bg-error-red-border';
 };

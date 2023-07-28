@@ -6,6 +6,7 @@ export default function TailwindClassBufferer() {
 			className={twMerge(
 				'bg-container-border-light',
 				'bg-success-green-border',
+				'bg-warning-yellow-border',
 				'bg-error-red-border'
 			)}
 		/>

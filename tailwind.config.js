@@ -23,6 +23,7 @@ const SEMANTIC_CLASSES = {
 	'button-bg-disabled': 'var(--button-bg-disabled)',
 	'success-green-border': 'var(--success-green-border)',
 	'success-green-bg': 'var(--success-green-bg)',
+	'warning-yellow-border': 'var(--warning-yellow-border)',
 	'error-red-border': 'var(--error-red-border)',
 	'error-red-bg': 'var(--error-red-bg)',
 };
