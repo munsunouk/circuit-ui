@@ -1,11 +1,14 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import { Loading } from '../icons';
+
 type ButtonProps = DetailedHTMLProps<
 	ButtonHTMLAttributes<HTMLButtonElement>,
 	HTMLButtonElement
 > & {
 	secondary?: boolean;
+	loading?: boolean;
 	Icon?: React.FC<React.SVGProps<SVGSVGElement>>;
 };
 
@@ -13,6 +16,7 @@ const Button = ({
 	className,
 	children,
 	secondary,
+	loading,
 	disabled,
 	Icon,
 	...rest
@@ -23,7 +27,7 @@ const Button = ({
 				'bg-white text-black w-full text-center py-5 font-semibold hover:bg-main-blue active:bg-container-bg-selected transition-all duration-300 active:text-text-emphasis cursor-pointer flex gap-4 justify-center items-center group',
 				secondary &&
 					'bg-black text-text-emphasis border-white border hover:border-main-blue hover:text-black active:border-secondary-blue w-auto py-2 px-4',
-				disabled &&
+				(disabled || loading) &&
 					'bg-button-bg-disabled active:bg-button-bg-disabled hover:bg-button-bg-disabled active:text-black cursor-not-allowed',
 				Icon && 'transition-none',
 				className
@@ -33,7 +37,7 @@ const Button = ({
 		>
 			{Icon ? (
 				<>
-					<span>{children}</span>
+					<span className="relative">{children}</span>
 					{Icon && (
 						<Icon
 							width={24}
@@ -43,7 +47,14 @@ const Button = ({
 					)}
 				</>
 			) : (
-				<>{children}</>
+				<span className="relative">
+					<span>{children}</span>
+					{loading && (
+						<span className="absolute top-0 right-[calc(100%+8px)] bottom-0 flex items-center justify-center">
+							<Loading className="w-4 h-4 animate-spin" />
+						</span>
+					)}
+				</span>
 			)}
 		</button>
 	);

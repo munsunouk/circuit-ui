@@ -8,7 +8,6 @@ import ConnectButton from '@/components/ConnectButton';
 
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
-import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
@@ -172,6 +171,7 @@ const DepositForm = () => {
 	const vaultPubkey = usePathToVaultPubKey();
 
 	const [amount, setAmount] = useState<number>(0);
+	const [loading, setLoading] = useState(false);
 
 	const isButtonDisabled = amount === 0;
 
@@ -186,7 +186,15 @@ const DepositForm = () => {
 		if (!vaultPubkey) return;
 
 		const baseAmount = new BN(amount * USDC_MARKET.precision.toNumber());
-		await appActions.depositVault(vaultPubkey, baseAmount);
+
+		setLoading(true);
+		try {
+			await appActions.depositVault(vaultPubkey, baseAmount);
+		} catch (err) {
+			console.error(err);
+		} finally {
+			setLoading(false);
+		}
 
 		resetForm();
 	};
@@ -210,6 +218,7 @@ const DepositForm = () => {
 					className="text-xl"
 					disabled={isButtonDisabled}
 					onClick={handleDeposit}
+					loading={loading}
 				>
 					Deposit
 				</Button>
@@ -229,6 +238,7 @@ const WithdrawForm = () => {
 
 	const [amount, setAmount] = useState<number>(0);
 	const [maxAmount, setMaxAmount] = useState<number>(0);
+	const [loading, setLoading] = useState(false);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
 		WithdrawalState.Requested
 	);
@@ -279,15 +289,22 @@ const WithdrawForm = () => {
 		setAmount(formattedAmount);
 	};
 
-	const handleOnClick = () => {
+	const handleOnClick = async () => {
 		if (!vaultPubkey) return;
 
-		if (withdrawalState === WithdrawalState.UnRequested) {
-			appActions.requestVaultWithdrawal(vaultPubkey, new BN(amount));
-		} else if (withdrawalState === WithdrawalState.Requested) {
-			appActions.cancelRequestWithdraw(vaultPubkey);
-		} else {
-			appActions.executeVaultWithdrawal(vaultPubkey);
+		try {
+			setLoading(true);
+			if (withdrawalState === WithdrawalState.UnRequested) {
+				await appActions.requestVaultWithdrawal(vaultPubkey, new BN(amount));
+			} else if (withdrawalState === WithdrawalState.Requested) {
+				await appActions.cancelRequestWithdraw(vaultPubkey);
+			} else {
+				await appActions.executeVaultWithdrawal(vaultPubkey);
+			}
+		} catch (err) {
+			console.error(err);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -329,6 +346,7 @@ const WithdrawForm = () => {
 							className="text-xl"
 							disabled={isButtonDisabled}
 							onClick={handleOnClick}
+							loading={loading}
 						>
 							{getWithdrawButtonLabel(withdrawalState)}
 						</Button>
