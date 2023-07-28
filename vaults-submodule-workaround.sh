@@ -23,12 +23,17 @@ fi
 # stop execution on error - don't let it build if something goes wrong
 set -e
 
-# get submodule commit
-output=`git submodule status | grep drift-vaults | awk '{print $1}' | head -n 1` # get submodule info
-echo "git submodule commit = $output"
-no_prefix=${output#*[+-]} # get rid of the prefix
-echo "no_prefix = $no_prefix"
-COMMIT=${no_prefix} # get rid of the suffix
+# get submodule commit - either get commit from current branch or hardcode the commit. 
+# vercel deployment has some issue whereby it always takes the commit from master branch,
+# hence we hardcode the commit instead
+
+# output=`git submodule status | grep drift-vaults | awk '{print $1}' | head -n 1` # get submodule info
+# echo "git submodule commit = $output"
+# no_prefix=${output#*[+-]} # get rid of the prefix
+# echo "no_prefix = $no_prefix"
+# COMMIT=${no_prefix} # get rid of the suffix
+
+COMMIT='b0a9fa27ef25eb784dea5bab3b7c6fa445807e3d'
 
 echo "TRYING TO USE SUBMODULE COMMIT: $COMMIT"
 

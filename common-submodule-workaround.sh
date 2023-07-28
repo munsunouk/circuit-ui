@@ -56,13 +56,8 @@ echo "git submodule update --init"
 git submodule update --init
 echo "clearing protocol .git"
 rm -rf .git
-echo "ls protocol"
-ls
 echo "cd .."
 cd ..
-
-echo "ls $SUBMODULE_PATH"
-ls
 
 echo "moving UP"
 # move the submodule from tmp to the submodule path
