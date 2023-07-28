@@ -95,7 +95,7 @@ const Form = ({
 	setAmount,
 }: {
 	tab: Tab;
-	amount: number;
+	amount: string;
 	maxAmount: number;
 	maxAmountString: string;
 	setAmount: (amount: number) => void;
@@ -155,9 +155,9 @@ const Form = ({
 					label: option.label,
 					onSelect: () => setAmount(maxAmount * option.value),
 					selected:
-						amount.toFixed(USDC_MARKET.precisionExp) ===
+						Number(amount).toFixed(USDC_MARKET.precisionExp) ===
 							(maxAmount * option.value).toFixed(USDC_MARKET.precisionExp) &&
-						amount !== 0,
+						Number(amount) !== 0,
 				}))}
 			/>
 		</div>
@@ -170,22 +170,22 @@ const DepositForm = () => {
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();
 
-	const [amount, setAmount] = useState<number>(0);
+	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
 
-	const isButtonDisabled = amount === 0;
+	const isButtonDisabled = +amount === 0;
 
 	const handleOnValueChange = (newAmount: number) => {
 		const formattedAmount = Number(
 			newAmount.toFixed(USDC_MARKET.precisionExp.toNumber())
 		);
-		setAmount(formattedAmount);
+		setAmount(formattedAmount.toString());
 	};
 
 	const handleDeposit = async () => {
 		if (!vaultPubkey) return;
 
-		const baseAmount = new BN(amount * USDC_MARKET.precision.toNumber());
+		const baseAmount = new BN(+amount * USDC_MARKET.precision.toNumber());
 
 		setLoading(true);
 		try {
@@ -200,11 +200,11 @@ const DepositForm = () => {
 	};
 
 	const resetForm = () => {
-		setAmount(0);
+		setAmount('');
 	};
 
 	return (
-		<div className="flex flex-col justify-between h-full gap-9">
+		<div className="flex flex-col justify-between h-[400px] gap-9">
 			<Form
 				tab={Tab.Deposit}
 				maxAmount={maxAmount}
@@ -236,7 +236,7 @@ const WithdrawForm = () => {
 	const vaultAccount = useCurrentVaultAccount();
 	const appActions = useAppActions();
 
-	const [amount, setAmount] = useState<number>(0);
+	const [amount, setAmount] = useState('');
 	const [maxAmount, setMaxAmount] = useState<number>(0);
 	const [loading, setLoading] = useState(false);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
@@ -255,7 +255,7 @@ const WithdrawForm = () => {
 		vaultDepositor?.lastWithdrawRequestShares ?? new BN(0);
 
 	const isButtonDisabled =
-		amount === 0 && withdrawalState !== WithdrawalState.Requested;
+		+amount === 0 && withdrawalState !== WithdrawalState.Requested;
 
 	useEffect(() => {
 		const hasRequestedWithdrawal = lastRequestedAmount.toNumber() > 0;
@@ -283,10 +283,10 @@ const WithdrawForm = () => {
 	}, [withdrawalState, lastRequestedAmount.toNumber(), userShares.toNumber()]);
 
 	const handleOnValueChange = (newAmount: number) => {
-		const formattedAmount = Number(
-			newAmount.toFixed(USDC_MARKET.precisionExp.toNumber())
+		const formattedAmount = Math.round(
+			Number(newAmount.toFixed(USDC_MARKET.precisionExp.toNumber()))
 		);
-		setAmount(formattedAmount);
+		setAmount(formattedAmount.toString());
 	};
 
 	const handleOnClick = async () => {
@@ -387,7 +387,7 @@ const DepositWithdrawForm = () => {
 					onSelect={() => setSelectedTab(Tab.Withdraw)}
 				/>
 			</div>
-			<div className={twMerge('mt-9 mb-7 px-7 min-h-[400px] h-1')}>
+			<div className={twMerge('pt-9 pb-7 px-7 min-h-[400px]')}>
 				{selectedTab === Tab.Deposit ? <DepositForm /> : <WithdrawForm />}
 			</div>
 		</GradientBorderBox>

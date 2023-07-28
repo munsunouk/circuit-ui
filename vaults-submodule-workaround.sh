@@ -26,7 +26,7 @@ set -e
 # get submodule commit
 output=`git submodule status | grep drift-vaults | awk '{print $1}' | head -n 1` # get submodule info
 echo "git submodule commit = $output"
-no_prefix=${output#*-} # get rid of the prefix
+no_prefix=${output#*[+-]} # get rid of the prefix
 echo "no_prefix = $no_prefix"
 COMMIT=${no_prefix} # get rid of the suffix
 
