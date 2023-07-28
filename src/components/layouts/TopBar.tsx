@@ -5,7 +5,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import useAppStore from '@/hooks/useAppStore';
@@ -53,10 +53,28 @@ const TopBar = () => {
 
 	const [isManageWalletsOpen, setIsManageWalletsOpen] = useState(false);
 
+	const manageWalletPopup = useRef<HTMLDivElement>(null);
+
 	const currentMainPath = pathname.split('/')[1];
 	const shortPublicKey = `${authority?.toString().slice(0, 4)}...${authority
 		?.toString()
 		.slice(40, 44)}`;
+
+	useEffect(() => {
+		// Close the manage wallets popup when clicking outside of it
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				manageWalletPopup.current &&
+				!manageWalletPopup.current.contains(event.target as Node)
+			) {
+				setIsManageWalletsOpen(false);
+			}
+		};
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	const openConnectWalletModal = () => {
 		setAppStore((s) => {
@@ -103,11 +121,12 @@ const TopBar = () => {
 
 			<span
 				className={twMerge(
-					'relative flex items-center justify-center h-full px-8 text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis',
+					'relative flex items-center justify-center h-full px-8 text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition-[border] duration-300',
 					isManageWalletsOpen &&
 						'bg-container-bg-selected border border-b-0 border-container-border-selected'
 				)}
 				onClick={handleManageWalletClick}
+				ref={manageWalletPopup}
 			>
 				{connected && authority ? (
 					<div className="flex flex-col">
@@ -115,22 +134,35 @@ const TopBar = () => {
 							<span>{shortPublicKey}</span>
 							<Chevron open={isManageWalletsOpen} width={36} height={36} />
 						</div>
-						{isManageWalletsOpen && (
-							<div className="absolute left-[-1px] right-[-1px] flex flex-col px-8 py-3 font-normal bg-black border border-t-0 top-full border-container-border-selected">
+						{
+							<div
+								className={twMerge(
+									'absolute left-[-1px] right-[-1px] flex flex-col px-8 py-3 font-normal bg-black border border-t-0 top-full transition-[height] transition-[border] duration-300 overflow-hidden',
+									isManageWalletsOpen
+										? 'h-auto border-container-border-selected'
+										: 'h-0 p-0 border-container-border'
+								)}
+							>
 								<div
-									className="py-3 transition-all duration-300 hover:opacity-80"
+									className={twMerge(
+										'py-3 hover:opacity-80 transition-[opacity] duration-300 delay-100',
+										isManageWalletsOpen ? 'opacity-100' : 'opacity-0'
+									)}
 									onClick={openConnectWalletModal}
 								>
 									Switch wallets
 								</div>
 								<div
-									className="py-3 transition-all duration-300 hover:opacity-80"
+									className={twMerge(
+										'py-3 hover:opacity-80 transition-[opacity] duration-300 delay-200',
+										isManageWalletsOpen ? 'opacity-100' : 'opacity-0'
+									)}
 									onClick={disconnect}
 								>
 									Disconnect
 								</div>
 							</div>
-						)}
+						}
 					</div>
 				) : (
 					<span>Connect Wallet</span>
