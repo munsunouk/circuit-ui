@@ -98,7 +98,7 @@ const Form = ({
 	amount: string;
 	maxAmount: number;
 	maxAmountString: string;
-	setAmount: (amount: number) => void;
+	setAmount: (amount: string) => void;
 }) => {
 	const [isFocused, setIsFocused] = useState(false);
 
@@ -120,7 +120,7 @@ const Form = ({
 					Max:{' '}
 					<span
 						className="underline cursor-pointer"
-						onClick={() => setAmount(maxAmount)}
+						onClick={() => setAmount(maxAmount.toString())}
 					>
 						{maxAmountString}
 					</span>
@@ -133,10 +133,10 @@ const Form = ({
 				)}
 			>
 				<Input
-					type="number"
+					// type="number"
 					className="border-0"
 					value={amount}
-					onChange={(e) => setAmount(Number(e.target.value))}
+					onChange={(e) => setAmount(e.target.value)}
 					onFocus={handleFocus}
 					onBlur={handleBlur}
 				/>
@@ -153,7 +153,7 @@ const Form = ({
 			<ButtonTabs
 				tabs={PERCENTAGE_SELECTOR_OPTIONS.map((option) => ({
 					label: option.label,
-					onSelect: () => setAmount(maxAmount * option.value),
+					onSelect: () => setAmount((maxAmount * option.value).toString()),
 					selected:
 						Number(amount).toFixed(USDC_MARKET.precisionExp) ===
 							(maxAmount * option.value).toFixed(USDC_MARKET.precisionExp) &&
@@ -175,9 +175,16 @@ const DepositForm = () => {
 
 	const isButtonDisabled = +amount === 0;
 
-	const handleOnValueChange = (newAmount: number) => {
+	const handleOnValueChange = (newAmount: string) => {
+		if (isNaN(+newAmount)) return;
+
+		if (+newAmount === 0) {
+			setAmount(newAmount);
+			return;
+		}
+
 		const formattedAmount = Number(
-			newAmount.toFixed(USDC_MARKET.precisionExp.toNumber())
+			(+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber())
 		);
 		setAmount(formattedAmount.toString());
 	};
@@ -282,9 +289,16 @@ const WithdrawForm = () => {
 		}
 	}, [withdrawalState, lastRequestedAmount.toNumber(), userShares.toNumber()]);
 
-	const handleOnValueChange = (newAmount: number) => {
+	const handleOnValueChange = (newAmount: string) => {
+		if (isNaN(+newAmount)) return;
+
+		if (+newAmount === 0) {
+			setAmount(newAmount);
+			return;
+		}
+
 		const formattedAmount = Math.round(
-			Number(newAmount.toFixed(USDC_MARKET.precisionExp.toNumber()))
+			Number((+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber()))
 		);
 		setAmount(formattedAmount.toString());
 	};
