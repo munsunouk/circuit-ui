@@ -134,7 +134,7 @@ export const Modal = ({
 							<Close className="w-6 h-6" />
 						</button>
 					</div>
-					<div className="px-4 py-3">{children}</div>
+					<div className="px-4 py-4">{children}</div>
 				</div>
 			</ModalBackground>
 		</ModalPortal>

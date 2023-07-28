@@ -155,7 +155,7 @@ export default function RpcSwitcherModal() {
 					<div className="h-1 w-7" />
 					<Input
 						className={twMerge(
-							'h-10 text-sm transition-opacity duration-300',
+							'h-10 text-sm transition-opacity duration-300 px-3',
 							selectedRpcLabel === CUSTOM_LABEL
 								? 'opacity-100 delay-300'
 								: 'opacity-0'
