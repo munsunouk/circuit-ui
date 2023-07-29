@@ -4,7 +4,7 @@ import { sourceCodePro } from '@/constants/fonts';
 
 const BreakdownRow = ({ label, value }: { label: string; value: string }) => {
 	return (
-		<div className="flex justify-between text-xl">
+		<div className="flex justify-between md:text-xl">
 			<span>{label}</span>
 			<span className={twMerge(sourceCodePro.className, 'text-text-emphasis')}>
 				{value}

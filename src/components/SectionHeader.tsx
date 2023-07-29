@@ -9,7 +9,7 @@ export default function SectionHeader({
 }) {
 	return (
 		<div className={twMerge('flex flex-col gap-1', className)}>
-			<span className="text-2xl font-semibold text-text-emphasis">
+			<span className="text-lg font-semibold md:text-2xl text-text-emphasis">
 				{children}
 			</span>
 			<span className="w-8 h-[2px] bg-main-blue" />

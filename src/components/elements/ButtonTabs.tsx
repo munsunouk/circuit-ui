@@ -46,7 +46,7 @@ function ButtonTabs({
 				{index !== 0 && (
 					<div
 						className={twMerge(
-							'w-[1px] border-y flex-1 min-w-[1px] bg-container-border border-container-border transition duration-300',
+							'w-[1px] border-y flex-1 min-w-[1px] max-w-[1px] bg-container-border border-container-border transition duration-300',
 							tab.selected &&
 								'bg-container-border-selected border-container-border-selected'
 						)}

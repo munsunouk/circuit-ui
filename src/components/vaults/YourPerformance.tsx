@@ -19,12 +19,12 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 			<span
 				className={twMerge(
 					sourceCodePro.className,
-					'text-2xl font-medium text-text-emphasis'
+					'text-lg md:text-2xl font-medium text-text-emphasis'
 				)}
 			>
 				{value}
 			</span>
-			<span className="text-lg">{label}</span>
+			<span className="text-sm md:text-lg">{label}</span>
 		</div>
 	);
 };
@@ -35,16 +35,19 @@ export default function YourPerformance() {
 	const vaultAccount = useCurrentVaultAccount();
 	const vaultStats = useCurrentVaultStats();
 
+	// User's vault share proportion
 	const totalVaultShares = vaultAccount?.totalShares.toNumber();
 	const userVaultShares = vaultDepositor?.vaultShares.toNumber();
 	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
+	// User's net deposits
 	const userNetDeposits = vaultDepositor?.netDeposits.toNumber();
 	const userNetDepositsString = BigNum.from(
 		userNetDeposits,
 		QUOTE_PRECISION_EXP
 	).toNotional();
 
+	// User's cumulative earnings
 	const userTotalDeposits = vaultDepositor?.totalDeposits.toNumber();
 	const userTotalWithdraws = vaultDepositor?.totalWithdraws.toNumber();
 	const vaultAccountBalance = vaultStats.netUsdValue.toNumber();
@@ -58,7 +61,7 @@ export default function YourPerformance() {
 	).toNotional();
 
 	return (
-		<div className={'relative flex flex-col gap-16'}>
+		<div className={'relative flex flex-col gap-8 md:gap-16'}>
 			<div>
 				<SectionHeader className="mb-9">Summary</SectionHeader>
 				<div className="flex items-center justify-center w-full gap-4">

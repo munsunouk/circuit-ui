@@ -2,7 +2,7 @@ import SectionHeader from '../SectionHeader';
 
 export default function VaultOverview() {
 	return (
-		<div className="flex flex-col w-full gap-16">
+		<div className="flex flex-col w-full gap-8 md:gap-16">
 			<div className="flex flex-col w-full gap-6">
 				<SectionHeader>Strategy</SectionHeader>
 				<div>

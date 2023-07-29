@@ -91,17 +91,18 @@ const TopBar = () => {
 	};
 
 	return (
-		<div className="sticky top-0 h-[64px] w-full bg-black/20 backdrop-blur-sm flex items-center justify-between border-b border-yellow border-container-border">
-			<span className="flex items-center w-[220px] gap-3 justify-center border-r h-full border-container-border">
+		<div className="sticky top-0 h-[48px] md:h-[64px] w-full bg-black/20 backdrop-blur-sm flex items-center justify-between border-b border-yellow border-container-border z-50">
+			<span className="flex items-center w-[160px] md:w-[220px] gap-2 md:gap-3 justify-center border-r h-full border-container-border">
 				<Image
 					src="/circuits-icon.svg"
 					alt="Circuits Icon"
 					width="30"
 					height="33"
+					className="w-[20px] h-[22px] md:w-[30px] md:h-[33px]"
 				/>
 				<span
 					className={twMerge(
-						'text-2xl text-white font-medium leading-normal',
+						'md:text-2xl text-white font-medium leading-normal',
 						syne.className
 					)}
 				>
@@ -109,7 +110,7 @@ const TopBar = () => {
 				</span>
 			</span>
 
-			<div className="flex items-center h-full">
+			<div className="items-center hidden h-full md:flex">
 				{TAB_OPTIONS.map((tab) => (
 					<Tab
 						key={tab.label}
@@ -121,7 +122,7 @@ const TopBar = () => {
 
 			<span
 				className={twMerge(
-					'relative flex items-center justify-center h-full px-8 text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition-[border] duration-300',
+					'relative flex items-center justify-center h-full px-8 text-sm md:text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition-[border] duration-300 w-[160px] md:w-[220px] ',
 					isManageWalletsOpen &&
 						'bg-container-bg-selected border border-b-0 border-container-border-selected'
 				)}
@@ -132,7 +133,10 @@ const TopBar = () => {
 					<div className="flex flex-col">
 						<div className="flex items-center gap-1">
 							<span>{shortPublicKey}</span>
-							<Chevron open={isManageWalletsOpen} width={36} height={36} />
+							<Chevron
+								open={isManageWalletsOpen}
+								className="w-6 h-6 md:w-9 md:h-9"
+							/>
 						</div>
 						{
 							<div
@@ -169,7 +173,7 @@ const TopBar = () => {
 						}
 					</div>
 				) : (
-					<span>Connect Wallet</span>
+					<span className="text-sm text-center md:text-xl">Connect Wallet</span>
 				)}
 			</span>
 		</div>

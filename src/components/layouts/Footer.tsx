@@ -1,10 +1,6 @@
 'use client';
 
-import {
-	useAllRpcLatencies,
-	useCurrentRpc,
-	useCurrentRpcLatency,
-} from '@drift-labs/react';
+import { useCurrentRpc, useCurrentRpcLatency } from '@drift-labs/react';
 
 import useAppStore from '@/hooks/useAppStore';
 
@@ -24,10 +20,10 @@ export default function Footer() {
 	};
 
 	return (
-		<div className="fixed bottom-0 inset-x-0 flex [&>div]:flex-1 [&>div]:text-center [&>div]:text-sm bg-secondary-blue py-1">
-			<div>Circuits Trading</div>
+		<div className="fixed bottom-0 inset-x-0 flex [&>div]:flex-1 [&>div]:text-center [&>div]:text-sm bg-secondary-blue py-1 px-4">
+			<div className="hidden md:block">Circuit Trading</div>
 			<div
-				className="flex items-center justify-center gap-2 cursor-pointer hover:opacity-80"
+				className="flex items-center gap-2 cursor-pointer md:justify-center hover:opacity-80"
 				onClick={openRpcSwitcherModal}
 			>
 				<div className={`w-2 h-2 rounded-full ${rpcLatencyColor}`} />
@@ -35,7 +31,7 @@ export default function Footer() {
 					{currentRpc.label} ({currentRpcLatency?.avg || 0} ms)
 				</div>
 			</div>
-			<div className="flex items-center justify-center gap-2">
+			<div className="flex items-center justify-end gap-2 md:justify-center">
 				<span className="transition duration-300 cursor-pointer hover:opacity-80">
 					Docs
 				</span>

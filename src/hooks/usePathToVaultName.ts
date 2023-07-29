@@ -1,8 +1,8 @@
 import { PublicKey } from '@solana/web3.js';
 import { usePathname } from 'next/navigation';
+import { useMemo } from 'react';
 
 import { DEFAULT_VAULT_PUBKEY } from '@/constants/vaults';
-import { useMemo } from 'react';
 
 const getVaultPubKey = (pathname: string) => {
 	const firstPath = pathname.split('/')[1];

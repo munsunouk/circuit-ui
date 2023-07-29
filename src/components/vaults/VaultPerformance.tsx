@@ -56,7 +56,7 @@ export default function VaultPerformance() {
 		<div className="flex flex-col w-full gap-8">
 			<div className="flex flex-col w-full gap-4">
 				<SectionHeader>Performance Breakdown</SectionHeader>
-				<div className="flex flex-col w-full gap-2">
+				<div className="flex flex-col w-full gap-1 md:gap-2">
 					<BreakdownRow
 						label="Total Earnings (All Time)"
 						value={BigNum.from(totalEarnings, QUOTE_PRECISION_EXP).toNotional()}

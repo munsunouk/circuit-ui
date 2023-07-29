@@ -35,7 +35,7 @@ export default function VaultPage() {
 	};
 
 	return (
-		<div className={'flex flex-col items-center w-full'}>
+		<div>
 			{isLoading && (
 				<div className="flex flex-col items-center justify-center w-full h-[80vh] gap-4">
 					<div className="animate-pulse">
@@ -55,7 +55,7 @@ export default function VaultPage() {
 			)}
 			<div
 				className={twMerge(
-					'flex flex-col items-center w-full',
+					'flex flex-col items-center w-full px-2',
 					isLoading ? 'h-0 overflow-hidden' : 'h-auto'
 				)}
 			>
@@ -73,7 +73,7 @@ export default function VaultPage() {
 				</div>
 				<div
 					className={twMerge(
-						'flex justify-between w-full gap-10 md:gap-16 mt-16 lg:gap-[130px] transition-opacity duration-300 delay-200',
+						'flex justify-between w-full gap-10 md:gap-16 mt-8 md:mt-16 lg:gap-[130px] transition-opacity duration-300 delay-200 flex-col md:flex-row',
 						isLoading ? 'opacity-0' : 'opacity-100'
 					)}
 				>

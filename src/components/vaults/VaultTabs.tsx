@@ -35,8 +35,8 @@ export default function VaultTabs({
 				selected: selectedTab === tab.tab,
 				onSelect: () => setSelectedTab(tab.tab),
 			}))}
-			className="mt-20"
-			tabClassName="w-[200px] text-xl first:rounded-l-sm last:rounded-r-sm"
+			className="w-full mt-10 md:mt-20"
+			tabClassName="flex-1 md:w-[200px] text-xs md:text-xl first:rounded-l-sm last:rounded-r-sm"
 		/>
 	);
 }
