@@ -232,7 +232,13 @@ const createAppActions = (
 		);
 		await vaultDepositorSubscriber.subscribe();
 		const vaultDepositorAccount =
-			vaultDepositorSubscriber.getUserAccountAndSlot().data;
+			vaultDepositorSubscriber.getUserAccountAndSlot()?.data;
+
+		if (!vaultDepositorAccount) {
+			console.log('User is not a vault depositor');
+			await vaultDepositorSubscriber.unsubscribe();
+			return;
+		}
 
 		vaultDepositorSubscriber.eventEmitter.on('update', () => {
 			set((s) => {
@@ -263,6 +269,9 @@ const createAppActions = (
 		try {
 			const vaultInfo = get().getVaultAccount(vaultAddress);
 			const vaultDepositor = get().getVaultDepositor(vaultAddress);
+			const connection = getCommon().connection;
+
+			if (!connection) throw new Error('No connection');
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
 				NOTIFICATION_UTILS.toast.error(
@@ -271,17 +280,36 @@ const createAppActions = (
 				return '';
 			}
 
-			if (!vaultDepositor) {
-				// TODO: initialize vault depositor for non-permissioned vault
-			}
-
 			const vaultClient = get().vaultClient;
 
 			if (!vaultClient) {
 				throw new Error('No vault client');
 			}
 
-			const tx = await vaultClient.deposit(vaultDepositor!.pubkey, amount);
+			let tx: string;
+			if (!vaultDepositor) {
+				// init vault depositor with deposit ix
+				const authority = getCommon().authority;
+				if (!authority) {
+					NOTIFICATION_UTILS.toast.error('Please connect your wallet first!');
+					return '';
+				}
+
+				const vaultDepositorPubkey = VaultDepositorSubscriber.getAddressSync(
+					VAULT_PROGRAM_ID,
+					vaultAddress,
+					authority
+				);
+				tx = await vaultClient.deposit(vaultDepositorPubkey, amount, {
+					authority,
+					vault: vaultAddress,
+				});
+
+				await connection.confirmTransaction(tx, 'finalized');
+				await initVaultDepositorSubscriber(vaultAddress, authority);
+			} else {
+				tx = await vaultClient.deposit(vaultDepositor.pubkey, amount);
+			}
 
 			NOTIFICATION_UTILS.toast.success(
 				`You have successfully deposited ${BigNum.from(
@@ -292,6 +320,7 @@ const createAppActions = (
 
 			return tx;
 		} catch (err) {
+			console.error(err);
 			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
 		}
 	};
@@ -326,6 +355,7 @@ const createAppActions = (
 
 			return tx;
 		} catch (err) {
+			console.error(err);
 			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
 		}
 	};
@@ -347,6 +377,7 @@ const createAppActions = (
 
 			return tx;
 		} catch (err) {
+			console.error(err);
 			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
 		}
 	};
