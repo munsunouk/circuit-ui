@@ -13,6 +13,7 @@ import useAppStore from '@/hooks/useAppStore';
 import { syne } from '@/constants/fonts';
 
 import Chevron from '../Chevron';
+import FadeInDiv from '../elements/FadeInDiv';
 
 type TabProps = {
 	label: string;
@@ -92,7 +93,7 @@ const TopBar = () => {
 
 	return (
 		<div className="sticky top-0 h-[48px] md:h-[64px] w-full bg-black/20 backdrop-blur-sm flex items-center justify-between border-b border-yellow border-container-border z-50">
-			<span className="flex items-center w-[160px] md:w-[220px] gap-2 md:gap-3 justify-center border-r h-full border-container-border">
+			<span className="flex items-center w-[160px] md:w-[220px] gap-2 md:gap-3 md:justify-center md:border-r h-full border-container-border pl-4">
 				<Image
 					src="/circuits-icon.svg"
 					alt="Circuits Icon"
@@ -147,28 +148,38 @@ const TopBar = () => {
 										: 'h-0 p-0 border-container-border'
 								)}
 							>
-								<div
-									className={twMerge(
-										'py-3 hover:opacity-80 transition-[opacity] duration-300 delay-100',
-										isManageWalletsOpen ? 'opacity-100' : 'opacity-0'
-									)}
+								<FadeInDiv
+									fadeCondition={isManageWalletsOpen}
+									delay={100}
+									className={'py-3'}
 									onClick={openConnectWalletModal}
 								>
 									<span className="transition-opacity duration-300 hover:opacity-80">
 										Switch wallets
 									</span>
-								</div>
-								<div
-									className={twMerge(
-										'py-3 transition-opacity duration-300 delay-200',
-										isManageWalletsOpen ? 'opacity-100' : 'opacity-0'
-									)}
+								</FadeInDiv>
+								<FadeInDiv
+									fadeCondition={isManageWalletsOpen}
+									delay={200}
+									className="py-3"
 									onClick={disconnect}
 								>
 									<span className="transition-opacity duration-300 hover:opacity-80">
 										Disconnect
 									</span>
-								</div>
+								</FadeInDiv>
+								<FadeInDiv
+									fadeCondition={isManageWalletsOpen}
+									delay={300}
+									className="py-3 md:hidden"
+								>
+									<Link
+										className="transition-opacity duration-300 hover:opacity-80"
+										href={'/faq'}
+									>
+										FAQ
+									</Link>
+								</FadeInDiv>
 							</div>
 						}
 					</div>

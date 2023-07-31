@@ -10,6 +10,7 @@ import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
+import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
@@ -54,7 +55,7 @@ export default function VaultPerformance() {
 
 	return (
 		<div className="flex flex-col w-full gap-8">
-			<div className="flex flex-col w-full gap-4">
+			<FadeInDiv className="flex flex-col w-full gap-4">
 				<SectionHeader>Performance Breakdown</SectionHeader>
 				<div className="flex flex-col w-full gap-1 md:gap-2">
 					<BreakdownRow
@@ -64,26 +65,26 @@ export default function VaultPerformance() {
 					<BreakdownRow label="Cumulative Return" value="$0.00" />
 					<BreakdownRow label="Max Daily Drawdown" value="$0.00" />
 				</div>
-			</div>
+			</FadeInDiv>
 
-			<div className="flex flex-col gap-4">
+			<FadeInDiv className="flex flex-col gap-4" delay={100}>
 				<SectionHeader>Cumulative Performance</SectionHeader>
 				<PerformanceGraph
 					data={formatPnlHistory(
 						vault?.pnlHistory[HistoryResolution.ALL] ?? []
 					)}
 				/>
-			</div>
+			</FadeInDiv>
 
-			<div>
+			<FadeInDiv delay={200}>
 				<SectionHeader className="mb-4">Vault Activity</SectionHeader>
 				<div>
 					View this Vault’s activity from open positions, recent trades, to open
 					orders any time. In the Overview page, you can download the activity
 					history for your records.
 				</div>
-			</div>
-			<div>
+			</FadeInDiv>
+			<FadeInDiv delay={200}>
 				<a
 					href={`https://app.drift.trade/?authority=${vaultAccount?.pubkey.toString()}`}
 					target="_blank"
@@ -93,7 +94,7 @@ export default function VaultPerformance() {
 						View Vault Activity on Drift
 					</Button>
 				</a>
-			</div>
+			</FadeInDiv>
 		</div>
 	);
 }

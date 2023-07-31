@@ -1,9 +1,10 @@
 import SectionHeader from '../SectionHeader';
+import FadeInDiv from '../elements/FadeInDiv';
 
 export default function VaultOverview() {
 	return (
 		<div className="flex flex-col w-full gap-8 md:gap-16">
-			<div className="flex flex-col w-full gap-6">
+			<FadeInDiv className="flex flex-col w-full gap-6">
 				<SectionHeader>Strategy</SectionHeader>
 				<div>
 					<span>
@@ -19,8 +20,8 @@ export default function VaultOverview() {
 						withdrawn by anyone but you.
 					</span>
 				</div>
-			</div>
-			<div className="flex flex-col w-full gap-6">
+			</FadeInDiv>
+			<FadeInDiv className="flex flex-col w-full gap-6" delay={100}>
 				<SectionHeader>Risks</SectionHeader>
 				<div>
 					<div className="mb-1 font-semibold text-text-semi-emphasis">
@@ -45,8 +46,8 @@ export default function VaultOverview() {
 						suffer financial losses.
 					</div>
 				</div>
-			</div>
-			<div className="flex flex-col w-full gap-4">
+			</FadeInDiv>
+			<FadeInDiv className="flex flex-col w-full gap-4" delay={200}>
 				<SectionHeader>Lock Up Period & Withdrawals</SectionHeader>
 				<div>
 					<span>Deposited funds are subject to a [period] period.</span>
@@ -57,8 +58,8 @@ export default function VaultOverview() {
 						available for withdrawal at the end of each quarter.
 					</span>
 				</div>
-			</div>
-			<div className="flex flex-col w-full gap-4">
+			</FadeInDiv>
+			<FadeInDiv className="flex flex-col w-full gap-4" delay={300}>
 				<SectionHeader>Fees</SectionHeader>
 				<div>
 					<span>A monthly performance fee of 30% applies.</span>
@@ -69,7 +70,7 @@ export default function VaultOverview() {
 						Glove service.
 					</span>
 				</div>
-			</div>
+			</FadeInDiv>
 		</div>
 	);
 }

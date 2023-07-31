@@ -14,6 +14,8 @@ import YourPerformance from '@/components/vaults/YourPerformance';
 
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 
+import FadeInDiv from '../elements/FadeInDiv';
+
 export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(
 		VaultTab.VaultPerformance
@@ -59,23 +61,22 @@ export default function VaultPage() {
 					isLoading ? 'h-0 overflow-hidden' : 'h-auto'
 				)}
 			>
-				<div
-					className={twMerge(
-						'flex flex-col items-center transition-opacity duration-300',
-						isLoading ? 'opacity-0' : 'opacity-100'
-					)}
+				<FadeInDiv
+					className={'flex flex-col items-center'}
+					fadeCondition={!isLoading}
 				>
 					<VaultHero />
 					<VaultTabs
 						selectedTab={selectedTab}
 						setSelectedTab={setSelectedTab}
 					/>
-				</div>
-				<div
+				</FadeInDiv>
+				<FadeInDiv
+					delay={200}
 					className={twMerge(
-						'flex justify-between w-full gap-10 md:gap-16 mt-8 md:mt-16 lg:gap-[130px] transition-opacity duration-300 delay-200 flex-col md:flex-row',
-						isLoading ? 'opacity-0' : 'opacity-100'
+						'flex justify-between w-full gap-10 md:gap-16 mt-8 md:mt-16 lg:gap-[130px] flex-col md:flex-row'
 					)}
+					fadeCondition={!isLoading}
 				>
 					<div className="max-w-[580px] w-full [&>div]:p-1">
 						{renderLeftPanel()}
@@ -84,7 +85,7 @@ export default function VaultPage() {
 						<DepositWithdrawForm />
 						<WhiteGloveDetails />
 					</div>
-				</div>
+				</FadeInDiv>
 			</div>
 		</div>
 	);

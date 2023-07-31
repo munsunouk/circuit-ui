@@ -18,6 +18,7 @@ import { USDC_MARKET } from '@/constants/environment';
 
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
+import FadeInDiv from '../elements/FadeInDiv';
 import GradientBorderBox from '../elements/GradientBorderBox';
 import Input from '../elements/Input';
 
@@ -211,7 +212,7 @@ const DepositForm = () => {
 	};
 
 	return (
-		<div className="flex flex-col justify-between h-[400px] gap-9">
+		<FadeInDiv className="flex flex-col justify-between h-[400px] gap-9">
 			<Form
 				tab={Tab.Deposit}
 				maxAmount={maxAmount}
@@ -232,7 +233,7 @@ const DepositForm = () => {
 			) : (
 				<ConnectButton />
 			)}
-		</div>
+		</FadeInDiv>
 	);
 };
 
@@ -323,7 +324,7 @@ const WithdrawForm = () => {
 	};
 
 	return (
-		<div className="flex flex-col justify-between h-full gap-9">
+		<FadeInDiv className="flex flex-col justify-between h-full gap-9">
 			<span className="text-text-emphasis">
 				{getWithdrawalDetails(withdrawalState)}
 			</span>
@@ -380,7 +381,7 @@ const WithdrawForm = () => {
 			) : (
 				<ConnectButton />
 			)}
-		</div>
+		</FadeInDiv>
 	);
 };
 

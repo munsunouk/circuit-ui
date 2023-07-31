@@ -4,20 +4,23 @@ import { twMerge } from 'tailwind-merge';
 
 import useAppStore from '@/hooks/useAppStore';
 
-import Button from '../elements/Button';
+import FadeInDiv from '../elements/FadeInDiv';
 import { Modal } from './Modal';
 
 const WalletOption = ({
 	onClick,
 	wallet,
+	index,
 }: {
 	onClick: () => void;
 	wallet: Wallet;
+	index: number;
 }) => {
 	return (
-		<div
+		<FadeInDiv
 			onClick={onClick}
 			className="flex justify-between transition-opacity duration-300 cursor-pointer hover:opacity-80"
+			delay={(index + 1) * 100}
 		>
 			<div className="flex gap-2">
 				<Image
@@ -39,7 +42,7 @@ const WalletOption = ({
 					? 'Detected'
 					: ''}
 			</div>
-		</div>
+		</FadeInDiv>
 	);
 };
 
@@ -60,11 +63,12 @@ export default function ConnectWalletModal() {
 	return (
 		<Modal onClose={handleOnClose} header="Connect Wallet">
 			<div className="flex flex-col gap-4 min-w-[300px]">
-				{walletContext?.wallets?.map((wallet) => (
+				{walletContext?.wallets?.map((wallet, index) => (
 					<WalletOption
 						key={wallet.adapter.name.toString()}
 						wallet={wallet}
 						onClick={() => handleConnectWallet(wallet)}
+						index={index}
 					/>
 				))}
 			</div>

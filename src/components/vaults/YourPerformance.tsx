@@ -11,6 +11,7 @@ import { sourceCodePro } from '@/constants/fonts';
 
 import ConnectButton from '../ConnectButton';
 import SectionHeader from '../SectionHeader';
+import FadeInDiv from '../elements/FadeInDiv';
 import BreakdownRow from './BreakdownRow';
 
 const StatsBox = ({ label, value }: { label: string; value: string }) => {
@@ -62,7 +63,7 @@ export default function YourPerformance() {
 
 	return (
 		<div className={'relative flex flex-col gap-8 md:gap-16'}>
-			<div>
+			<FadeInDiv>
 				<SectionHeader className="mb-9">Summary</SectionHeader>
 				<div className="flex items-center justify-center w-full gap-4">
 					<StatsBox
@@ -75,8 +76,8 @@ export default function YourPerformance() {
 						value={connected ? cumulativeEarningsString : '--'}
 					/>
 				</div>
-			</div>
-			<div>
+			</FadeInDiv>
+			<FadeInDiv delay={100}>
 				<SectionHeader className="mb-4">Performance Breakdown</SectionHeader>
 				<BreakdownRow
 					label="Cumulative Earnings"
@@ -88,7 +89,7 @@ export default function YourPerformance() {
 					value={`${Number(userSharesProportion.toFixed(6))}%`}
 				/>
 				<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
-			</div>
+			</FadeInDiv>
 			{!connected && (
 				<>
 					<div className="absolute inset-0 flex flex-col items-center backdrop-blur-sm">

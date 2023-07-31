@@ -16,6 +16,7 @@ import { getRpcLatencyColor } from '@/utils/utils';
 
 import Env from '@/constants/environment';
 
+import FadeInDiv from '../elements/FadeInDiv';
 import Input from '../elements/Input';
 import { Checkmark } from '../icons';
 import { Modal } from './Modal';
@@ -27,18 +28,21 @@ const RpcOption = ({
 	label,
 	latency,
 	selected,
+	index,
 }: {
 	onClick: () => void;
 	label: string;
 	latency: number;
 	selected: boolean;
+	index: number;
 }) => {
 	const rpcLatencyColor = getRpcLatencyColor(latency);
 
 	return (
-		<div
+		<FadeInDiv
 			onClick={onClick}
 			className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+			delay={(index + 1) * 100}
 		>
 			<div className="flex items-center justify-center w-4 h-4">
 				{selected && <Checkmark className="w-4 h-4" />}
@@ -48,7 +52,7 @@ const RpcOption = ({
 				<div className={`w-2 h-2 ${rpcLatencyColor} rounded-full`} />
 				<span>{latency} ms</span>
 			</div>
-		</div>
+		</FadeInDiv>
 	);
 };
 
@@ -124,7 +128,7 @@ export default function RpcSwitcherModal() {
 	return (
 		<Modal onClose={handleOnClose} header="Switch RPCs">
 			<div className="flex flex-col gap-3 min-w-[300px]">
-				{rpcOptions.map((rpc) => {
+				{rpcOptions.map((rpc, index) => {
 					return (
 						<RpcOption
 							key={rpc.label}
@@ -132,6 +136,7 @@ export default function RpcSwitcherModal() {
 							label={rpc.label}
 							latency={allRpcLatencies[rpc.value]?.avg ?? 0}
 							selected={selectedRpcLabel === rpc.label}
+							index={index}
 						/>
 					);
 				})}
@@ -142,29 +147,29 @@ export default function RpcSwitcherModal() {
 						currentRpc.label === CUSTOM_LABEL ? currentRpcLatency?.avg : 0
 					}
 					selected={selectedRpcLabel === CUSTOM_LABEL}
+					index={rpcOptions.length}
 				/>
 
-				<div
+				<FadeInDiv
 					className={twMerge(
 						'flex transition-[all] duration-300 overflow-hidden',
 						selectedRpcLabel === CUSTOM_LABEL
 							? 'h-[44px] mt-0 pb-1'
 							: 'h-0 -mt-2 delay-300'
 					)}
+					delay={(rpcOptions.length + 2) * 100}
 				>
 					<div className="h-1 w-7" />
 					<Input
 						className={twMerge(
 							'h-10 text-sm transition-opacity duration-300 px-3',
-							selectedRpcLabel === CUSTOM_LABEL
-								? 'opacity-100 delay-300'
-								: 'opacity-0'
+							selectedRpcLabel === CUSTOM_LABEL ? 'opacity-100' : 'opacity-0'
 						)}
 						placeholder="Enter RPC URL"
 						value={customRpcValue}
 						onChange={(e) => setCustomRpcValue(e.target.value)}
 					/>
-				</div>
+				</FadeInDiv>
 			</div>
 		</Modal>
 	);

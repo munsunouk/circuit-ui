@@ -10,8 +10,11 @@ import {
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import FadeInDiv from '../elements/FadeInDiv';
 import { Close } from '../icons';
 import ModalPortal from './ModalPortal';
+
+const TRANSITION_DELAY = 100;
 
 const clickedInsideElement = (
 	event: MouseEvent,
@@ -40,6 +43,23 @@ export const ModalBackground = (
 ) => {
 	const backgroundRef = useRef<HTMLDivElement>(null);
 	const [isClosing, setIsClosing] = useState(false);
+	const [blurBackground, setBlurBackground] = useState(false);
+
+	useEffect(() => {
+		setTimeout(() => {
+			setBlurBackground(true);
+		}, TRANSITION_DELAY);
+
+		return () => setBlurBackground(false);
+	}, []);
+
+	useEffect(() => {
+		document.body.classList.add(`overflow-hidden`);
+
+		return () => {
+			document.body.classList.remove(`overflow-hidden`);
+		};
+	}, []);
 
 	const closingModalFromBackground = (event: ReactMouseEvent) => {
 		const eventWasInsideModal = clickedInsideElement(
@@ -58,14 +78,6 @@ export const ModalBackground = (
 		setIsClosing(true);
 	};
 
-	useEffect(() => {
-		document.body.classList.add(`overflow-hidden`);
-
-		return () => {
-			document.body.classList.remove(`overflow-hidden`);
-		};
-	}, []);
-
 	const handleClose = () => {
 		if (isClosing) {
 			props.onClose();
@@ -74,7 +86,10 @@ export const ModalBackground = (
 
 	return (
 		<div
-			className={`fixed z-50 inset-0 w-screen h-screen overflow-auto sm:overflow-hidden backdrop-blur-sm transition-all duration-300`}
+			className={twMerge(
+				'fixed z-50 inset-0 w-screen h-screen overflow-auto sm:overflow-hidden',
+				blurBackground && 'backdrop-blur-sm'
+			)}
 			aria-labelledby="modal-title"
 			role="dialog"
 			aria-modal="true"
@@ -84,7 +99,7 @@ export const ModalBackground = (
 		>
 			<div className="min-h-screen px-4 pb-20 sm:block sm:p-0">
 				<div
-					className={`fixed inset-0 transition-opacity bg-opacity-50 flex items-center justify-center`}
+					className={`fixed inset-0 flex items-center justify-center`}
 					aria-hidden="true"
 					onMouseUp={handleClose}
 				>
@@ -121,7 +136,8 @@ export const Modal = ({
 	return (
 		<ModalPortal id={id}>
 			<ModalBackground onClose={onClose} contentRef={contentRef}>
-				<div
+				<FadeInDiv
+					delay={TRANSITION_DELAY}
 					ref={contentRef}
 					className={twMerge('border bg-container-bg border-white', className)}
 				>
@@ -135,7 +151,7 @@ export const Modal = ({
 						</button>
 					</div>
 					<div className="px-4 py-4">{children}</div>
-				</div>
+				</FadeInDiv>
 			</ModalBackground>
 		</ModalPortal>
 	);
