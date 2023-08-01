@@ -79,7 +79,7 @@ const FormTab = ({
 	return (
 		<span
 			className={twMerge(
-				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:opacity-80 transition duration-300',
+				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-main-blue hover:text-black transition duration-300',
 				selected &&
 					'bg-container-bg-selected text-text-selected border-container-border-selected'
 			)}
@@ -191,14 +191,21 @@ const DepositForm = () => {
 		usdcBalance.toString(),
 		VAULT_SHARES_PRECISION
 	);
-	const maxDepositAmount = maxAvailableCapacity.gt(usdcBalanceBigNum)
+	let maxDepositAmount = maxAvailableCapacity.gt(usdcBalanceBigNum)
 		? usdcBalanceBigNum.toNum()
 		: maxAvailableCapacity.scale(99, 100).toNum();
+	maxDepositAmount = Math.max(0, maxDepositAmount);
 
 	const handleOnValueChange = (newAmount: string) => {
 		if (isNaN(+newAmount)) return;
 
 		if (+newAmount === 0) {
+			setAmount(newAmount);
+			return;
+		}
+
+		// if last char of string is a decimal point, don't format
+		if (newAmount[newAmount.length - 1] === '.') {
 			setAmount(newAmount);
 			return;
 		}

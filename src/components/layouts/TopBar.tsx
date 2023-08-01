@@ -37,7 +37,7 @@ const Tab = (props: TabProps) => {
 		<Link
 			href={props.route}
 			className={twMerge(
-				'flex items-center justify-center w-40 h-full cursor-pointer hover:opacity-80 font-normal',
+				'flex items-center justify-center w-40 h-full cursor-pointer hover:bg-main-blue hover:text-black font-normal text-xl transition duration-300',
 				props.selected && 'bg-container-bg-selected text-text-selected'
 			)}
 		>
@@ -123,9 +123,9 @@ const TopBar = () => {
 
 			<span
 				className={twMerge(
-					'relative flex items-center justify-center h-full px-8 text-sm md:text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition-[border] duration-300 w-[160px] md:w-[220px] ',
+					'relative flex items-center justify-center h-full px-8 text-sm md:text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition duration-300 w-[160px] md:w-[220px] hover:bg-main-blue group',
 					isManageWalletsOpen &&
-						'bg-container-bg-selected border border-b-0 border-container-border-selected'
+						'bg-container-bg-selected border border-b-0 border-container-border-selected hover:bg-container-bg-selected hover:text-text-emphasis'
 				)}
 				onClick={handleManageWalletClick}
 				ref={manageWalletPopup}
@@ -133,10 +133,20 @@ const TopBar = () => {
 				{connected && authority ? (
 					<div className="flex flex-col">
 						<div className="flex items-center gap-1">
-							<span>{shortPublicKey}</span>
+							<span
+								className={twMerge(
+									'transition duration-300 group-hover:text-black',
+									isManageWalletsOpen && 'group-hover:text-text-emphasis'
+								)}
+							>
+								{shortPublicKey}
+							</span>
 							<Chevron
 								open={isManageWalletsOpen}
-								className="w-6 h-6 md:w-9 md:h-9"
+								className={twMerge(
+									'w-6 h-6 md:w-9 md:h-9 group-hover:[&>path]:fill-black',
+									isManageWalletsOpen && 'group-hover:[&>path]:fill-white'
+								)}
 							/>
 						</div>
 						{
@@ -154,7 +164,7 @@ const TopBar = () => {
 									className={'py-3'}
 									onClick={openConnectWalletModal}
 								>
-									<span className="transition-opacity duration-300 hover:opacity-80">
+									<span className="transition-opacity duration-300 hover:opacity-80 hover:text-text-emphasis">
 										Switch wallets
 									</span>
 								</FadeInDiv>
@@ -164,7 +174,7 @@ const TopBar = () => {
 									className="py-3"
 									onClick={disconnect}
 								>
-									<span className="transition-opacity duration-300 hover:opacity-80">
+									<span className="transition-opacity duration-300 hover:opacity-80 hover:text-text-emphasis">
 										Disconnect
 									</span>
 								</FadeInDiv>
@@ -174,7 +184,7 @@ const TopBar = () => {
 									className="py-3 md:hidden"
 								>
 									<Link
-										className="transition-opacity duration-300 hover:opacity-80"
+										className="transition-opacity duration-300 hover:opacity-80 hover:text-text-emphasis"
 										href={'/faq'}
 									>
 										FAQ

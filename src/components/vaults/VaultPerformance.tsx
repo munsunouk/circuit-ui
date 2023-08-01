@@ -20,37 +20,21 @@ export default function VaultPerformance() {
 	const vaultAccount = useCurrentVaultAccount();
 	const vaultStats = useCurrentVaultStats();
 
-	const totalDeposits = vaultAccount?.netDeposits ?? new BN(0);
-	const currentBalance = vaultStats.netUsdValue;
-	const totalEarnings = currentBalance.sub(totalDeposits); // FIXME: this is not correct, should be a cumulative sum of period earnings, where period = until withdrawal time
+	const totalEarnings = vaultStats.totalAllTimePnl;
 
 	const formatPnlHistory = (pnlHistory: UISerializableAccountSnapshot[]) => {
-		const formattedHistory = pnlHistory.map((snapshot) => ({
-			x: snapshot.epochTs,
-			// @ts-ignore
-			y: snapshot.allTimeTotalPnl as number,
-		}));
+		const formattedHistory = pnlHistory
+			.map((snapshot) => ({
+				x: snapshot.epochTs,
+				// @ts-ignore - snapshot response was not deserialized, hence its default form is already a number
+				y: snapshot.allTimeTotalPnl as number,
+			}))
+			.concat({
+				x: Date.now() / 1000,
+				y: vaultStats.totalAllTimePnl,
+			});
 
-		// find the last index of the leading numbers where the numbers are intangible
-		// we define intangible as a number that is less than 1% of the next number
-		let intangibleIndex = -1;
-		for (let i = 0; i < formattedHistory.length; i++) {
-			if (i === formattedHistory.length - 1) {
-				continue;
-			}
-
-			const isIntangible =
-				formattedHistory[i].y === 0 ||
-				formattedHistory[i].y < Math.abs(formattedHistory[i + 1].y) * 0.01;
-
-			if (!isIntangible && intangibleIndex > -1) {
-				break;
-			} else {
-				intangibleIndex = i;
-			}
-		}
-
-		return formattedHistory.slice(intangibleIndex + 1);
+		return formattedHistory;
 	};
 
 	return (

@@ -87,16 +87,18 @@ export default function YourPerformance() {
 			</FadeInDiv>
 			<FadeInDiv delay={100}>
 				<SectionHeader className="mb-4">Performance Breakdown</SectionHeader>
-				<BreakdownRow
-					label="Cumulative Earnings"
-					value={cumulativeEarningsString}
-				/>
-				<BreakdownRow label="Your Deposits" value={userNetDepositsString} />
-				<BreakdownRow
-					label="Vault Share"
-					value={`${Number(userSharesProportion.toFixed(6))}%`}
-				/>
-				<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
+				<div className="flex flex-col gap-2">
+					<BreakdownRow
+						label="Cumulative Earnings"
+						value={cumulativeEarningsString}
+					/>
+					<BreakdownRow label="Your Deposits" value={userNetDepositsString} />
+					<BreakdownRow
+						label="Vault Share"
+						value={`${Number(userSharesProportion.toFixed(6))}%`}
+					/>
+					<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
+				</div>
 			</FadeInDiv>
 			{!connected && (
 				<>

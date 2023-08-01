@@ -62,7 +62,7 @@ export default function ConnectWalletModal() {
 
 	return (
 		<Modal onClose={handleOnClose} header="Connect Wallet">
-			<div className="flex flex-col gap-4 min-w-[300px]">
+			<div className="flex flex-col gap-6 min-w-[300px]">
 				{walletContext?.wallets?.map((wallet, index) => (
 					<WalletOption
 						key={wallet.adapter.name.toString()}

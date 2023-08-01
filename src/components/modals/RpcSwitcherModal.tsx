@@ -127,7 +127,7 @@ export default function RpcSwitcherModal() {
 
 	return (
 		<Modal onClose={handleOnClose} header="Switch RPCs">
-			<div className="flex flex-col gap-3 min-w-[300px]">
+			<div className="flex flex-col gap-6 min-w-[300px]">
 				{rpcOptions.map((rpc, index) => {
 					return (
 						<RpcOption
@@ -140,36 +140,38 @@ export default function RpcSwitcherModal() {
 						/>
 					);
 				})}
-				<RpcOption
-					onClick={() => setSelectedRpcLabel(CUSTOM_LABEL)}
-					label="Custom RPC"
-					latency={
-						currentRpc.label === CUSTOM_LABEL ? currentRpcLatency?.avg : 0
-					}
-					selected={selectedRpcLabel === CUSTOM_LABEL}
-					index={rpcOptions.length}
-				/>
-
-				<FadeInDiv
-					className={twMerge(
-						'flex transition-[all] duration-300 overflow-hidden',
-						selectedRpcLabel === CUSTOM_LABEL
-							? 'h-[44px] mt-0 pb-1'
-							: 'h-0 -mt-2 delay-300'
-					)}
-					delay={(rpcOptions.length + 2) * 100}
-				>
-					<div className="h-1 w-7" />
-					<Input
-						className={twMerge(
-							'h-10 text-sm transition-opacity duration-300 px-3',
-							selectedRpcLabel === CUSTOM_LABEL ? 'opacity-100' : 'opacity-0'
-						)}
-						placeholder="Enter RPC URL"
-						value={customRpcValue}
-						onChange={(e) => setCustomRpcValue(e.target.value)}
+				<div className="flex flex-col gap-2">
+					<RpcOption
+						onClick={() => setSelectedRpcLabel(CUSTOM_LABEL)}
+						label="Custom RPC"
+						latency={
+							currentRpc.label === CUSTOM_LABEL ? currentRpcLatency?.avg : 0
+						}
+						selected={selectedRpcLabel === CUSTOM_LABEL}
+						index={rpcOptions.length}
 					/>
-				</FadeInDiv>
+
+					<FadeInDiv
+						className={twMerge(
+							'flex transition-[all] duration-300 overflow-hidden',
+							selectedRpcLabel === CUSTOM_LABEL
+								? 'h-[44px] mt-0 pb-1'
+								: 'h-0 -mt-2 delay-100'
+						)}
+						delay={(rpcOptions.length + 2) * 100}
+					>
+						<div className="h-1 w-7" />
+						<Input
+							className={twMerge(
+								'h-10 text-sm transition-opacity duration-300 px-3',
+								selectedRpcLabel === CUSTOM_LABEL ? 'opacity-100' : 'opacity-0'
+							)}
+							placeholder="Enter RPC URL"
+							value={customRpcValue}
+							onChange={(e) => setCustomRpcValue(e.target.value)}
+						/>
+					</FadeInDiv>
+				</div>
 			</div>
 		</Modal>
 	);

@@ -3,11 +3,17 @@ import { BN } from '@drift-labs/sdk';
 import useAppStore from './useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 
-const DEFAULT_VAULT_STATS = {
+interface VaultStats {
+	netUsdValue: BN;
+	totalAllTimePnl: BN;
+}
+
+const DEFAULT_VAULT_STATS: VaultStats = {
 	netUsdValue: new BN(0),
+	totalAllTimePnl: new BN(0),
 };
 
-export default function useCurrentVaultStats() {
+export default function useCurrentVaultStats(): VaultStats {
 	const currentVaultPubKey = usePathToVaultPubKey();
 	const vaultDriftUser = useAppStore(
 		(s) => s.vaults[currentVaultPubKey?.toString() ?? '']?.vaultDriftUser
@@ -26,7 +32,10 @@ export default function useCurrentVaultStats() {
 	const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
 	const netUsdValue = collateral.add(unrealizedPNL);
 
+	const totalAllTimePnl = vaultDriftUser.getTotalAllTimePnl();
+
 	return {
 		netUsdValue,
+		totalAllTimePnl,
 	};
 }
