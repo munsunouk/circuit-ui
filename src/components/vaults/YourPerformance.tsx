@@ -1,4 +1,5 @@
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { VAULT_SHARES_PRECISION } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
@@ -95,7 +96,11 @@ export default function YourPerformance() {
 					<BreakdownRow label="Your Deposits" value={userNetDepositsString} />
 					<BreakdownRow
 						label="Vault Share"
-						value={`${Number(userSharesProportion.toFixed(6))}%`}
+						value={`${Number(
+							(userSharesProportion * 100).toFixed(
+								VAULT_SHARES_PRECISION.toNumber() - 2
+							)
+						)}%`}
 					/>
 					<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
 				</div>

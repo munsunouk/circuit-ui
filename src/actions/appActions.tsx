@@ -13,9 +13,9 @@ import {
 import {
 	VAULT_PROGRAM_ID,
 	Vault,
+	VaultAccount,
 	VaultDepositor,
-	VaultDepositorSubscriber,
-	VaultSubscriber,
+	VaultDepositorAccount,
 	WithdrawUnit,
 	getDriftVaultProgram,
 	getVaultClient,
@@ -73,8 +73,8 @@ const createAppActions = (
 				vaultDriftClient,
 				vaultDriftUser,
 				vaultDriftUserAccount,
-				vaultSubscriber,
-				vaultAccount,
+				vaultAccount: vaultSubscriber,
+				vaultAccountData: vaultAccount,
 				pnlHistory: {
 					[HistoryResolution.DAY]: [],
 					[HistoryResolution.WEEK]: [],
@@ -179,23 +179,23 @@ const createAppActions = (
 
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
 
-		const vaultSubscriber = new VaultSubscriber(
+		const vaultSubscriber = new VaultAccount(
 			driftVaultsProgram,
 			vaultAddress,
 			accountLoader
 		);
 		await vaultSubscriber.subscribe();
-		const vaultAccount = vaultSubscriber.getUserAccountAndSlot().data;
+		const vaultAccount = vaultSubscriber.getData();
 
 		vaultSubscriber.eventEmitter.on('update', () => {
 			set((s) => {
-				s.vaults[vaultAddress.toString()]!.vaultSubscriber = vaultSubscriber;
+				s.vaults[vaultAddress.toString()]!.vaultAccount = vaultSubscriber;
 			});
 		});
 
 		vaultSubscriber.eventEmitter.on('vaultUpdate', (newVault) => {
 			set((s) => {
-				s.vaults[vaultAddress.toString()]!.vaultAccount = newVault as Vault;
+				s.vaults[vaultAddress.toString()]!.vaultAccountData = newVault as Vault;
 			});
 		});
 
@@ -225,14 +225,13 @@ const createAppActions = (
 		);
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
 
-		const vaultDepositorSubscriber = new VaultDepositorSubscriber(
+		const vaultDepositorSubscriber = new VaultDepositorAccount(
 			driftVaultsProgram,
 			vaultDepositorAddress,
 			accountLoader
 		);
 		await vaultDepositorSubscriber.subscribe();
-		const vaultDepositorAccount =
-			vaultDepositorSubscriber.getUserAccountAndSlot()?.data;
+		const vaultDepositorAccount = vaultDepositorSubscriber.getData();
 
 		if (!vaultDepositorAccount) {
 			console.log('User is not a vault depositor');
@@ -242,7 +241,7 @@ const createAppActions = (
 
 		vaultDepositorSubscriber.eventEmitter.on('update', () => {
 			set((s) => {
-				s.vaults[vaultAddress.toString()]!.vaultDepositorSubscriber =
+				s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
 					vaultDepositorSubscriber;
 			});
 		});
@@ -251,16 +250,16 @@ const createAppActions = (
 			'vaultDepositorUpdate',
 			(newVaultDepositor) => {
 				set((s) => {
-					s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
+					s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
 						newVaultDepositor as VaultDepositor;
 				});
 			}
 		);
 
 		set((s) => {
-			s.vaults[vaultAddress.toString()]!.vaultDepositorSubscriber =
-				vaultDepositorSubscriber;
 			s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
+				vaultDepositorSubscriber;
+			s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
 				vaultDepositorAccount;
 		});
 	};
@@ -295,7 +294,7 @@ const createAppActions = (
 					return '';
 				}
 
-				const vaultDepositorPubkey = VaultDepositorSubscriber.getAddressSync(
+				const vaultDepositorPubkey = VaultDepositorAccount.getAddressSync(
 					VAULT_PROGRAM_ID,
 					vaultAddress,
 					authority

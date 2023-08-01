@@ -1,10 +1,10 @@
 import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
 	Vault,
+	VaultAccount,
 	VaultClient,
 	VaultDepositor,
-	VaultDepositorSubscriber,
-	VaultSubscriber,
+	VaultDepositorAccount,
 } from '@drift-labs/vaults-sdk';
 import { UISnapshotHistory } from '@drift/common';
 import { produce } from 'immer';
@@ -21,11 +21,11 @@ export interface AppStoreState {
 			| {
 					vaultDriftClient: DriftClient;
 					vaultDriftUser: User; // used to get vault's drift account data (e.g. vault balance)
-					vaultDriftUserAccount: UserAccount | undefined; // we store the actual account so we know when it updates
-					vaultSubscriber: VaultSubscriber;
-					vaultAccount: Vault; // we store the actual account so we know when it updates
-					vaultDepositorSubscriber?: VaultDepositorSubscriber;
-					vaultDepositorAccount?: VaultDepositor; // we store the actual account so we know when it updates
+					vaultDriftUserAccount: UserAccount | undefined; // we store the actual account data so we know when it updates -> object reference will update when account data updates
+					vaultAccount: VaultAccount;
+					vaultAccountData: Vault; // we store the actual account data so we know when it updates
+					vaultDepositorAccount?: VaultDepositorAccount;
+					vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
 					pnlHistory: UISnapshotHistory;
 			  }
 			| undefined;
@@ -67,13 +67,13 @@ const useAppStore = create<AppStoreState>((set, get) => {
 			if (!vaultAddress) return undefined;
 
 			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultAccount;
+			return vault?.vaultAccountData;
 		},
 		getVaultDepositor: (vaultAddress: PublicKey | undefined) => {
 			if (!vaultAddress) return undefined;
 
 			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultDepositorAccount;
+			return vault?.vaultDepositorAccountData;
 		},
 		getVaultDriftUserAccount: (vaultAddress: PublicKey | undefined) => {
 			if (!vaultAddress) return undefined;

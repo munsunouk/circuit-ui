@@ -386,7 +386,7 @@ const WithdrawForm = () => {
 									VAULT_SHARES_PRECISION
 								).toPrecision(VAULT_SHARES_PRECISION)}{' '}
 								{withdrawalState === WithdrawalState.Requested
-									? 'withdrawal requested'
+									? 'shares withdrawal requested'
 									: 'shares available for withdrawal'}
 							</span>
 						)}
