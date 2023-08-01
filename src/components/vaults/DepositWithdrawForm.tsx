@@ -1,4 +1,5 @@
-import { BN } from '@drift-labs/sdk';
+import { BN, BigNum } from '@drift-labs/sdk';
+import { VAULT_SHARES_PRECISION } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -10,6 +11,7 @@ import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
 import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
+import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import { redeemPeriodToString } from '@/utils/utils';
@@ -167,14 +169,31 @@ const Form = ({
 
 const DepositForm = () => {
 	const { connected } = useWallet();
-	const maxAmount = useAppStore((s) => s.balances.usdc);
+	const usdcBalance = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();
+	const vaultAccount = useCurrentVaultAccount();
+	const vaultStats = useCurrentVaultStats();
 
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
 
 	const isButtonDisabled = +amount === 0;
+
+	// Max amount that can be deposited
+	const maxCapacity = vaultAccount?.maxTokens;
+	const tvl = vaultStats.netUsdValue;
+	const maxAvailableCapacity = BigNum.from(
+		maxCapacity?.sub(tvl),
+		USDC_MARKET.precisionExp
+	);
+	const usdcBalanceBigNum = BigNum.fromPrint(
+		usdcBalance.toString(),
+		VAULT_SHARES_PRECISION
+	);
+	const maxDepositAmount = maxAvailableCapacity.gt(usdcBalanceBigNum)
+		? usdcBalanceBigNum.toNum()
+		: maxAvailableCapacity.scale(99, 100).toNum();
 
 	const handleOnValueChange = (newAmount: string) => {
 		if (isNaN(+newAmount)) return;
@@ -215,8 +234,8 @@ const DepositForm = () => {
 		<FadeInDiv className="flex flex-col justify-between h-[400px] gap-9">
 			<Form
 				tab={Tab.Deposit}
-				maxAmount={maxAmount}
-				maxAmountString={`${maxAmount.toFixed(2)} USDC`}
+				maxAmount={maxDepositAmount}
+				maxAmountString={`${maxDepositAmount.toFixed(2)} USDC`}
 				setAmount={handleOnValueChange}
 				amount={amount}
 			/>
@@ -298,8 +317,8 @@ const WithdrawForm = () => {
 			return;
 		}
 
-		const formattedAmount = Math.round(
-			Number((+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber()))
+		const formattedAmount = Number(
+			(+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber())
 		);
 		setAmount(formattedAmount.toString());
 	};
@@ -310,7 +329,8 @@ const WithdrawForm = () => {
 		try {
 			setLoading(true);
 			if (withdrawalState === WithdrawalState.UnRequested) {
-				await appActions.requestVaultWithdrawal(vaultPubkey, new BN(amount));
+				const shares = new BN(+amount * 10 ** VAULT_SHARES_PRECISION);
+				await appActions.requestVaultWithdrawal(vaultPubkey, new BN(shares));
 			} else if (withdrawalState === WithdrawalState.Requested) {
 				await appActions.cancelRequestWithdraw(vaultPubkey);
 			} else {
@@ -331,8 +351,11 @@ const WithdrawForm = () => {
 
 			<Form
 				tab={Tab.Withdraw}
-				maxAmount={maxAmount}
-				maxAmountString={`${maxAmount} shares`}
+				maxAmount={BigNum.from(maxAmount, VAULT_SHARES_PRECISION).toNum()}
+				maxAmountString={`${BigNum.from(
+					maxAmount,
+					VAULT_SHARES_PRECISION
+				).toPrecision(VAULT_SHARES_PRECISION)} shares`}
 				setAmount={handleOnValueChange}
 				amount={amount}
 			/>
@@ -344,17 +367,20 @@ const WithdrawForm = () => {
 							withdrawalState === WithdrawalState.AvailableForWithdrawal) && (
 							<span
 								className={twMerge(
-									'w-full text-center py-2 text-text-emphasis',
+									'w-full text-center py-2 text-text-emphasis px-2',
 									withdrawalState === WithdrawalState.Requested &&
 										'bg-button-bg-disabled',
 									withdrawalState === WithdrawalState.AvailableForWithdrawal &&
 										'bg-success-green-bg font-semibold'
 								)}
 							>
-								{lastRequestedAmount.toNumber()}{' '}
+								{BigNum.from(
+									lastRequestedAmount,
+									VAULT_SHARES_PRECISION
+								).toPrecision(VAULT_SHARES_PRECISION)}{' '}
 								{withdrawalState === WithdrawalState.Requested
 									? 'withdrawal requested'
-									: 'available for withdrawal'}
+									: 'shares available for withdrawal'}
 							</span>
 						)}
 						<Button

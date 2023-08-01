@@ -30,6 +30,8 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 	);
 };
 
+const BUFFER = 0.01 * 10 ** QUOTE_PRECISION_EXP;
+
 export default function YourPerformance() {
 	const { connected } = useWallet();
 	const vaultDepositor = useCurrentVaultDepositor();
@@ -54,8 +56,14 @@ export default function YourPerformance() {
 	const vaultAccountBalance = vaultStats.netUsdValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
-	const cumulativeEarnings =
+	let cumulativeEarnings =
 		userTotalWithdraws - userTotalDeposits + userAccountBalanceProportion;
+
+	// prevent $-0.00
+	if (cumulativeEarnings < 0 && cumulativeEarnings > -BUFFER) {
+		cumulativeEarnings = 0;
+	}
+
 	const cumulativeEarningsString = BigNum.from(
 		cumulativeEarnings,
 		QUOTE_PRECISION_EXP
