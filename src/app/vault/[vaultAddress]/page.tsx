@@ -1,3 +1,3 @@
-import VaultPage from '@/app/page';
+import VaultPage from '@/components/vaults/VaultPage';
 
 export default VaultPage;

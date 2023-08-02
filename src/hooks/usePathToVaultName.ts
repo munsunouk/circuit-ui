@@ -2,15 +2,11 @@ import { PublicKey } from '@solana/web3.js';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { DEFAULT_VAULT_PUBKEY } from '@/constants/vaults';
-
 const getVaultPubKey = (pathname: string) => {
 	const firstPath = pathname.split('/')[1];
 	const possibleVaultAddress = pathname.split('/')[2];
 
-	if (firstPath === '') {
-		return DEFAULT_VAULT_PUBKEY;
-	} else if (firstPath === 'vault') {
+	if (firstPath === 'vault') {
 		try {
 			return new PublicKey(possibleVaultAddress);
 		} catch (err) {

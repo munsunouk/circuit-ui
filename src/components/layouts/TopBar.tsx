@@ -12,7 +12,7 @@ import useAppStore from '@/hooks/useAppStore';
 
 import { syne } from '@/constants/fonts';
 
-import Chevron from '../Chevron';
+import Chevron from '../elements/Chevron';
 import FadeInDiv from '../elements/FadeInDiv';
 
 type TabProps = {
@@ -23,7 +23,7 @@ type TabProps = {
 
 const TAB_OPTIONS: Omit<TabProps, 'selected'>[] = [
 	{
-		label: 'Supercharger',
+		label: 'All Vaults',
 		route: '/',
 	},
 	{
