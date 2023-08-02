@@ -20,7 +20,7 @@ export default function Footer() {
 	};
 
 	return (
-		<div className="fixed bottom-0 inset-x-0 flex [&>div]:flex-1 [&>div]:text-center [&>div]:text-sm bg-black py-1 px-4">
+		<div className="fixed bottom-0 inset-x-0 flex [&>div]:flex-1 [&>div]:text-center [&>div]:text-sm bg-black py-1 px-4 z-50">
 			<div className="hidden md:block">Circuit Trading</div>
 			<div
 				className="flex items-center gap-2 cursor-pointer md:justify-center hover:opacity-80"

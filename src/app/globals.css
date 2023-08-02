@@ -86,6 +86,13 @@ body::-webkit-scrollbar {
 	-webkit-text-fill-color: transparent;
 }
 
+.radial-gradient-text {
+	background: radial-gradient(#88c9ff 0%, #fff 100%);
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
 .blue-white-gradient-background {
 	background: var(--blue-white-linear-gradient);
 }
@@ -148,5 +155,14 @@ body::-webkit-scrollbar {
 	20%,
 	40% {
 		opacity: 1;
+	}
+}
+
+#tsparticles {
+	height: 10vw;
+	max-height: 120px;
+
+	@media screen and (max-width: 768px) {
+		height: 20vw;
 	}
 }
