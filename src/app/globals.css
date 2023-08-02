@@ -29,8 +29,8 @@
 	--error-red-border: #d46d66;
 	--error-red-bg: #1d0200;
 
-	/* Linear Gradient */
-	--blue-white-gradient: linear-gradient(
+	/* Gradients */
+	--blue-white-linear-gradient: linear-gradient(
 		61deg,
 		#52cbff 17.79%,
 		#fff 22.25%,
@@ -40,6 +40,7 @@
 		#fff 73.24%,
 		#52cbff 77.56%
 	);
+	--blue-radial-gradient: radial-gradient(#040e29, #00000030);
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -79,14 +80,18 @@ body::-webkit-scrollbar {
 }
 
 .gradient-vault-name {
-	background: var(--blue-white-gradient);
+	background: var(--blue-white-linear-gradient);
 	background-clip: text;
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
 
 .blue-white-gradient-background {
-	background: var(--blue-white-gradient);
+	background: var(--blue-white-linear-gradient);
+}
+
+.blue-radial-gradient-background {
+	background-image: var(--blue-radial-gradient);
 }
 
 .gradient-container-blue {

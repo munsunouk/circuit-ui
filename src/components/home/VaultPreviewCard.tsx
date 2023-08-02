@@ -9,6 +9,7 @@ import { UiVaultConfig } from '@/constants/vaults';
 import Badge from '../elements/Badge';
 import Button from '../elements/Button';
 import { Lock } from '../icons';
+import Particles from './Particles';
 
 function VaultStat({ label, value }: { label: string; value: string }) {
 	return (
@@ -72,17 +73,42 @@ interface VaultPreviewCardProps {
 }
 
 export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
+	const [isHover, setIsHover] = useState(false);
+
+	const handleMouseEnter = () => {
+		setIsHover(true);
+	};
+
+	const handleMouseLeave = () => {
+		setIsHover(false);
+	};
+
 	return (
-		<div className="relative flex-1 w-full flex flex-col border border-container-border cursor-pointer group">
+		<div
+			className="relative flex-1 w-full flex flex-col border border-container-border cursor-pointer group"
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+		>
 			{/** Background image (separated to allow isolation of the brightness feature) */}
 			<div
-				className="absolute inset-0 group-hover:brightness-150 transition-all duration-300"
+				className="absolute inset-0 group-hover:brightness-150 transition-all duration-300 z-10"
 				style={{
 					backgroundImage: `url(${vault.previewBackdropUrl})`,
 					backgroundSize: 'cover',
 				}}
 			/>
-			<div className="relative isolate flex flex-col mt-[25%] grow">
+
+			{/** Particles on hover */}
+			<div className="absolute flex justify-center z-50 w-full">
+				<div className="w-[80%]">
+					{isHover && <Particles color={vault.backdropParticlesColor} />}
+				</div>
+			</div>
+
+			{/** Radial background on hover */}
+			<div className="absolute inset-x-0 top-0 bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0 transition-all duration-300" />
+
+			<div className="relative isolate flex flex-col mt-[25%] grow z-20">
 				{/** Background blur + grayscale (separated to allow isolation of inner content from grayscale ) */}
 				<div className="absolute inset-0 grayscale backdrop-blur" />
 				<div className="flex flex-col items-center text-center md:px-16 md:py-10 px-4 py-3 gap-6 isolate grow">
