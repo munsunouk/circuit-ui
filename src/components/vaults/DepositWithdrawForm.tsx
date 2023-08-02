@@ -351,21 +351,25 @@ const WithdrawForm = () => {
 	};
 
 	return (
-		<FadeInDiv className="flex flex-col justify-between h-full gap-9">
+		<FadeInDiv
+			className={'flex flex-col justify-between h-full gap-9 min-h-[400px]'}
+		>
 			<span className="text-text-emphasis">
 				{getWithdrawalDetails(withdrawalState)}
 			</span>
 
-			<Form
-				tab={Tab.Withdraw}
-				maxAmount={BigNum.from(maxAmount, VAULT_SHARES_PRECISION).toNum()}
-				maxAmountString={`${BigNum.from(
-					maxAmount,
-					VAULT_SHARES_PRECISION
-				).toPrecision(VAULT_SHARES_PRECISION)} shares`}
-				setAmount={handleOnValueChange}
-				amount={amount}
-			/>
+			{withdrawalState === WithdrawalState.UnRequested && (
+				<Form
+					tab={Tab.Withdraw}
+					maxAmount={BigNum.from(maxAmount, VAULT_SHARES_PRECISION).toNum()}
+					maxAmountString={`${BigNum.from(
+						maxAmount,
+						VAULT_SHARES_PRECISION
+					).toPrecision(VAULT_SHARES_PRECISION)} shares`}
+					setAmount={handleOnValueChange}
+					amount={amount}
+				/>
+			)}
 
 			{connected ? (
 				<div className="flex flex-col items-center gap-4">
