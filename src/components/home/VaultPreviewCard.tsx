@@ -12,6 +12,7 @@ import Badge from '../elements/Badge';
 import Button from '../elements/Button';
 import { Lock } from '../icons';
 import Particles from './Particles';
+import { encodeVaultName } from '@/utils/utils';
 
 function VaultStat({ label, value }: { label: string; value: string }) {
 	return (
@@ -103,7 +104,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 
 	return (
 		<Link
-			href={`/vault/${vault.pubkey.toString()}`}
+			href={`/vault/${encodeVaultName(vault.name)}`}
 			className="relative flex-1 w-full flex flex-col border border-container-border cursor-pointer group"
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}

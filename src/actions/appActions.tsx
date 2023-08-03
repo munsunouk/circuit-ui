@@ -179,27 +179,28 @@ const createAppActions = (
 
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
 
-		const vaultSubscriber = new VaultAccount(
+		const vaultAccount = new VaultAccount(
 			driftVaultsProgram,
 			vaultAddress,
 			accountLoader
 		);
-		await vaultSubscriber.subscribe();
-		const vaultAccount = vaultSubscriber.getData();
+		await vaultAccount.subscribe();
+		const vaultAccountData = vaultAccount.getData();
 
-		vaultSubscriber.eventEmitter.on('update', () => {
+		vaultAccount.eventEmitter.on('update', () => {
 			set((s) => {
-				s.vaults[vaultAddress.toString()]!.vaultAccount = vaultSubscriber;
+				s.vaults[vaultAddress.toString()]!.vaultAccount = vaultAccount;
 			});
 		});
 
-		vaultSubscriber.eventEmitter.on('vaultUpdate', (newVault) => {
+		vaultAccount.eventEmitter.on('vaultUpdate', (newVaultData) => {
 			set((s) => {
-				s.vaults[vaultAddress.toString()]!.vaultAccountData = newVault as Vault;
+				s.vaults[vaultAddress.toString()]!.vaultAccountData =
+					newVaultData as Vault;
 			});
 		});
 
-		return { vaultSubscriber, vaultAccount };
+		return { vaultSubscriber: vaultAccount, vaultAccount: vaultAccountData };
 	};
 
 	const initVaultDepositorSubscriber = async (
@@ -225,42 +226,42 @@ const createAppActions = (
 		);
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
 
-		const vaultDepositorSubscriber = new VaultDepositorAccount(
+		const vaultDepositorAccount = new VaultDepositorAccount(
 			driftVaultsProgram,
 			vaultDepositorAddress,
 			accountLoader
 		);
-		await vaultDepositorSubscriber.subscribe();
-		const vaultDepositorAccount = vaultDepositorSubscriber.getData();
+		await vaultDepositorAccount.subscribe();
+		const vaultDepositorAccountData = vaultDepositorAccount.getData();
 
-		if (!vaultDepositorAccount) {
+		if (!vaultDepositorAccountData) {
 			console.log('User is not a vault depositor');
-			await vaultDepositorSubscriber.unsubscribe();
+			await vaultDepositorAccount.unsubscribe();
 			return;
 		}
 
-		vaultDepositorSubscriber.eventEmitter.on('update', () => {
+		vaultDepositorAccount.eventEmitter.on('update', () => {
 			set((s) => {
 				s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
-					vaultDepositorSubscriber;
+					vaultDepositorAccount;
 			});
 		});
 
-		vaultDepositorSubscriber.eventEmitter.on(
+		vaultDepositorAccount.eventEmitter.on(
 			'vaultDepositorUpdate',
-			(newVaultDepositor) => {
+			(newVaultDepositorData) => {
 				set((s) => {
 					s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
-						newVaultDepositor as VaultDepositor;
+						newVaultDepositorData as VaultDepositor;
 				});
 			}
 		);
 
 		set((s) => {
 			s.vaults[vaultAddress.toString()]!.vaultDepositorAccount =
-				vaultDepositorSubscriber;
-			s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
 				vaultDepositorAccount;
+			s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
+				vaultDepositorAccountData;
 		});
 	};
 

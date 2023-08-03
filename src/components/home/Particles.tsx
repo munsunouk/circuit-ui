@@ -55,7 +55,7 @@ function CustomParticles({ color }: { color: string }) {
 							top: 'out',
 						},
 						random: true,
-						speed: { min: 0.1, max: 0.5 },
+						speed: { min: 0.1, max: 0.7 },
 						straight: true,
 					},
 					shape: {
