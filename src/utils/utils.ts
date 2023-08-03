@@ -20,4 +20,4 @@ export const getRpcLatencyColor = (latency: number | undefined) => {
 // replace space with '-', and uri encode vault name
 export const encodeVaultName = (name: string) => {
 	return encodeURIComponent(name.toLowerCase().replace(/\s/g, '-'));
-}
+};

@@ -1,8 +1,9 @@
-import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import {
 	HistoryResolution,
 	UISerializableAccountSnapshot,
 } from '@drift/common';
+import dayjs from 'dayjs';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
@@ -22,6 +23,10 @@ export default function VaultPerformance() {
 
 	const totalEarnings = vaultStats.totalAllTimePnl;
 
+	const normalizeDate = (epochTs: number) => {
+		return dayjs(dayjs.unix(epochTs).format('MM/DD/YYYY')).unix();
+	};
+
 	const formatPnlHistory = (pnlHistory: UISerializableAccountSnapshot[]) => {
 		const formattedHistory = pnlHistory
 			.map((snapshot) => ({
@@ -32,7 +37,11 @@ export default function VaultPerformance() {
 			.concat({
 				x: Date.now() / 1000,
 				y: vaultStats.totalAllTimePnl,
-			});
+			})
+			.map((point) => ({
+				...point,
+				x: normalizeDate(point.x), // normalize to start of day so that the graph looks consistent
+			}));
 
 		return formattedHistory;
 	};

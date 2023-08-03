@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
+import { encodeVaultName } from '@/utils/utils';
+
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { UiVaultConfig } from '@/constants/vaults';
 
@@ -12,7 +14,6 @@ import Badge from '../elements/Badge';
 import Button from '../elements/Button';
 import { Lock } from '../icons';
 import Particles from './Particles';
-import { encodeVaultName } from '@/utils/utils';
 
 function VaultStat({ label, value }: { label: string; value: string }) {
 	return (

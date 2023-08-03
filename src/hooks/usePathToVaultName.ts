@@ -1,8 +1,10 @@
-import { VAULTS } from '@/constants/vaults';
-import { encodeVaultName } from '@/utils/utils';
 import { PublicKey } from '@solana/web3.js';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
+
+import { encodeVaultName } from '@/utils/utils';
+
+import { VAULTS } from '@/constants/vaults';
 
 const getVaultPubKey = (pathname: string): PublicKey | undefined => {
 	const firstPath = pathname.split('/')[1];
@@ -14,7 +16,8 @@ const getVaultPubKey = (pathname: string): PublicKey | undefined => {
 
 	try {
 		const foundVaultUsingName = VAULTS.find(
-			(vault) => encodeVaultName(vault.name) === possibleVaultAddressOrName.toLowerCase()
+			(vault) =>
+				encodeVaultName(vault.name) === possibleVaultAddressOrName.toLowerCase()
 		);
 
 		if (foundVaultUsingName) {
