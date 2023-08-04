@@ -20,7 +20,7 @@ export const VAULTS: UiVaultConfig[] = [
 		pubkey: TEST_VAULT_PUBKEY,
 		description: 'Delta-neutral market making strategy',
 		permissioned: true,
-		previewBackdropUrl: '/supercharger-backdrop.png',
+		previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
 		backdropParticlesColor: '#88c9ff',
 	},
 	{
@@ -28,7 +28,7 @@ export const VAULTS: UiVaultConfig[] = [
 		pubkey: new PublicKey('2bXtK9phuqUbqsmonWCNYcV87DkFmqyRiDqGen4daZwx'),
 		description: 'Delta-neutral market making strategy',
 		comingSoon: true,
-		previewBackdropUrl: '/turbocharger-backdrop.png',
+		previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
 		backdropParticlesColor: '#3DBC9D',
 	},
 	{
@@ -36,7 +36,7 @@ export const VAULTS: UiVaultConfig[] = [
 		pubkey: new PublicKey('B4LBd4DEKZZLvkn7eazUf7xU9RuTpvxH4th18VgVzMpB'),
 		description: 'Hedged Drift Liquidity Provider (DLP) strategy',
 		comingSoon: true,
-		previewBackdropUrl: '/hedged-dlp-backdrop.png',
+		previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
 		backdropParticlesColor: '#88c9ff',
 	},
 ];

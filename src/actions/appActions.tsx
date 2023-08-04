@@ -21,8 +21,13 @@ import {
 	getVaultClient,
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
-import { COMMON_UI_UTILS, HistoryResolution } from '@drift/common';
+import {
+	COMMON_UI_UTILS,
+	HistoryResolution,
+	UISnapshotHistory,
+} from '@drift/common';
 import { Commitment } from '@solana/web3.js';
+import axios from 'axios';
 import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
@@ -66,6 +71,8 @@ const createAppActions = (
 			initVaultSubscriber(vaultAddress),
 		]);
 
+		const vaultSnapshots = await fetchAndSetVaultSnapshots(vaultAccount.user);
+
 		set((s) => {
 			s.vaultClient = vaultClient;
 
@@ -75,15 +82,33 @@ const createAppActions = (
 				vaultDriftUserAccount,
 				vaultAccount: vaultSubscriber,
 				vaultAccountData: vaultAccount,
-				pnlHistory: {
-					[HistoryResolution.DAY]: [],
-					[HistoryResolution.WEEK]: [],
-					[HistoryResolution.MONTH]: [],
-					[HistoryResolution.ALL]: [],
-					dailyAllTimePnls: [],
-				},
+				pnlHistory: vaultSnapshots,
 			};
 		});
+	};
+
+	const fetchAndSetVaultSnapshots = async (userAccount: PublicKey) => {
+		try {
+			const res = await axios.get<{ data: UISnapshotHistory[] }>(
+				`${
+					Env.historyServerUrl
+				}/userSnapshots/?userPubKeys=${userAccount.toString()}`
+			);
+
+			const snapshots = res.data.data;
+
+			return snapshots[0];
+		} catch (err) {
+			console.error(err);
+
+			return {
+				[HistoryResolution.DAY]: [],
+				[HistoryResolution.WEEK]: [],
+				[HistoryResolution.MONTH]: [],
+				[HistoryResolution.ALL]: [],
+				dailyAllTimePnls: [],
+			};
+		}
 	};
 
 	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {

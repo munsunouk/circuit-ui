@@ -62,7 +62,7 @@ export default function VaultPage() {
 				)}
 			>
 				<FadeInDiv
-					className={'flex flex-col items-center'}
+					className={'flex flex-col items-center w-full'}
 					fadeCondition={!isLoading}
 				>
 					<VaultHero />

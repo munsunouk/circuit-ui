@@ -68,17 +68,6 @@ body::-webkit-scrollbar {
 	display: none;
 }
 
-.backdrop {
-	background-image: url('../../public/backdrop.png');
-	background-repeat: no-repeat;
-	background-size: 100%;
-	background-position: top center;
-
-	@media (max-width: 768px) {
-		background-size: 140%;
-	}
-}
-
 .gradient-vault-name {
 	background: var(--blue-white-linear-gradient);
 	background-clip: text;
