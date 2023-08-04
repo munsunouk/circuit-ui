@@ -32,11 +32,11 @@ export default function VaultPerformance() {
 			.map((snapshot) => ({
 				x: snapshot.epochTs,
 				// @ts-ignore - snapshot response was not deserialized, hence its default form is already a number
-				y: snapshot.allTimeTotalPnl as number,
+				y: Number(snapshot.allTimeTotalPnl),
 			}))
 			.concat({
 				x: Date.now() / 1000,
-				y: vaultStats.totalAllTimePnl,
+				y: vaultStats.totalAllTimePnl.toNumber(),
 			})
 			.map((point) => ({
 				...point,
@@ -62,11 +62,15 @@ export default function VaultPerformance() {
 
 			<FadeInDiv className="flex flex-col gap-4" delay={100}>
 				<SectionHeader>Cumulative Performance</SectionHeader>
-				<PerformanceGraph
-					data={formatPnlHistory(
-						vault?.pnlHistory[HistoryResolution.ALL] ?? []
+				<div className="w-full h-[320px]">
+					{(vault?.pnlHistory[HistoryResolution.ALL].length ?? 0) > 0 && (
+						<PerformanceGraph
+							data={formatPnlHistory(
+								vault?.pnlHistory[HistoryResolution.ALL] ?? []
+							)}
+						/>
 					)}
-				/>
+				</div>
 			</FadeInDiv>
 
 			<FadeInDiv delay={200}>

@@ -1,3 +1,5 @@
+'use client';
+
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import dayjs from 'dayjs';
 import {
@@ -46,8 +48,8 @@ const CUSTOM_AREA_COLORS_ID = 'custom-area-colors';
 
 export default function PerformanceGraph({
 	data,
-	bufferXPct = 0.0001,
-	bufferYPct = 0.001,
+	bufferXPct = 0.0001, // 0.01%
+	bufferYPct = 0.2, // 0.1%
 }: {
 	data: {
 		x: number;
@@ -58,7 +60,10 @@ export default function PerformanceGraph({
 }) {
 	const minY = data.reduce((acc, curr) => Math.min(acc, curr.y), Infinity);
 	const maxY = data.reduce((acc, curr) => Math.max(acc, curr.y), -Infinity);
-	const yDomain = [minY * (1 - bufferYPct), maxY * (1 + bufferYPct)];
+	const yDomain = [
+		minY * (1 + minY > 0 ? -1 * bufferYPct : bufferYPct), // minY may be negative, hence we check the need to add or subtract the buffer
+		maxY * (1 + bufferYPct),
+	];
 
 	const minX = data.reduce((acc, curr) => Math.min(acc, curr.x), Infinity);
 	const maxX = data.reduce((acc, curr) => Math.max(acc, curr.x), -Infinity);
@@ -84,7 +89,8 @@ export default function PerformanceGraph({
 				// find the absolute y difference between the 2 points
 				// find how far back 0 is from the current point (in terms of x-axis length)
 				// find the percentage of the graph between the 2 points where 0 is (in terms of x-axis length)
-				const yDistanceBtwPoints = Math.abs(data[i].y) + Math.abs(previousValue);
+				const yDistanceBtwPoints =
+					Math.abs(data[i].y) + Math.abs(previousValue);
 				const xDistanceBtwPoints = data[i].x - data[i - 1].x;
 				const zeroOffsetLengthFromSecondPoint =
 					(Math.abs(data[i].y) / yDistanceBtwPoints) * xDistanceBtwPoints;
@@ -95,11 +101,11 @@ export default function PerformanceGraph({
 				const offsetPct = (zeroPointXLength / xAxisLength) * 100;
 
 				stops.push({
-					offset: offsetPct,
+					offset: offsetPct * 0.99,
 					color: previousColor,
 				});
 				stops.push({
-					offset: offsetPct,
+					offset: offsetPct * 1.01,
 					color: currentColor,
 				});
 			}
@@ -205,7 +211,7 @@ export default function PerformanceGraph({
 					hide
 					interval={2}
 				/>
-				<YAxis domain={yDomain} hide />
+				<YAxis domain={yDomain} ticks={[0]} axisLine={false} />
 				{/* @ts-ignore */}
 				<Tooltip content={(props) => <CustomTooltip {...props} />} />
 			</AreaChart>
