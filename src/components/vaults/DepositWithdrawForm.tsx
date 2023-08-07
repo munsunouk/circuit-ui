@@ -1,16 +1,21 @@
-import { BN, BigNum } from '@drift-labs/sdk';
-import { VAULT_SHARES_PRECISION } from '@drift-labs/vaults-sdk';
+import {
+	BN,
+	BigNum,
+	PERCENTAGE_PRECISION,
+	QUOTE_PRECISION_EXP,
+} from '@drift-labs/sdk';
+import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import ConnectButton from '@/components/ConnectButton';
 
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
-import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
-import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
+import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
+import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
@@ -172,7 +177,7 @@ const DepositForm = () => {
 	const usdcBalance = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();
-	const vaultAccount = useCurrentVaultAccount();
+	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
 
 	const [amount, setAmount] = useState('');
@@ -181,7 +186,7 @@ const DepositForm = () => {
 	const isButtonDisabled = +amount === 0;
 
 	// Max amount that can be deposited
-	const maxCapacity = vaultAccount?.maxTokens;
+	const maxCapacity = vaultAccountData?.maxTokens;
 	const tvl = vaultStats.netUsdValue;
 	const maxAvailableCapacity = BigNum.from(
 		maxCapacity?.sub(tvl),
@@ -189,7 +194,7 @@ const DepositForm = () => {
 	);
 	const usdcBalanceBigNum = BigNum.fromPrint(
 		usdcBalance.toString(),
-		VAULT_SHARES_PRECISION
+		VAULT_SHARES_PRECISION_EXP
 	);
 	let maxDepositAmount = maxAvailableCapacity.gt(usdcBalanceBigNum)
 		? usdcBalanceBigNum.toNum()
@@ -263,30 +268,82 @@ const DepositForm = () => {
 	);
 };
 
+/**
+ * The withdraw form's UI is designed to display the estimated USDC to withdraw.
+ * It will calculate the max amount of shares (after profit share fee if in profit)
+ * that the user can withdraw, and convert that amount to USDC. However, the max amount
+ * of shares is always updating since the amount of profit is always changing.
+ * Hence, we designed it so that we assign the max USDC value only once, on the first
+ * calculation, so that both the max USDC value and percentage to withdraw remain
+ * un-updated even if the max amount of shares after profit share fee changes due to
+ * account data subscription.
+ */
 const WithdrawForm = () => {
 	const { connected } = useWallet();
 	const vaultPubkey = usePathToVaultPubKey();
-	const vaultDepositor = useCurrentVaultDepositor();
-	const vaultAccount = useCurrentVaultAccount();
+	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
+	const vaultAccountData = useCurrentVaultAccountData();
 	const appActions = useAppActions();
+	const vaultStats = useCurrentVaultStats();
+	const vaultDepositorAccount = useAppStore(
+		(s) => s.vaults[vaultPubkey?.toString() ?? '']?.vaultDepositorAccount
+	);
 
+	const [maxSharesUsdcValue, setMaxSharesUsdcValue] = useState(new BN(0));
 	const [amount, setAmount] = useState('');
-	const [maxAmount, setMaxAmount] = useState<number>(0);
 	const [loading, setLoading] = useState(false);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
 		WithdrawalState.Requested
 	);
 
+	const hasCalcMaxSharesOnce = useRef(false);
+
+	const tvl = vaultStats.netUsdValue;
+
+	// withdrawal variables
 	const withdrawalWaitingPeriod = redeemPeriodToString(
-		vaultAccount?.redeemPeriod.toNumber()
+		vaultAccountData?.redeemPeriod.toNumber()
 	);
 	const withdrawalAvailableTs =
-		vaultDepositor?.lastWithdrawRequestTs.toNumber() +
-		vaultAccount?.redeemPeriod.toNumber();
-
-	const userShares = vaultDepositor?.vaultShares ?? new BN(0);
+		vaultDepositorAccountData?.lastWithdrawRequestTs.toNumber() +
+		vaultAccountData?.redeemPeriod.toNumber();
 	const lastRequestedAmount =
-		vaultDepositor?.lastWithdrawRequestShares ?? new BN(0);
+		vaultDepositorAccountData?.lastWithdrawRequestShares ?? new BN(0);
+
+	// we only want to set the max shares once when all data is available,
+	// to prevent the max amount from constantly updating due to data change subscriptions.
+	useEffect(() => {
+		if (
+			vaultAccountData &&
+			vaultDepositorAccount !== undefined &&
+			!tvl.eq(new BN(0)) &&
+			!hasCalcMaxSharesOnce.current
+		) {
+			// user variables
+			const userShares = vaultDepositorAccountData?.vaultShares ?? new BN(0);
+			const userEquity = userShares.mul(tvl).div(vaultAccountData.totalShares);
+
+			// profit share fee variables
+			const vaultProfitShareFee = new BN(vaultAccountData.profitShare);
+			const profitSharingFeePct =
+				vaultDepositorAccount.calcProfitShareFeesProportion(
+					vaultProfitShareFee,
+					userEquity
+				);
+
+			const profitShareFeeShares = userShares
+				.mul(profitSharingFeePct)
+				.div(PERCENTAGE_PRECISION);
+			const userSharesAfterFees = userShares.sub(profitShareFeeShares);
+
+			const maxSharesUsdcValue = userSharesAfterFees
+				.mul(tvl)
+				.div(vaultAccountData?.totalShares);
+
+			setMaxSharesUsdcValue(maxSharesUsdcValue);
+			hasCalcMaxSharesOnce.current = true;
+		}
+	}, [vaultDepositorAccount, vaultAccountData, tvl]);
 
 	const isButtonDisabled =
 		+amount === 0 && withdrawalState !== WithdrawalState.Requested;
@@ -308,14 +365,6 @@ const WithdrawForm = () => {
 		}
 	}, [withdrawalAvailableTs, lastRequestedAmount.toNumber()]);
 
-	useEffect(() => {
-		if (withdrawalState === WithdrawalState.AvailableForWithdrawal) {
-			setMaxAmount(lastRequestedAmount.toNumber());
-		} else {
-			setMaxAmount(userShares.toNumber());
-		}
-	}, [withdrawalState, lastRequestedAmount.toNumber(), userShares.toNumber()]);
-
 	const handleOnValueChange = (newAmount: string) => {
 		if (isNaN(+newAmount)) return;
 
@@ -336,8 +385,11 @@ const WithdrawForm = () => {
 		try {
 			setLoading(true);
 			if (withdrawalState === WithdrawalState.UnRequested) {
-				const shares = new BN(+amount * 10 ** VAULT_SHARES_PRECISION);
-				await appActions.requestVaultWithdrawal(vaultPubkey, new BN(shares));
+				const pctToWithdraw = new BN(+amount * 10 ** QUOTE_PRECISION_EXP)
+					.mul(PERCENTAGE_PRECISION)
+					.div(maxSharesUsdcValue);
+
+				await appActions.requestVaultWithdrawal(vaultPubkey, pctToWithdraw);
 			} else if (withdrawalState === WithdrawalState.Requested) {
 				await appActions.cancelRequestWithdraw(vaultPubkey);
 			} else {
@@ -361,11 +413,14 @@ const WithdrawForm = () => {
 			{withdrawalState === WithdrawalState.UnRequested && (
 				<Form
 					tab={Tab.Withdraw}
-					maxAmount={BigNum.from(maxAmount, VAULT_SHARES_PRECISION).toNum()}
+					maxAmount={BigNum.from(
+						maxSharesUsdcValue,
+						QUOTE_PRECISION_EXP
+					).toNum()}
 					maxAmountString={`${BigNum.from(
-						maxAmount,
-						VAULT_SHARES_PRECISION
-					).toPrecision(VAULT_SHARES_PRECISION)} shares`}
+						maxSharesUsdcValue,
+						QUOTE_PRECISION_EXP
+					).toFixed(2)} USDC`}
 					setAmount={handleOnValueChange}
 					amount={amount}
 				/>
@@ -387,8 +442,8 @@ const WithdrawForm = () => {
 							>
 								{BigNum.from(
 									lastRequestedAmount,
-									VAULT_SHARES_PRECISION
-								).toPrecision(VAULT_SHARES_PRECISION)}{' '}
+									VAULT_SHARES_PRECISION_EXP
+								).toPrecision(VAULT_SHARES_PRECISION_EXP)}{' '}
 								{withdrawalState === WithdrawalState.Requested
 									? 'shares withdrawal requested'
 									: 'shares available for withdrawal'}

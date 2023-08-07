@@ -6,7 +6,7 @@ import {
 import dayjs from 'dayjs';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
-import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
+import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import SectionHeader from '../SectionHeader';
@@ -18,7 +18,7 @@ import PerformanceGraph from './PerformanceGraph';
 
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
-	const vaultAccount = useCurrentVaultAccount();
+	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
 
 	const totalEarnings = vaultStats.totalAllTimePnl;
@@ -83,7 +83,7 @@ export default function VaultPerformance() {
 			</FadeInDiv>
 			<FadeInDiv delay={200}>
 				<a
-					href={`https://app.drift.trade/?authority=${vaultAccount?.pubkey.toString()}`}
+					href={`https://app.drift.trade/?authority=${vaultAccountData?.pubkey.toString()}`}
 					target="_blank"
 					rel="noopener noreferrer"
 				>

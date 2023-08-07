@@ -35,8 +35,10 @@ export interface AppStoreState {
 	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
-	getVaultAccount: (vaultAddress: PublicKey | undefined) => Vault | undefined;
-	getVaultDepositor: (
+	getVaultAccountData: (
+		vaultAddress: PublicKey | undefined
+	) => Vault | undefined;
+	getVaultDepositorAccountData: (
 		vaultAddress: PublicKey | undefined
 	) => VaultDepositor | undefined;
 	getVaultDriftUserAccount: (
@@ -63,13 +65,13 @@ const useAppStore = create<AppStoreState>((set, get) => {
 		...DEFAULT_APP_STORE_STATE,
 		set: setProducerFn,
 		get: () => get(),
-		getVaultAccount: (vaultAddress: PublicKey | undefined) => {
+		getVaultAccountData: (vaultAddress: PublicKey | undefined) => {
 			if (!vaultAddress) return undefined;
 
 			const vault = get().vaults[vaultAddress.toString()];
 			return vault?.vaultAccountData;
 		},
-		getVaultDepositor: (vaultAddress: PublicKey | undefined) => {
+		getVaultDepositorAccountData: (vaultAddress: PublicKey | undefined) => {
 			if (!vaultAddress) return undefined;
 
 			const vault = get().vaults[vaultAddress.toString()];

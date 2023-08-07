@@ -292,8 +292,8 @@ const createAppActions = (
 
 	const depositVault = async (vaultAddress: PublicKey, amount: BN) => {
 		try {
-			const vaultInfo = get().getVaultAccount(vaultAddress);
-			const vaultDepositor = get().getVaultDepositor(vaultAddress);
+			const vaultInfo = get().getVaultAccountData(vaultAddress);
+			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 			const connection = getCommon().connection;
 
 			if (!connection) throw new Error('No connection');
@@ -352,12 +352,12 @@ const createAppActions = (
 
 	const requestVaultWithdrawal = async (
 		vaultAddress: PublicKey,
-		sharesAmount: BN
+		percentage: BN
 	) => {
 		try {
 			const vaultClient = get().vaultClient;
-			const vaultInfo = get().getVaultAccount(vaultAddress);
-			const vaultDepositor = get().getVaultDepositor(vaultAddress);
+			const vaultAccountData = get().getVaultAccountData(vaultAddress);
+			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -365,15 +365,15 @@ const createAppActions = (
 
 			const tx = await vaultClient.requestWithdraw(
 				vaultDepositor.pubkey,
-				sharesAmount,
-				WithdrawUnit.SHARES
+				percentage,
+				WithdrawUnit.SHARES_PERCENT
 			);
 
 			NOTIFICATION_UTILS.toast.success(
 				<ToastWithMessage
 					title="Withdrawal Requested"
 					message={`You may make your withdrawal in ${redeemPeriodToString(
-						vaultInfo?.redeemPeriod
+						vaultAccountData?.redeemPeriod
 					)}`}
 				/>
 			);
@@ -388,7 +388,7 @@ const createAppActions = (
 	const cancelRequestWithdraw = async (vaultAddress: PublicKey) => {
 		try {
 			const vaultClient = get().vaultClient;
-			const vaultDepositor = get().getVaultDepositor(vaultAddress);
+			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
 			if (!vaultClient || !vaultDepositor) {
 				throw new Error('No vault client/vault depositor found');
@@ -409,7 +409,7 @@ const createAppActions = (
 
 	const executeVaultWithdrawal = async (vaultAddress: PublicKey) => {
 		const vaultClient = get().vaultClient;
-		const vaultDepositor = get().getVaultDepositor(vaultAddress);
+		const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
 		if (!vaultClient || !vaultDepositor) {
 			throw new Error('No vault client/vault depositor found');

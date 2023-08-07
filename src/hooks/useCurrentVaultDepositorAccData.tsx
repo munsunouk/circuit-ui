@@ -1,10 +1,10 @@
 import useAppStore from './useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 
-export default function useCurrentVaultDepositor() {
+export default function useCurrentVaultDepositorAccData() {
 	const currentVaultPubKey = usePathToVaultPubKey();
 	const vaultDepositor = useAppStore((s) =>
-		s.getVaultDepositor(currentVaultPubKey)
+		s.getVaultDepositorAccountData(currentVaultPubKey)
 	);
 	return vaultDepositor;
 }

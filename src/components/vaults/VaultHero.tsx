@@ -2,7 +2,7 @@ import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { decodeName } from '@drift-labs/vaults-sdk';
 import { twMerge } from 'tailwind-merge';
 
-import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
+import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
@@ -25,20 +25,20 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 };
 
 export default function VaultHero() {
-	const vaultAccount = useCurrentVaultAccount();
+	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
 
 	const uiVaultConfig = VAULTS.find(
-		(v) => v.pubkey.toString() === vaultAccount?.pubkey.toString()
+		(v) => v.pubkey.toString() === vaultAccountData?.pubkey.toString()
 	);
 
-	const name = decodeName(vaultAccount?.name ?? []);
+	const name = decodeName(vaultAccountData?.name ?? []);
 	const tvl = vaultStats.netUsdValue;
-	const maxCapacity = vaultAccount?.maxTokens;
+	const maxCapacity = vaultAccountData?.maxTokens;
 
 	return (
 		<div
-			className="flex flex-col items-center bg-no-repeat w-full pb-10 relative"
+			className="relative flex flex-col items-center w-full pb-10 bg-no-repeat"
 			style={{
 				backgroundImage: `url(${
 					uiVaultConfig?.previewBackdropUrl ?? '/backdrops/marble-backdrop.png'
@@ -48,9 +48,9 @@ export default function VaultHero() {
 			}}
 		>
 			<div className="absolute w-full h-full bg-gradient-to-t from-black to-[#00000070]" />
-			<div className="absolute w-10 h-full left-0 bg-gradient-to-r from-black to-transparent" />
-			<div className="absolute w-10 h-full right-0 bg-gradient-to-l from-black to-transparent" />
-			<div className="flex flex-col items-center gap-3 my-20 text-center md:my-40 z-10">
+			<div className="absolute left-0 w-10 h-full bg-gradient-to-r from-black to-transparent" />
+			<div className="absolute right-0 w-10 h-full bg-gradient-to-l from-black to-transparent" />
+			<div className="z-10 flex flex-col items-center gap-3 my-20 text-center md:my-40">
 				<span
 					className={twMerge(
 						syne.className,
@@ -63,7 +63,7 @@ export default function VaultHero() {
 					Delta-neutral market making and liquidity provision strategy
 				</span>
 			</div>
-			<div className="flex items-center w-full gap-5 md:gap-11 z-10">
+			<div className="z-10 flex items-center w-full gap-5 md:gap-11">
 				<StatsBox
 					label="Total Value Locked"
 					value={BigNum.from(tvl, QUOTE_PRECISION_EXP).toNotional()}

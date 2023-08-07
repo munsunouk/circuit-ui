@@ -58,7 +58,6 @@ export default function PerformanceGraph({
 	bufferXPct?: number;
 	bufferYPct?: number;
 }) {
-	console.log('🚀 ~ file: PerformanceGraph.tsx:61 ~ data:', data);
 	const minY = data.reduce((acc, curr) => Math.min(acc, curr.y), Infinity);
 	const maxY = data.reduce((acc, curr) => Math.max(acc, curr.y), -Infinity);
 	const yDomain = [

@@ -1,11 +1,11 @@
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
-import { VAULT_SHARES_PRECISION } from '@drift-labs/vaults-sdk';
+import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
-import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
-import useCurrentVaultDepositor from '@/hooks/useCurrentVaultDepositor';
+import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
+import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
 import { sourceCodePro } from '@/constants/fonts';
@@ -35,25 +35,25 @@ const BUFFER = 0.01 * 10 ** QUOTE_PRECISION_EXP;
 
 export default function YourPerformance() {
 	const { connected } = useWallet();
-	const vaultDepositor = useCurrentVaultDepositor();
-	const vaultAccount = useCurrentVaultAccount();
+	const vaultDepositorAccData = useCurrentVaultDepositorAccData();
+	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
 
 	// User's vault share proportion
-	const totalVaultShares = vaultAccount?.totalShares.toNumber();
-	const userVaultShares = vaultDepositor?.vaultShares.toNumber();
+	const totalVaultShares = vaultAccountData?.totalShares.toNumber();
+	const userVaultShares = vaultDepositorAccData?.vaultShares.toNumber();
 	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
 	// User's net deposits
-	const userNetDeposits = vaultDepositor?.netDeposits.toNumber();
+	const userNetDeposits = vaultDepositorAccData?.netDeposits.toNumber();
 	const userNetDepositsString = BigNum.from(
 		userNetDeposits,
 		QUOTE_PRECISION_EXP
 	).toNotional();
 
 	// User's cumulative earnings
-	const userTotalDeposits = vaultDepositor?.totalDeposits.toNumber();
-	const userTotalWithdraws = vaultDepositor?.totalWithdraws.toNumber();
+	const userTotalDeposits = vaultDepositorAccData?.totalDeposits.toNumber();
+	const userTotalWithdraws = vaultDepositorAccData?.totalWithdraws.toNumber();
 	const vaultAccountBalance = vaultStats.netUsdValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
@@ -98,7 +98,7 @@ export default function YourPerformance() {
 						label="Vault Share"
 						value={`${Number(
 							(userSharesProportion * 100).toFixed(
-								VAULT_SHARES_PRECISION.toNumber() - 2
+								VAULT_SHARES_PRECISION_EXP.toNumber() - 2
 							)
 						)}%`}
 					/>

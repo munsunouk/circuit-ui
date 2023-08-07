@@ -12,7 +12,7 @@ import VaultTabs, { VaultTab } from '@/components/vaults/VaultTabs';
 import WhiteGloveDetails from '@/components/vaults/WhiteGloveDetails';
 import YourPerformance from '@/components/vaults/YourPerformance';
 
-import useCurrentVaultAccount from '@/hooks/useCurrentVaultAccount';
+import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 
 import FadeInDiv from '../elements/FadeInDiv';
 
@@ -20,9 +20,9 @@ export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(
 		VaultTab.VaultPerformance
 	);
-	const vault = useCurrentVaultAccount();
+	const vaultAccountData = useCurrentVaultAccountData();
 
-	const isLoading = !vault;
+	const isLoading = !vaultAccountData;
 
 	const renderLeftPanel = () => {
 		switch (selectedTab) {

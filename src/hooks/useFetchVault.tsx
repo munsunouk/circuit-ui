@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
 import { useAppActions } from './useAppActions';
-import useCurrentVaultAccount from './useCurrentVaultAccount';
+import useCurrentVaultAccountData from './useCurrentVaultAccountData';
 import usePathToVaultPubKey from './usePathToVaultName';
 
 /**
@@ -20,7 +20,7 @@ export default function useFetchVault() {
 	const appActions = useAppActions();
 	const vaultPubKey = usePathToVaultPubKey();
 	const authority = useCommonDriftStore((s) => s.authority);
-	const vaultAccount = useCurrentVaultAccount();
+	const vaultAccountData = useCurrentVaultAccountData();
 
 	// fetch vault account, vault drift account
 	useEffect(() => {
@@ -31,10 +31,10 @@ export default function useFetchVault() {
 
 	// fetch vault depositor
 	useEffect(() => {
-		if (vaultPubKey && authority && vaultAccount) {
+		if (vaultPubKey && authority && vaultAccountData) {
 			appActions.initVaultDepositorSubscriber(vaultPubKey, authority);
 		}
-	}, [vaultPubKey, authority, !!vaultAccount]);
+	}, [vaultPubKey, authority, !!vaultAccountData]);
 
 	const fetchAllVaultInformation = async (vaultPubKey: PublicKey) => {
 		try {
