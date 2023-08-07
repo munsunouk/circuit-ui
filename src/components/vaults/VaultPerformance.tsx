@@ -9,13 +9,14 @@ import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 
+import { normalizeDate } from '@/utils/utils';
+
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
 import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
-import { normalizeDate } from '@/utils/utils';
 
 export default function VaultPerformance() {
 	const vault = useCurrentVault();

@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export const redeemPeriodToString = (seconds = 0) => {
 	const hours = seconds / 60 / 60;
