@@ -17,7 +17,7 @@ import Particles from './Particles';
 
 function VaultStat({ label, value }: { label: string; value: string }) {
 	return (
-		<div className="flex text-center flex-col">
+		<div className="flex flex-col text-center">
 			<span>{label}</span>
 			<span
 				className={twMerge(
@@ -51,8 +51,8 @@ function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
 	}, []);
 
 	return (
-		<div className="w-full flex flex-col gap-4">
-			<div className="flex w-full justify-between">
+		<div className="flex flex-col w-full gap-4">
+			<div className="flex justify-between w-full">
 				<VaultStat label={'30D Return'} value={thirtyDayReturn} />
 				<VaultStat label={'TVL'} value={tvl} />
 				<VaultStat label={'Capacity'} value="99.7%" />
@@ -106,13 +106,13 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	return (
 		<Link
 			href={`/vault/${encodeVaultName(vault.name)}`}
-			className="relative flex-1 w-full flex flex-col border border-container-border cursor-pointer group"
+			className="relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group"
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
 		>
 			{/** Background image (separated to allow isolation of the brightness feature) */}
 			<div
-				className="absolute inset-0 group-hover:brightness-125 transition-all duration-300 z-10"
+				className="absolute inset-0 z-10 transition-all duration-300 group-hover:brightness-125"
 				style={{
 					backgroundImage: `url(${vault.previewBackdropUrl})`,
 					backgroundSize: 'cover',
@@ -120,7 +120,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 			/>
 
 			{/** Particles on hover */}
-			<div className="absolute flex justify-center z-50 w-full">
+			<div className="absolute z-50 flex justify-center w-full">
 				<div
 					className="w-[80%]"
 					style={{
@@ -132,23 +132,23 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 			</div>
 
 			{/** Radial background on hover */}
-			<div className="absolute inset-x-0 top-0 bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0 transition-all duration-300" />
+			<div className="absolute inset-x-0 top-0 transition-all duration-300 bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0" />
 
 			<div
-				className="relative isolate flex flex-col grow z-20"
+				className="relative z-20 flex flex-col isolate grow"
 				style={{ marginTop: `${topSectionHeight}px` }}
 			>
 				{/** Background blur + grayscale (separated to allow isolation of inner content from grayscale ) */}
-				<div className="absolute inset-0 grayscale backdrop-blur" />
-				<div className="flex flex-col items-center text-center md:px-16 md:py-10 px-4 py-4 gap-4 isolate grow">
+				<div className="absolute inset-0 backdrop-blur" />
+				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-16 md:py-10 isolate grow">
 					<div className="flex flex-col items-center gap-2">
 						<span className={twMerge(syne.className, 'text-4xl font-bold')}>
 							{vault.name}
 						</span>
-						<div className="flex gap-2 items-center">
+						<div className="flex items-center gap-2">
 							{vault.permissioned && (
 								<Badge>
-									<div className="flex gap-1 items-center justify-center whitespace-nowrap">
+									<div className="flex items-center justify-center gap-1 whitespace-nowrap">
 										<Lock />
 										<span>Whitelist Only</span>
 									</div>
@@ -169,7 +169,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 							</span>
 						)}
 						{!vault?.comingSoon && (
-							<div className="flex flex-col w-full items-center justify-end">
+							<div className="flex flex-col items-center justify-end w-full">
 								<VaultStats {...DUMMY_VAULTS_STATS} />
 								<div className="overflow-hidden transition-all duration-300 group-hover:mt-5 w-full group-hover:h-[32px] h-0">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>

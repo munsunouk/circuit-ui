@@ -1,6 +1,5 @@
 import { twMerge } from 'tailwind-merge';
 
-import FadeInDiv from '@/components/elements/FadeInDiv';
 import VaultPreviewCard from '@/components/home/VaultPreviewCard';
 
 import { syne } from '@/constants/fonts';
@@ -14,7 +13,7 @@ export default function HomePage() {
 	};
 	return (
 		<div className="flex flex-col items-center gap-8 max-w-[1392px]">
-			<FadeInDiv className="mt-10 mb-4 md:my-40 flex flex-col text-center items-center max-w-[400px] md:max-w-[640px] overflow-hidden gap-3">
+			<div className="mt-10 mb-4 md:my-40 flex flex-col text-center items-center max-w-[400px] md:max-w-[640px] overflow-hidden gap-3">
 				<span
 					className={twMerge(
 						syne.className,
@@ -27,14 +26,11 @@ export default function HomePage() {
 					Multiply your yields with delta-neutral market making and liquidity
 					provision strategies
 				</span>
-			</FadeInDiv>
+			</div>
 
-			<FadeInDiv
-				className="grid md:grid-cols-2 grid-cols-1 md:gap-6 gap-3 w-full"
-				delay={200}
-			>
+			<div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 md:gap-6">
 				{renderVaults()}
-			</FadeInDiv>
+			</div>
 		</div>
 	);
 }

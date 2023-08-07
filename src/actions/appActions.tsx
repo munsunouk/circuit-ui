@@ -176,8 +176,10 @@ const createAppActions = (
 
 		vaultDriftClient.eventEmitter.on('update', () => {
 			set((s) => {
-				s.vaults[vaultPubKey.toString()]!.vaultDriftClient = vaultDriftClient;
-				s.vaults[vaultPubKey.toString()]!.vaultDriftUser = vaultDriftUser;
+				if (s.vaults[vaultPubKey.toString()]) {
+					s.vaults[vaultPubKey.toString()]!.vaultDriftClient = vaultDriftClient;
+					s.vaults[vaultPubKey.toString()]!.vaultDriftUser = vaultDriftUser;
+				}
 			});
 		});
 
