@@ -43,6 +43,54 @@ const CustomTooltip = ({
 	return null;
 };
 
+// ticks configuration for given extremes
+// e.g.
+const TICKS_MAP: { [key: number]: number[] } = {
+	0: [0.5, 1],
+	1: [0.5, 1, 1.5],
+	2: [1, 2],
+	3: [1, 2, 3],
+	4: [2, 4],
+	5: [2.5, 5],
+	6: [2.5, 5],
+	7: [2.5, 5, 7.5],
+	8: [5, 10],
+	9: [5, 10],
+};
+
+const getTicksForGivenExtreme = (extreme: number) => {
+	const sign = Math.sign(extreme);
+	const absolute = Math.abs(extreme);
+
+	const magnitude = Math.floor(Math.log10(absolute));
+	const firstDigit = Math.floor(absolute / 10 ** magnitude);
+
+	const ticks = TICKS_MAP[firstDigit].map(
+		(tick) => tick * 10 ** magnitude * sign
+	);
+	sign < 0 && ticks.reverse();
+
+	return ticks;
+};
+
+const getCustomYTicks = (min: number, max: number) => {
+	let ticks = [0];
+	let negativeAreaTicks: number[] = [];
+	let positiveAreaTicks: number[] = [];
+
+	if (min < 0) {
+		negativeAreaTicks = getTicksForGivenExtreme(min);
+	}
+
+	if (max > 0) {
+		positiveAreaTicks = getTicksForGivenExtreme(max);
+	}
+
+	const customTicks = [...negativeAreaTicks, ...ticks, ...positiveAreaTicks];
+
+	return customTicks;
+};
+
 const CUSTOM_LINE_COLORS_ID = 'custom-line-colors';
 const CUSTOM_AREA_COLORS_ID = 'custom-area-colors';
 
@@ -211,7 +259,14 @@ export default function PerformanceGraph({
 					hide
 					interval={2}
 				/>
-				<YAxis domain={yDomain} ticks={[0]} axisLine={false} />
+				<YAxis
+					domain={yDomain}
+					ticks={getCustomYTicks(minY, maxY)}
+					tickFormatter={(tick) =>
+						BigNum.from(tick, QUOTE_PRECISION_EXP).toNotional()
+					}
+					axisLine={false}
+				/>
 				{/* @ts-ignore */}
 				<Tooltip content={(props) => <CustomTooltip {...props} />} />
 			</AreaChart>
