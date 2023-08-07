@@ -15,6 +15,7 @@ import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
+import { normalizeDate } from '@/utils/utils';
 
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
@@ -22,10 +23,6 @@ export default function VaultPerformance() {
 	const vaultStats = useCurrentVaultStats();
 
 	const totalEarnings = vaultStats.totalAllTimePnl;
-
-	const normalizeDate = (epochTs: number) => {
-		return dayjs(dayjs.unix(epochTs).format('MM/DD/YYYY')).unix();
-	};
 
 	const formatPnlHistory = (pnlHistory: UISerializableAccountSnapshot[]) => {
 		const formattedHistory = pnlHistory

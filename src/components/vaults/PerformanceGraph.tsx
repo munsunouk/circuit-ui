@@ -14,6 +14,8 @@ import {
 } from 'recharts';
 import { twMerge } from 'tailwind-merge';
 
+import { normalizeDate } from '@/utils/utils';
+
 const CustomTooltip = ({
 	active,
 	payload,
@@ -43,79 +45,59 @@ const CustomTooltip = ({
 	return null;
 };
 
-// ticks configuration for given extremes
-// e.g.
-const TICKS_MAP: { [key: number]: number[] } = {
-	0: [0.5, 1],
-	1: [0.5, 1, 1.5],
-	2: [1, 2],
-	3: [1, 2, 3],
-	4: [2, 4],
-	5: [2.5, 5],
-	6: [2.5, 5],
-	7: [2.5, 5, 7.5],
-	8: [5, 10],
-	9: [5, 10],
-};
+const getDateTicks = (
+	firstDateTs: number,
+	interval: number,
+	unit: dayjs.ManipulateType
+) => {
+	let currentDate = dayjs.unix(normalizeDate(dayjs().unix()));
+	const firstDate = dayjs.unix(firstDateTs);
+	const ticks = [currentDate.unix()];
 
-const getTicksForGivenExtreme = (extreme: number) => {
-	const sign = Math.sign(extreme);
-	const absolute = Math.abs(extreme);
-
-	const magnitude = Math.floor(Math.log10(absolute));
-	const firstDigit = Math.floor(absolute / 10 ** magnitude);
-
-	const ticks = TICKS_MAP[firstDigit].map(
-		(tick) => tick * 10 ** magnitude * sign
-	);
-	sign < 0 && ticks.reverse();
-
-	return ticks;
-};
-
-const getCustomYTicks = (min: number, max: number) => {
-	let ticks = [0];
-	let negativeAreaTicks: number[] = [];
-	let positiveAreaTicks: number[] = [];
-
-	if (min < 0) {
-		negativeAreaTicks = getTicksForGivenExtreme(min);
+	while (currentDate.isAfter(firstDate)) {
+		currentDate = currentDate.subtract(interval, unit);
+		ticks.push(currentDate.unix());
 	}
 
-	if (max > 0) {
-		positiveAreaTicks = getTicksForGivenExtreme(max);
+	return ticks.reverse();
+};
+
+const getCustomXAxisTicks = (dataLength: number, firstDateTs: number) => {
+	// if data is in days
+	if (dataLength <= 21) {
+		// return every 2 days
+		return getDateTicks(firstDateTs, 2, 'day');
+	} else if (dataLength <= 60) {
+		// return every week
+		return getDateTicks(firstDateTs, 1, 'week');
+	} else if (dataLength <= 180) {
+		// return every month
+		return getDateTicks(firstDateTs, 1, 'month');
+	} else if (dataLength <= 360) {
+		// return every 2 months
+		return getDateTicks(firstDateTs, 2, 'month');
+	} else {
+		// return every 3 months
+		return getDateTicks(firstDateTs, 3, 'month');
 	}
-
-	const customTicks = [...negativeAreaTicks, ...ticks, ...positiveAreaTicks];
-
-	return customTicks;
 };
 
 const CUSTOM_LINE_COLORS_ID = 'custom-line-colors';
 const CUSTOM_AREA_COLORS_ID = 'custom-area-colors';
+const ONE_DAY_IN_SECONDS = 86400;
 
 export default function PerformanceGraph({
 	data,
-	bufferXPct = 0.0001, // 0.01%
-	bufferYPct = 0.2, // 0.1%
 }: {
 	data: {
 		x: number;
 		y: number;
 	}[];
 	bufferXPct?: number;
-	bufferYPct?: number;
 }) {
-	const minY = data.reduce((acc, curr) => Math.min(acc, curr.y), Infinity);
-	const maxY = data.reduce((acc, curr) => Math.max(acc, curr.y), -Infinity);
-	const yDomain = [
-		minY * (1 + minY > 0 ? -1 * bufferYPct : bufferYPct), // minY may be negative, hence we check the need to add or subtract the buffer
-		maxY * (1 + bufferYPct),
-	];
-
 	const minX = data.reduce((acc, curr) => Math.min(acc, curr.x), Infinity);
 	const maxX = data.reduce((acc, curr) => Math.max(acc, curr.x), -Infinity);
-	const xDomain = [minX * (1 - bufferXPct), maxX * (1 + bufferXPct)];
+	const xDomain = [minX - ONE_DAY_IN_SECONDS, maxX + ONE_DAY_IN_SECONDS];
 
 	const getColor = (value: number) => {
 		return value >= 0 ? '#66d485' : '#d46d66';
@@ -256,12 +238,10 @@ export default function PerformanceGraph({
 					type="number"
 					dataKey={'x'}
 					domain={xDomain}
-					hide
-					interval={2}
+					tickFormatter={(tick) => dayjs.unix(tick).format('DD/MM/YY')}
+					ticks={getCustomXAxisTicks(data.length, data[0].x)}
 				/>
 				<YAxis
-					domain={yDomain}
-					ticks={getCustomYTicks(minY, maxY)}
 					tickFormatter={(tick) =>
 						BigNum.from(tick, QUOTE_PRECISION_EXP).toNotional()
 					}
