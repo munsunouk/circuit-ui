@@ -1,4 +1,4 @@
-import { BN } from '@drift-labs/sdk';
+import { BN, PublicKey } from '@drift-labs/sdk';
 
 import useAppStore from './useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
@@ -13,17 +13,16 @@ const DEFAULT_VAULT_STATS: VaultStats = {
 	totalAllTimePnl: new BN(0),
 };
 
-export default function useCurrentVaultStats(): VaultStats {
-	const currentVaultPubKey = usePathToVaultPubKey();
+export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	const vaultDriftUser = useAppStore(
-		(s) => s.vaults[currentVaultPubKey?.toString() ?? '']?.vaultDriftUser
+		(s) => s.vaults[vaultPubKey?.toString() ?? '']?.vaultDriftUser
 	);
 
 	// This is needed to re-render the hook when the user account updates.
 	// Drift user does not update when the user account updates, but user is required
 	// to calculate the stats from the user account, hence we require both states
 	useAppStore(
-		(s) => s.vaults[currentVaultPubKey?.toString() ?? '']?.vaultDriftUserAccount
+		(s) => s.vaults[vaultPubKey?.toString() ?? '']?.vaultDriftUserAccount
 	);
 
 	if (!vaultDriftUser) return DEFAULT_VAULT_STATS;
@@ -38,4 +37,9 @@ export default function useCurrentVaultStats(): VaultStats {
 		netUsdValue,
 		totalAllTimePnl,
 	};
+}
+
+export function useCurrentVaultStats(): VaultStats {
+	const currentVaultPubKey = usePathToVaultPubKey();
+	return useVaultStats(currentVaultPubKey);
 }

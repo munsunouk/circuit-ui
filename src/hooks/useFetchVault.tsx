@@ -22,6 +22,12 @@ export default function useFetchVault() {
 	const authority = useCommonDriftStore((s) => s.authority);
 	const vaultAccountData = useCurrentVaultAccountData();
 
+	useEffect(() => {
+		if (driftClientIsReady) {
+			appActions.setupVaultClient();
+		}
+	}, [driftClientIsReady]);
+
 	// fetch vault account, vault drift account
 	useEffect(() => {
 		if (driftClientIsReady && vaultPubKey) {

@@ -20,8 +20,8 @@ const getVaultPubKey = (pathname: string): PublicKey | undefined => {
 				encodeVaultName(vault.name) === possibleVaultAddressOrName.toLowerCase()
 		);
 
-		if (foundVaultUsingName) {
-			return foundVaultUsingName.pubkey;
+		if (foundVaultUsingName?.pubkeyString) {
+			return new PublicKey(foundVaultUsingName.pubkeyString);
 		}
 
 		return new PublicKey(possibleVaultAddressOrName);

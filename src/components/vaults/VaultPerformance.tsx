@@ -3,11 +3,10 @@ import {
 	HistoryResolution,
 	UISerializableAccountSnapshot,
 } from '@drift/common';
-import dayjs from 'dayjs';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
-import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
+import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { normalizeDate } from '@/utils/utils';
 

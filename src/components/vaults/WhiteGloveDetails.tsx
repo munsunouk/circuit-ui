@@ -1,22 +1,18 @@
-import GradientBorderBox from '../elements/GradientBorderBox';
-import { Email, Telegram } from '../icons';
+import { CIRCUIT_EMAIL, CIRCUIT_TWITTER_LINK } from '@/constants/misc';
 
-const ContactOption = ({
-	Icon,
-	label,
-}: {
-	Icon: React.FC<React.SVGProps<SVGSVGElement>>;
-	label: string;
-}) => {
-	return (
-		<span className="flex items-center gap-2">
-			<Icon width={24} height={24} />
-			<span className="text-text-emphasis">{label}</span>
-		</span>
-	);
-};
+import ButtonLink from '../elements/ButtonLink';
+import GradientBorderBox from '../elements/GradientBorderBox';
+import { Email, Twitter } from '../icons';
 
 export default function WhiteGloveDetails() {
+	const handleTwitterClick = () => {
+		window.open(CIRCUIT_TWITTER_LINK, '_blank');
+	};
+
+	const handleEmailClick = () => {
+		window.open(`mailto:${CIRCUIT_EMAIL}`, '_blank');
+	};
+
 	return (
 		<GradientBorderBox className="flex flex-col gap-2 px-6 py-5" color="yellow">
 			<span>
@@ -24,8 +20,12 @@ export default function WhiteGloveDetails() {
 				to learn more about our white glove service.
 			</span>
 			<div className="flex gap-6">
-				<ContactOption Icon={Email} label="Email" />
-				<ContactOption Icon={Telegram} label="Telegram" />
+				<ButtonLink
+					Icon={Twitter}
+					label="Twitter"
+					onClick={handleTwitterClick}
+				/>
+				<ButtonLink Icon={Email} label="Email" onClick={handleEmailClick} />
 			</div>
 		</GradientBorderBox>
 	);

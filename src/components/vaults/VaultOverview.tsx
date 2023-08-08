@@ -1,7 +1,16 @@
+import { PERCENTAGE_PRECISION } from '@drift-labs/sdk';
+
+import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
+
 import SectionHeader from '../SectionHeader';
 import FadeInDiv from '../elements/FadeInDiv';
 
 export default function VaultOverview() {
+	const vaultAccountData = useCurrentVaultAccountData();
+
+	const profitShareFeeString =
+		(vaultAccountData?.profitShare ?? 0) / PERCENTAGE_PRECISION.toNumber();
+
 	return (
 		<div className="flex flex-col w-full gap-8 md:gap-16">
 			<FadeInDiv className="flex flex-col w-full gap-6">
@@ -62,7 +71,7 @@ export default function VaultOverview() {
 			<FadeInDiv className="flex flex-col w-full gap-4" delay={300}>
 				<SectionHeader>Fees</SectionHeader>
 				<div>
-					<span>A monthly performance fee of 30% applies.</span>
+					<span>A performance fee of {profitShareFeeString}% applies.</span>
 					<br />
 					<br />
 					<span>

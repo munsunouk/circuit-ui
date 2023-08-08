@@ -46,11 +46,7 @@ const createAppActions = (
 	get: StoreApi<AppStoreState>['getState'],
 	set: (x: (s: AppStoreState) => void) => void
 ) => {
-	/**
-	 * Gets on-chain data of the given vault address
-	 * @param vaultAddress The address of the vault
-	 */
-	const fetchVault = async (vaultAddress: PublicKey) => {
+	const setupVaultClient = () => {
 		const state = getCommon();
 
 		if (!state.connection || !state.driftClient.client) {
@@ -63,6 +59,22 @@ const createAppActions = (
 			state.driftClient.client
 		);
 
+		set((s) => {
+			s.vaultClient = vaultClient;
+		});
+	};
+
+	/**
+	 * Gets on-chain data of the given vault address
+	 * @param vaultAddress The address of the vault
+	 */
+	const fetchVault = async (vaultAddress: PublicKey) => {
+		const state = getCommon();
+
+		if (!state.connection || !state.driftClient.client) {
+			throw new Error('No connection');
+		}
+
 		const [
 			{ vaultDriftClient, vaultDriftUser, vaultDriftUserAccount },
 			{ vaultSubscriber, vaultAccount },
@@ -74,8 +86,6 @@ const createAppActions = (
 		const vaultSnapshots = await fetchAndSetVaultSnapshots(vaultAccount.user);
 
 		set((s) => {
-			s.vaultClient = vaultClient;
-
 			s.vaults[vaultAddress.toString()] = {
 				vaultDriftClient,
 				vaultDriftUser,
@@ -423,6 +433,7 @@ const createAppActions = (
 	};
 
 	return {
+		setupVaultClient,
 		fetchVault,
 		initVaultDepositorSubscriber,
 		depositVault,

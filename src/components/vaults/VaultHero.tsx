@@ -3,23 +3,41 @@ import { decodeName } from '@drift-labs/vaults-sdk';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
-import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
+import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
-const StatsBox = ({ label, value }: { label: string; value: string }) => {
+import Badge from '../elements/Badge';
+import { Lock } from '../icons';
+
+const StatsBox = ({
+	label,
+	value,
+	position,
+}: {
+	label: string;
+	value: string;
+	position: 'left' | 'right';
+}) => {
 	return (
-		<div className="md:min-w-[300px] flex flex-col items-center gap-1 text-center flex-1">
-			<span
-				className={twMerge(
-					sourceCodePro.className,
-					'text-xl md:text-4xl font-medium text-text-emphasis'
-				)}
-			>
-				{value}
-			</span>
-			<span className="text-sm md:text-xl">{label}</span>
+		<div
+			className={twMerge(
+				'md:min-w-[200px] flex flex-col flex-1',
+				position === 'left' ? 'items-end' : 'items-start'
+			)}
+		>
+			<div className="flex flex-col gap-1 text-center">
+				<span
+					className={twMerge(
+						sourceCodePro.className,
+						'text-xl md:text-4xl font-medium text-text-emphasis'
+					)}
+				>
+					{value}
+				</span>
+				<span className="text-sm md:text-xl">{label}</span>
+			</div>
 		</div>
 	);
 };
@@ -29,7 +47,7 @@ export default function VaultHero() {
 	const vaultStats = useCurrentVaultStats();
 
 	const uiVaultConfig = VAULTS.find(
-		(v) => v.pubkey.toString() === vaultAccountData?.pubkey.toString()
+		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
 
 	const name = decodeName(vaultAccountData?.name ?? []);
@@ -48,9 +66,9 @@ export default function VaultHero() {
 			}}
 		>
 			<div className="absolute w-full h-full bg-gradient-to-t from-black to-[#00000070]" />
-			<div className="absolute left-0 w-10 h-full bg-gradient-to-r from-black to-transparent" />
-			<div className="absolute right-0 w-10 h-full bg-gradient-to-l from-black to-transparent" />
-			<div className="z-10 flex flex-col items-center gap-3 my-20 text-center md:my-40">
+			<div className="absolute left-0 w-40 h-full bg-gradient-to-r from-black to-transparent" />
+			<div className="absolute right-0 w-40 h-full bg-gradient-to-l from-black to-transparent" />
+			<div className="z-10 flex flex-col items-center gap-3 mt-20 mb-16 text-center md:mt-40 md:mb-32">
 				<span
 					className={twMerge(
 						syne.className,
@@ -60,18 +78,28 @@ export default function VaultHero() {
 					{name}
 				</span>
 				<span className="font-light leading-none md:text-2xl">
-					Delta-neutral market making and liquidity provision strategy
+					{uiVaultConfig?.description}
+				</span>
+				<span>
+					<Badge>
+						<div className="flex items-center justify-center gap-1 whitespace-nowrap">
+							<Lock />
+							<span>Whitelist Only</span>
+						</div>
+					</Badge>
 				</span>
 			</div>
-			<div className="z-10 flex items-center w-full gap-5 md:gap-11">
+			<div className="z-10 flex items-center justify-center w-full gap-5 md:gap-11">
 				<StatsBox
 					label="Total Value Locked"
 					value={BigNum.from(tvl, QUOTE_PRECISION_EXP).toNotional()}
+					position="left"
 				/>
 				<div className="h-12 border-r border-container-border" />
 				<StatsBox
 					label="Max Capacity"
 					value={BigNum.from(maxCapacity, QUOTE_PRECISION_EXP).toNotional()}
+					position="right"
 				/>
 			</div>
 		</div>

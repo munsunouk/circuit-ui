@@ -6,6 +6,7 @@ import {
 	Area,
 	AreaChart,
 	CartesianGrid,
+	DotProps,
 	ResponsiveContainer,
 	Tooltip,
 	TooltipProps,
@@ -86,6 +87,30 @@ const CUSTOM_LINE_COLORS_ID = 'custom-line-colors';
 const CUSTOM_AREA_COLORS_ID = 'custom-area-colors';
 const POSITIVE_GREEN = '#82ca9d';
 const NEGATIVE_RED = '#d46d66';
+
+const CustomActiveDot = (props: DotProps & { payload: { y: number } }) => {
+	const { cx = 0, cy = 0, payload } = props;
+
+	return (
+		<svg
+			x={cx - 4}
+			y={cy - 4}
+			width="8"
+			height="8"
+			viewBox="0 0 8 8"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<circle
+				cx="4"
+				cy="4"
+				r="3.5"
+				fill={payload.y >= 0 ? POSITIVE_GREEN : NEGATIVE_RED}
+				stroke="white"
+			/>
+		</svg>
+	);
+};
 
 export default function PerformanceGraph({
 	data,
@@ -187,6 +212,8 @@ export default function PerformanceGraph({
 					fill={`url(#${CUSTOM_AREA_COLORS_ID})`}
 					strokeWidth={2}
 					dot={false}
+					/* @ts-ignore */
+					activeDot={<CustomActiveDot />}
 				/>
 				<CartesianGrid stroke="#32D7D720" />
 				<XAxis
@@ -204,8 +231,11 @@ export default function PerformanceGraph({
 					}
 					tickMargin={8}
 				/>
-				{/* @ts-ignore */}
-				<Tooltip content={(props) => <CustomTooltip {...props} />} />
+				<Tooltip
+					/* @ts-ignore */
+					content={(props) => <CustomTooltip {...props} />}
+					cursor={{ stroke: '#32D7D740' }}
+				/>
 			</AreaChart>
 		</ResponsiveContainer>
 	);

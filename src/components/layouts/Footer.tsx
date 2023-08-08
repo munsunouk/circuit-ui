@@ -1,6 +1,7 @@
 'use client';
 
 import { useCurrentRpc, useCurrentRpcLatency } from '@drift-labs/react';
+import Link from 'next/link';
 
 import useAppStore from '@/hooks/useAppStore';
 
@@ -20,7 +21,7 @@ export default function Footer() {
 	};
 
 	return (
-		<div className="fixed bottom-0 inset-x-0 flex [&>div]:flex-1 [&>div]:text-center [&>div]:text-sm bg-black py-1 px-4 z-50">
+		<div className="fixed bottom-0 inset-x-0 flex [&>div]:flex-1 [&>div]:text-center [&>div]:text-sm bg-black py-1 px-4 z-50 whitespace-nowrap">
 			<div className="hidden md:block">Circuit Trading</div>
 			<div
 				className="flex items-center gap-2 cursor-pointer md:justify-center hover:opacity-80"
@@ -32,13 +33,32 @@ export default function Footer() {
 				</div>
 			</div>
 			<div className="flex items-center justify-end gap-2 md:justify-center">
-				<span className="transition duration-300 cursor-pointer hover:opacity-80">
-					Docs
-				</span>
+				<Link
+					className="transition duration-300 cursor-pointer hover:opacity-80"
+					href="https://docs.circuit.trade/faq"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					FAQ
+				</Link>
 				<span className="h-2 border-r border-container-border-light" />
-				<span className="transition duration-300 cursor-pointer hover:opacity-80">
+				<Link
+					className="transition duration-300 cursor-pointer hover:opacity-80"
+					href="https://docs.circuit.trade/"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Docs
+				</Link>
+				<span className="h-2 border-r border-container-border-light" />
+				<Link
+					className="transition duration-300 cursor-pointer hover:opacity-80"
+					href="https://docs.circuit.trade/misc/terms-and-conditions"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
 					Terms & Conditions
-				</span>
+				</Link>
 			</div>
 		</div>
 	);

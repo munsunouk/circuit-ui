@@ -29,7 +29,6 @@ const Button = ({
 					'bg-black text-text-emphasis border-white border hover:border-main-blue hover:text-black active:border-secondary-blue w-auto py-2 px-4',
 				(disabled || loading) &&
 					'bg-button-bg-disabled active:bg-button-bg-disabled hover:bg-button-bg-disabled active:text-black cursor-not-allowed',
-				Icon && 'transition-none',
 				className
 			)}
 			disabled={disabled}
@@ -42,7 +41,7 @@ const Button = ({
 						<Icon
 							width={24}
 							height={24}
-							className="[&>path]:group-hover:stroke-black [&>path]:group-active:stroke-white"
+							className="[&>path]:group-hover:stroke-black [&>path]:group-active:stroke-white [&>path]:transition-all [&>path]:duration-300"
 						/>
 					)}
 				</>

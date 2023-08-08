@@ -11,6 +11,8 @@ const SEMANTIC_CLASSES = {
 	'text-emphasis': 'var(--text-emphasis)',
 	'text-semi-emphasis': 'var(--text-semi-emphasis)',
 	'text-selected': 'var(--text-selected)',
+	'text-button-link-hover': 'var(--text-button-link-hover)',
+	'text-button-link-active': 'var(--text-button-link-active)',
 
 	// Background/Border Colors
 	'container-bg': 'var(--container-bg)',

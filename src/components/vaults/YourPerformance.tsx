@@ -3,10 +3,9 @@ import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
-import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
-import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
+import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { sourceCodePro } from '@/constants/fonts';
 
@@ -51,22 +50,22 @@ export default function YourPerformance() {
 		QUOTE_PRECISION_EXP
 	).toNotional();
 
-	// User's cumulative earnings
+	// User's total earnings
 	const userTotalDeposits = vaultDepositorAccData?.totalDeposits.toNumber();
 	const userTotalWithdraws = vaultDepositorAccData?.totalWithdraws.toNumber();
 	const vaultAccountBalance = vaultStats.netUsdValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
-	let cumulativeEarnings =
+	let totalEarnings =
 		userTotalWithdraws - userTotalDeposits + userAccountBalanceProportion;
 
 	// prevent $-0.00
-	if (cumulativeEarnings < 0 && cumulativeEarnings > -BUFFER) {
-		cumulativeEarnings = 0;
+	if (totalEarnings < 0 && totalEarnings > -BUFFER) {
+		totalEarnings = 0;
 	}
 
-	const cumulativeEarningsString = BigNum.from(
-		cumulativeEarnings,
+	const totalEarningsString = BigNum.from(
+		totalEarnings,
 		QUOTE_PRECISION_EXP
 	).toNotional();
 
@@ -81,8 +80,8 @@ export default function YourPerformance() {
 					/>
 					<div className="h-12 border-r border-container-border" />
 					<StatsBox
-						label="Cumulative Earnings"
-						value={connected ? cumulativeEarningsString : '--'}
+						label="Total Earnings (All Time)"
+						value={connected ? totalEarningsString : '--'}
 					/>
 				</div>
 			</FadeInDiv>
@@ -90,8 +89,8 @@ export default function YourPerformance() {
 				<SectionHeader className="mb-4">Performance Breakdown</SectionHeader>
 				<div className="flex flex-col gap-2">
 					<BreakdownRow
-						label="Cumulative Earnings"
-						value={cumulativeEarningsString}
+						label="Total Earnings (All Time)"
+						value={totalEarningsString}
 					/>
 					<BreakdownRow label="Your Deposits" value={userNetDepositsString} />
 					<BreakdownRow

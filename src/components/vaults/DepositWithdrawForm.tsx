@@ -16,8 +16,8 @@ import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
-import useCurrentVaultStats from '@/hooks/useCurrentVaultStats';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { redeemPeriodToString } from '@/utils/utils';
 

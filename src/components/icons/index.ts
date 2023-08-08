@@ -6,3 +6,4 @@ export { default as ExternalLink } from './ExternalLink';
 export { default as Loading } from './Loading';
 export { default as Lock } from './Lock';
 export { default as Telegram } from './Telegram';
+export { default as Twitter } from './Twitter';

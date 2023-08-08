@@ -1,9 +1,16 @@
 'use client';
 
+import { useCommonDriftStore } from '@drift-labs/react';
+import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
+
+import { useAppActions } from '@/hooks/useAppActions';
+import useAppStore from '@/hooks/useAppStore';
+import { useVaultStats } from '@/hooks/useVaultStats';
 
 import { encodeVaultName } from '@/utils/utils';
 
@@ -31,12 +38,6 @@ function VaultStat({ label, value }: { label: string; value: string }) {
 	);
 }
 
-const DUMMY_VAULTS_STATS: VaultStats = {
-	thirtyDayReturn: '32.76%',
-	tvl: '$33.37',
-	capacity: 90.7,
-};
-
 interface VaultStats {
 	thirtyDayReturn: string;
 	tvl: string;
@@ -55,7 +56,7 @@ function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
 			<div className="flex justify-between w-full">
 				<VaultStat label={'30D Return'} value={thirtyDayReturn} />
 				<VaultStat label={'TVL'} value={tvl} />
-				<VaultStat label={'Capacity'} value="99.7%" />
+				<VaultStat label={'Capacity'} value={`${capacity.toFixed(2)}%`} />
 			</div>
 			<div className="h-2 border">
 				<div
@@ -72,13 +73,75 @@ function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
 	);
 }
 
+const CardContainer = ({
+	children,
+	comingSoon,
+	handleMouseEnter,
+	handleMouseLeave,
+	vaultName,
+}: {
+	children: React.ReactNode;
+	comingSoon: boolean;
+	handleMouseEnter: () => void;
+	handleMouseLeave: () => void;
+	vaultName: string;
+}) => {
+	if (comingSoon) {
+		return (
+			<div
+				className={
+					'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group'
+				}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+			>
+				{children}
+			</div>
+		);
+	}
+
+	return (
+		<Link
+			href={`/vault/${encodeVaultName(vaultName)}`}
+			className={
+				'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group'
+			}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+		>
+			{children}
+		</Link>
+	);
+};
+
 interface VaultPreviewCardProps {
 	vault: UiVaultConfig;
 }
 
 export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
-	const [isHover, setIsHover] = useState(false);
 	const { width } = useWindowSize();
+	const connection = useCommonDriftStore((s) => s.connection);
+	const appActions = useAppActions();
+
+	const vaultPubkey = vault.pubkeyString
+		? new PublicKey(vault.pubkeyString)
+		: undefined;
+	const vaultAccountData = useAppStore((s) =>
+		s.getVaultAccountData(vaultPubkey)
+	);
+	const vaultStats = useVaultStats(vaultPubkey);
+
+	const [isHover, setIsHover] = useState(false);
+
+	const tvl = vaultStats.netUsdValue;
+	const maxCapacity = vaultAccountData?.maxTokens ?? new BN(1);
+	const capacityPct = (tvl.toNumber() / maxCapacity.toNumber()) * 100;
+
+	useEffect(() => {
+		if (vaultPubkey && connection) {
+			appActions.fetchVault(vaultPubkey);
+		}
+	}, [vault.pubkeyString, connection]);
 
 	const topSectionHeight = calculateTopSectionHeight();
 
@@ -104,11 +167,11 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	}
 
 	return (
-		<Link
-			href={`/vault/${encodeVaultName(vault.name)}`}
-			className="relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group"
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
+		<CardContainer
+			comingSoon={!vault.pubkeyString}
+			handleMouseEnter={handleMouseEnter}
+			handleMouseLeave={handleMouseLeave}
+			vaultName={vault.name}
 		>
 			{/** Background image (separated to allow isolation of the brightness feature) */}
 			<div
@@ -158,7 +221,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						</div>
 					</div>
 					<div className="w-full grow flex flex-col items-center justify-end h-[136px]">
-						{vault?.comingSoon && (
+						{!vault?.pubkeyString && (
 							<span
 								className={twMerge(
 									sourceCodePro.className,
@@ -168,9 +231,13 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 								Coming Soon
 							</span>
 						)}
-						{!vault?.comingSoon && (
+						{!!vault?.pubkeyString && (
 							<div className="flex flex-col items-center justify-end w-full">
-								<VaultStats {...DUMMY_VAULTS_STATS} />
+								<VaultStats
+									thirtyDayReturn="12%"
+									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toNotional()}
+									capacity={capacityPct}
+								/>
 								<div className="overflow-hidden transition-all duration-300 group-hover:mt-5 w-full group-hover:h-[32px] h-0">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>
 								</div>
@@ -179,6 +246,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 					</div>
 				</div>
 			</div>
-		</Link>
+		</CardContainer>
 	);
 }

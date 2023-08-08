@@ -26,10 +26,6 @@ const TAB_OPTIONS: Omit<TabProps, 'selected'>[] = [
 		label: 'All Vaults',
 		route: '/',
 	},
-	{
-		label: 'FAQ',
-		route: '/faq',
-	},
 ];
 
 const Tab = (props: TabProps) => {
@@ -144,7 +140,7 @@ const TopBar = () => {
 							<Chevron
 								open={isManageWalletsOpen}
 								className={twMerge(
-									'w-6 h-6 md:w-9 md:h-9 group-hover:[&>path]:fill-black',
+									'w-6 h-6 md:w-9 md:h-9 group-hover:[&>path]:fill-black [&>path]:transition-all [&>path]:duration-300',
 									isManageWalletsOpen && 'group-hover:[&>path]:fill-white'
 								)}
 							/>

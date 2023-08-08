@@ -13,6 +13,8 @@
 	--text-semi-emphasis: #fafafa;
 	--text-emphasis: #fff;
 	--text-selected: var(--main-blue);
+	--text-button-link-hover: #e9b735;
+	--text-button-link-active: #a37500;
 
 	/* Background/Border Colors */
 	--container-bg: #000;
