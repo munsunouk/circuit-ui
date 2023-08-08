@@ -14,7 +14,8 @@ export const VAULTS: UiVaultConfig[] = [
 	{
 		name: 'Supercharger',
 		pubkeyString: TEST_VAULT_PUBKEY,
-		description: 'Multiply your yields with delta-neutral market making strategies',
+		description:
+			'Multiply your yields with delta-neutral market making strategies',
 		permissioned: true,
 		previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
 		backdropParticlesColor: '#88c9ff',
