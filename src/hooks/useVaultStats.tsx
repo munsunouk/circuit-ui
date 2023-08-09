@@ -6,11 +6,13 @@ import usePathToVaultPubKey from './usePathToVaultName';
 interface VaultStats {
 	netUsdValue: BN;
 	totalAllTimePnl: BN;
+	isLoaded: boolean;
 }
 
 const DEFAULT_VAULT_STATS: VaultStats = {
 	netUsdValue: new BN(0),
 	totalAllTimePnl: new BN(0),
+	isLoaded: false,
 };
 
 export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
@@ -36,6 +38,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	return {
 		netUsdValue,
 		totalAllTimePnl,
+		isLoaded: true,
 	};
 }
 

@@ -385,7 +385,7 @@
 "@drift-labs/react@file:./drift-common/react":
   version "1.0.0"
   dependencies:
-    "@drift/common" "file:../../Library/Caches/Yarn/v6/npm-@drift-labs-react-1.0.0-4f9a427e-5ca0-4ec6-a3d5-09cf227f80f8-1690983918074/node_modules/@drift-labs/common-ts"
+    "@drift/common" "file:../../Library/Caches/Yarn/v6/npm-@drift-labs-react-1.0.0-3c134731-969a-4b8e-b907-302a35e790fc-1691555294687/node_modules/@drift-labs/common-ts"
     "@solana/wallet-adapter-react" "^0.15.32"
     immer "^10.0.2"
     react-singleton-hook "^4.0.1"
@@ -418,7 +418,7 @@
 "@drift/common@file:./drift-common/common-ts", "@drift/common@file:drift-common/common-ts":
   version "1.0.0"
   dependencies:
-    "@drift-labs/sdk" "file:../../Library/Caches/Yarn/v6/npm-@drift-common-1.0.0-7fbb3c92-3423-4abd-97aa-874401387c5d-1690983918084/node_modules/@drift/protocol/sdk"
+    "@drift-labs/sdk" "file:../../Library/Caches/Yarn/v6/npm-@drift-common-1.0.0-4bf1a826-9969-4d20-aa6b-d9d10d9dff30-1691555294696/node_modules/@drift/protocol/sdk"
     "@jest/globals" "^29.3.1"
     "@slack/web-api" "^6.4.0"
     "@solana/spl-token" "^0.3.8"
@@ -4728,6 +4728,11 @@ react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
+
+react-loading-skeleton@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/react-loading-skeleton/-/react-loading-skeleton-3.3.1.tgz#cd6e3a626ee86c76a46c14e2379243f2f8834e1b"
+  integrity sha512-NilqqwMh2v9omN7LteiDloEVpFyMIa0VGqF+ukqp0ncVlYu1sKYbYGX9JEl+GtOT9TKsh04zCHAbavnQ2USldA==
 
 react-particles@^2.11.0:
   version "2.11.0"

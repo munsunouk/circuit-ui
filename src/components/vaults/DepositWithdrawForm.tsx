@@ -48,7 +48,16 @@ const getWithdrawalDetails = (state: WithdrawalState) => {
 		case WithdrawalState.AvailableForWithdrawal:
 			return 'Withdrawals can be requested at any time and will be available at the end of each quarter.';
 		case WithdrawalState.Requested:
-			return 'Only one withdrawal request can be made at a time.';
+			return (
+				<span>
+					Only one withdrawal request can be made at a time.
+					<br />
+					<br />
+					The vault manager <span className="underline">may</span> send over
+					your funds once the withdrawal is made available, otherwise you can
+					come back and make the withdraw yourself.
+				</span>
+			);
 		default:
 			return '';
 	}

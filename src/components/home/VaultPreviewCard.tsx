@@ -5,6 +5,7 @@ import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
@@ -22,29 +23,47 @@ import Button from '../elements/Button';
 import { Lock } from '../icons';
 import Particles from './Particles';
 
-function VaultStat({ label, value }: { label: string; value: string }) {
+function VaultStat({
+	label,
+	value,
+	loading,
+}: {
+	label: string;
+	value: string;
+	loading: boolean;
+}) {
 	return (
 		<div className="flex flex-col text-center">
 			<span>{label}</span>
-			<span
-				className={twMerge(
-					sourceCodePro.className,
-					'transition-all duration-300 md:text-3xl group-hover:md:text-2xl text-xl group-hover:text-lg'
-				)}
-			>
-				{value}
-			</span>
+			{loading ? (
+				<Skeleton />
+			) : (
+				<span
+					className={twMerge(
+						sourceCodePro.className,
+						'transition-all duration-300 md:text-3xl group-hover:md:text-2xl text-xl group-hover:text-lg'
+					)}
+				>
+					{value}
+				</span>
+			)}
 		</div>
 	);
 }
 
-interface VaultStats {
+interface VaultStatsProps {
 	thirtyDayReturn: string;
 	tvl: string;
 	capacity: number;
+	loading: boolean;
 }
 
-function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
+function VaultStats({
+	thirtyDayReturn,
+	tvl,
+	capacity,
+	loading,
+}: VaultStatsProps) {
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
@@ -54,9 +73,17 @@ function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
 	return (
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
-				<VaultStat label={'30D Return'} value={thirtyDayReturn} />
-				<VaultStat label={'TVL'} value={`$${tvl}`} />
-				<VaultStat label={'Capacity'} value={`${capacity.toFixed(2)}%`} />
+				{/* <VaultStat
+					label={'30D Return'}
+					value={thirtyDayReturn}
+					loading={loading}
+				/> */}
+				<VaultStat label={'TVL'} value={`$${tvl}`} loading={loading} />
+				<VaultStat
+					label={'Capacity'}
+					value={`${capacity.toFixed(2)}%`}
+					loading={loading}
+				/>
 			</div>
 			<div className="h-2 border">
 				<div
@@ -64,7 +91,7 @@ function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
 						width: isMounted && capacity > 0 ? `${capacity}%` : '0%',
 					}}
 					className={twMerge(
-						'h-full blue-white-gradient-background transition-[width] duration-2000',
+						'h-full blue-white-gradient-background transition-[width] duration-1000',
 						capacity !== 100 && 'border-r'
 					)}
 				/>
@@ -237,6 +264,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									thirtyDayReturn="12%"
 									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toMillified()}
 									capacity={capacityPct}
+									loading={!vaultStats.isLoaded}
 								/>
 								<div className="overflow-hidden transition-all duration-300 group-hover:mt-5 w-full group-hover:h-[32px] h-0">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>

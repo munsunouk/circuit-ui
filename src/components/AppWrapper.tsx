@@ -8,6 +8,8 @@ import {
 } from '@drift-labs/react';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
+import { SkeletonTheme } from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 import useAppStore from '@/hooks/useAppStore';
 import useFetchVault from '@/hooks/useFetchVault';
@@ -45,7 +47,9 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 					idlePollingRateSwitcher: true,
 				}}
 			>
-				<AppSetup>{children}</AppSetup>
+				<SkeletonTheme baseColor="#88c9ff" highlightColor="#fff">
+					<AppSetup>{children}</AppSetup>
+				</SkeletonTheme>
 			</DriftProvider>
 		</WalletProvider>
 	);
