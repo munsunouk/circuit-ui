@@ -10,6 +10,7 @@ type ButtonProps = DetailedHTMLProps<
 	secondary?: boolean;
 	loading?: boolean;
 	Icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+	innerClassName?: string;
 };
 
 const Button = ({
@@ -19,6 +20,7 @@ const Button = ({
 	loading,
 	disabled,
 	Icon,
+	innerClassName,
 	...rest
 }: ButtonProps) => {
 	return (
@@ -46,10 +48,10 @@ const Button = ({
 					)}
 				</>
 			) : (
-				<span className="relative">
-					<span>{children}</span>
+				<span className={twMerge('relative', innerClassName)}>
+					{children}
 					{loading && (
-						<span className="absolute top-0 right-[calc(100%+8px)] bottom-0 flex items-center justify-center">
+						<span className="absolute top-0 right-[calc(100%+4px)] bottom-0 flex items-center justify-center">
 							<Loading className="w-4 h-4 animate-spin" />
 						</span>
 					)}

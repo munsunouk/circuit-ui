@@ -3,6 +3,7 @@ import {
 	HistoryResolution,
 	UISerializableAccountSnapshot,
 } from '@drift/common';
+import { useState } from 'react';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
@@ -12,15 +13,31 @@ import { normalizeDate } from '@/utils/utils';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
+import Dropdown from '../elements/Dropdown';
 import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
 
+const PERFORMANCE_GRAPH_OPTIONS = [
+	{
+		label: '30 Days',
+		value: HistoryResolution.MONTH,
+	},
+	{
+		label: 'All',
+		value: HistoryResolution.ALL,
+	},
+];
+
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
+
+	const [selectedGraphOption, setSelectedGraphOption] = useState(
+		PERFORMANCE_GRAPH_OPTIONS[0]
+	);
 
 	const totalEarnings = vaultStats.totalAllTimePnl;
 
@@ -59,11 +76,19 @@ export default function VaultPerformance() {
 
 			<FadeInDiv className="flex flex-col gap-4" delay={100}>
 				<SectionHeader>Cumulative Performance</SectionHeader>
+				<div className="flex justify-end w-full">
+					<Dropdown
+						options={PERFORMANCE_GRAPH_OPTIONS}
+						selectedOption={selectedGraphOption}
+						setSelectedOption={setSelectedGraphOption}
+						width={120}
+					/>
+				</div>
 				<div className="w-full h-[320px]">
 					{(vault?.pnlHistory[HistoryResolution.ALL].length ?? 0) > 0 && (
 						<PerformanceGraph
 							data={formatPnlHistory(
-								vault?.pnlHistory[HistoryResolution.ALL] ?? []
+								vault?.pnlHistory[selectedGraphOption.value] ?? []
 							)}
 						/>
 					)}
