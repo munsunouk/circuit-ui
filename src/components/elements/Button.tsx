@@ -33,7 +33,7 @@ const Button = ({
 					'bg-button-bg-disabled active:bg-button-bg-disabled hover:bg-button-bg-disabled active:text-black cursor-not-allowed',
 				className
 			)}
-			disabled={disabled}
+			disabled={disabled || loading}
 			{...rest}
 		>
 			{Icon ? (

@@ -152,6 +152,9 @@ const createAppActions = (
 				type: 'polling',
 				accountLoader: accountLoader,
 			},
+			opts: {
+				preflightCommitment: 'confirmed',
+			},
 		};
 
 		const vaultDriftClient = new DriftClient(vaultDriftClientConfig);

@@ -3,6 +3,7 @@ import {
 	BigNum,
 	PERCENTAGE_PRECISION,
 	QUOTE_PRECISION_EXP,
+	ZERO,
 } from '@drift-labs/sdk';
 import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -53,9 +54,9 @@ const getWithdrawalDetails = (state: WithdrawalState) => {
 					Only one withdrawal request can be made at a time.
 					<br />
 					<br />
-					The vault manager <span className="underline">may</span> send over
-					your funds once the withdrawal is made available, otherwise you can
-					come back and make the withdraw yourself.
+					The vault manager <span className="underline">may</span> transfer your
+					funds over once the withdrawal becomes available. If not, you can
+					return and initiate the withdrawal yourself.
 				</span>
 			);
 		default:
@@ -181,18 +182,59 @@ const Form = ({
 	);
 };
 
+const handleOnValueChangeCurried =
+	(setAmount: (amount: string) => void) => (newAmount: string) => {
+		if (isNaN(+newAmount)) return;
+
+		if (newAmount === '') {
+			setAmount('');
+			return;
+		}
+
+		const lastChar = newAmount[newAmount.length - 1];
+
+		// if last char of string is a decimal point, don't format
+		if (lastChar === '.') {
+			setAmount(newAmount);
+			return;
+		}
+
+		if (lastChar === '0') {
+			// if last char of string is a zero in the decimal places, cut it off if it exceeds precision
+			const numOfDigitsAfterDecimal = newAmount.split('.')[1]?.length ?? 0;
+			if (numOfDigitsAfterDecimal > USDC_MARKET.precisionExp.toNumber()) {
+				setAmount(newAmount.slice(0, -1));
+			} else {
+				setAmount(newAmount);
+			}
+			return;
+		}
+
+		const formattedAmount = Number(
+			(+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber())
+		);
+		setAmount(formattedAmount.toString());
+	};
+
 const DepositForm = () => {
 	const { connected } = useWallet();
 	const usdcBalance = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();
 	const vaultAccountData = useCurrentVaultAccountData();
+	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultStats = useCurrentVaultStats();
 
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
 
-	const isButtonDisabled = +amount === 0;
+	const isNotWhitelistedUser =
+		!!vaultAccountData?.permissioned && !vaultDepositorAccountData;
+	const isWithdrawalInProcess =
+		vaultDepositorAccountData?.lastWithdrawRequestShares.gt(ZERO);
+
+	const isButtonDisabled =
+		+amount === 0 || isWithdrawalInProcess || isNotWhitelistedUser;
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
@@ -210,25 +252,7 @@ const DepositForm = () => {
 		: maxAvailableCapacity.scale(99, 100).toNum();
 	maxDepositAmount = Math.max(0, maxDepositAmount);
 
-	const handleOnValueChange = (newAmount: string) => {
-		if (isNaN(+newAmount)) return;
-
-		if (+newAmount === 0) {
-			setAmount(newAmount);
-			return;
-		}
-
-		// if last char of string is a decimal point, don't format
-		if (newAmount[newAmount.length - 1] === '.') {
-			setAmount(newAmount);
-			return;
-		}
-
-		const formattedAmount = Number(
-			(+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber())
-		);
-		setAmount(formattedAmount.toString());
-	};
+	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
 
 	const handleDeposit = async () => {
 		if (!vaultPubkey) return;
@@ -262,14 +286,27 @@ const DepositForm = () => {
 			/>
 
 			{connected ? (
-				<Button
-					className="text-xl"
-					disabled={isButtonDisabled}
-					onClick={handleDeposit}
-					loading={loading}
-				>
-					Deposit
-				</Button>
+				<div className="flex flex-col w-full">
+					{(isWithdrawalInProcess || isNotWhitelistedUser) && (
+						<span
+							className={twMerge(
+								'w-full text-center py-2 text-text-emphasis px-2 bg-button-bg-disabled'
+							)}
+						>
+							{isNotWhitelistedUser && 'You are not whitelisted'}
+							{isWithdrawalInProcess &&
+								'You have a withdrawal in process, please wait for you withdrawal to complete'}
+						</span>
+					)}
+					<Button
+						className="text-xl"
+						disabled={isButtonDisabled}
+						onClick={handleDeposit}
+						loading={loading}
+					>
+						Deposit
+					</Button>
+				</div>
 			) : (
 				<ConnectButton />
 			)}
@@ -319,7 +356,7 @@ const WithdrawForm = () => {
 	const lastRequestedAmount =
 		vaultDepositorAccountData?.lastWithdrawRequestShares ?? new BN(0);
 
-	// we only want to set the max shares once when all data is available,
+	// we only want to set the max shares once, when all data is available,
 	// to prevent the max amount from constantly updating due to data change subscriptions.
 	useEffect(() => {
 		if (
@@ -375,19 +412,7 @@ const WithdrawForm = () => {
 		}
 	}, [withdrawalAvailableTs, lastRequestedAmount.toNumber()]);
 
-	const handleOnValueChange = (newAmount: string) => {
-		if (isNaN(+newAmount)) return;
-
-		if (+newAmount === 0) {
-			setAmount(newAmount);
-			return;
-		}
-
-		const formattedAmount = Number(
-			(+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber())
-		);
-		setAmount(formattedAmount.toString());
-	};
+	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
 
 	const handleOnClick = async () => {
 		if (!vaultPubkey) return;
