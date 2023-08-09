@@ -346,7 +346,8 @@ const WithdrawForm = () => {
 	}, [vaultDepositorAccount, vaultAccountData, tvl]);
 
 	const isButtonDisabled =
-		+amount === 0 && withdrawalState !== WithdrawalState.Requested;
+		(+amount === 0 && withdrawalState === WithdrawalState.UnRequested) ||
+		loading;
 
 	useEffect(() => {
 		const hasRequestedWithdrawal = lastRequestedAmount.toNumber() > 0;

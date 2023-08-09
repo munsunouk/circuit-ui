@@ -53,11 +53,11 @@ const getDateTicks = (
 ) => {
 	let currentDate = dayjs.unix(normalizeDate(dayjs().unix()));
 	const firstDate = dayjs.unix(firstDateTs);
-	const ticks = [currentDate.unix()];
+	const ticks = [];
 
 	while (currentDate.isAfter(firstDate)) {
-		currentDate = currentDate.subtract(interval, unit);
 		ticks.push(currentDate.unix());
+		currentDate = currentDate.subtract(interval, unit);
 	}
 
 	return ticks.reverse();
@@ -227,7 +227,7 @@ export default function PerformanceGraph({
 				/>
 				<YAxis
 					tickFormatter={(tick) =>
-						BigNum.from(tick, QUOTE_PRECISION_EXP).toNotional()
+						`$${BigNum.from(tick, QUOTE_PRECISION_EXP).toMillified()}`
 					}
 					tickMargin={8}
 				/>

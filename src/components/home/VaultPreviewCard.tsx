@@ -55,7 +55,7 @@ function VaultStats({ thirtyDayReturn, tvl, capacity }: VaultStats) {
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
 				<VaultStat label={'30D Return'} value={thirtyDayReturn} />
-				<VaultStat label={'TVL'} value={tvl} />
+				<VaultStat label={'TVL'} value={`$${tvl}`} />
 				<VaultStat label={'Capacity'} value={`${capacity.toFixed(2)}%`} />
 			</div>
 			<div className="h-2 border">
@@ -235,7 +235,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 							<div className="flex flex-col items-center justify-end w-full">
 								<VaultStats
 									thirtyDayReturn="12%"
-									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toNotional()}
+									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toMillified()}
 									capacity={capacityPct}
 								/>
 								<div className="overflow-hidden transition-all duration-300 group-hover:mt-5 w-full group-hover:h-[32px] h-0">
