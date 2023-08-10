@@ -13,6 +13,7 @@ import ConnectButton from '../ConnectButton';
 import SectionHeader from '../SectionHeader';
 import FadeInDiv from '../elements/FadeInDiv';
 import BreakdownRow from './BreakdownRow';
+import TransactionHistory from './TransactionHistory';
 
 const StatsBox = ({ label, value }: { label: string; value: string }) => {
 	return (
@@ -103,6 +104,9 @@ export default function YourPerformance() {
 					/>
 					<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
 				</div>
+			</FadeInDiv>
+			<FadeInDiv delay={200}>
+				<TransactionHistory />
 			</FadeInDiv>
 			{!connected && (
 				<>

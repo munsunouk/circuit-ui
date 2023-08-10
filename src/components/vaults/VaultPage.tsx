@@ -13,14 +13,20 @@ import WhiteGloveDetails from '@/components/vaults/WhiteGloveDetails';
 import YourPerformance from '@/components/vaults/YourPerformance';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
+import useFetchEventRecords from '@/hooks/useFetchEventRecords';
+import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import FadeInDiv from '../elements/FadeInDiv';
+import Loading from '../elements/Loading';
 
 export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(
 		VaultTab.VaultPerformance
 	);
 	const vaultAccountData = useCurrentVaultAccountData();
+	const currentVaultPubKey = usePathToVaultPubKey();
+
+	useFetchEventRecords(currentVaultPubKey);
 
 	const isLoading = !vaultAccountData;
 
@@ -39,20 +45,8 @@ export default function VaultPage() {
 	return (
 		<div>
 			{isLoading && (
-				<div className="flex flex-col items-center justify-center w-full h-[80vh] gap-4">
-					<div className="animate-pulse">
-						<Image
-							src="/circuits-icon.svg"
-							alt="Circuits Icon"
-							width="60"
-							height="66"
-						/>
-					</div>
-					<div className="loading">
-						Loading Vault<span>.</span>
-						<span>.</span>
-						<span>.</span>
-					</div>
+				<div className="flex items-center justify-center w-full h-[80vh]">
+					<Loading text="Loading Vault" />
 				</div>
 			)}
 			<div
@@ -74,7 +68,7 @@ export default function VaultPage() {
 				<FadeInDiv
 					delay={200}
 					className={twMerge(
-						'flex justify-between w-full gap-10 md:gap-16 mt-8 md:mt-16 lg:gap-[130px] flex-col md:flex-row'
+						'flex justify-between w-full gap-8 mt-8 md:mt-16 lg:gap-[130px] flex-col md:flex-row'
 					)}
 					fadeCondition={!isLoading}
 				>

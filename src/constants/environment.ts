@@ -40,4 +40,8 @@ const Env: EnvironmentVariables = {
 			: EnvironmentConstants.historyServerUrl.dev,
 };
 
+export const OrderedSpotMarkets = [...MainnetSpotMarkets].sort(
+	(a, b) => a.marketIndex - b.marketIndex
+);
+
 export default Env;

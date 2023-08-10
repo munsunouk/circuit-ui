@@ -8,15 +8,18 @@ import {
 	DriftClientConfig,
 	PublicKey,
 	QUOTE_PRECISION_EXP,
+	fetchLogs,
 	getMarketsAndOraclesForSubscription,
 } from '@drift-labs/sdk';
 import {
+	LogParser,
 	VAULT_PROGRAM_ID,
 	Vault,
 	VaultAccount,
 	VaultDepositor,
 	VaultDepositorAccount,
 	WithdrawUnit,
+	WrappedEvents,
 	getDriftVaultProgram,
 	getVaultClient,
 	getVaultDepositorAddressSync,
@@ -28,6 +31,7 @@ import {
 } from '@drift/common';
 import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
+import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
@@ -84,16 +88,25 @@ const createAppActions = (
 		]);
 
 		const vaultSnapshots = await fetchAndSetVaultSnapshots(vaultAccount.user);
+		const currentVaultState = get().vaults[vaultAddress.toString()];
+		const updatedVaultState = {
+			vaultDriftClient,
+			vaultDriftUser,
+			vaultDriftUserAccount,
+			vaultAccount: vaultSubscriber,
+			vaultAccountData: vaultAccount,
+			pnlHistory: vaultSnapshots,
+		};
 
 		set((s) => {
-			s.vaults[vaultAddress.toString()] = {
-				vaultDriftClient,
-				vaultDriftUser,
-				vaultDriftUserAccount,
-				vaultAccount: vaultSubscriber,
-				vaultAccountData: vaultAccount,
-				pnlHistory: vaultSnapshots,
-			};
+			if (!currentVaultState) {
+				s.vaults[vaultAddress.toString()] = updatedVaultState;
+			} else {
+				s.vaults[vaultAddress.toString()] = {
+					...currentVaultState,
+					...updatedVaultState,
+				};
+			}
 		});
 	};
 
@@ -305,6 +318,62 @@ const createAppActions = (
 		});
 	};
 
+	const fetchVaultDepositorEvents = async (vaultPubKey: PublicKey) => {
+		const connection = getCommon().connection;
+		const currentRecords =
+			get().vaults[vaultPubKey.toString()]?.eventRecords?.records ?? [];
+		const mostRecentTx = currentRecords?.[0]?.txSig;
+		const vaultClient = get().vaultClient;
+		const vaultDepositorPubKey =
+			get().vaults[vaultPubKey.toString()]?.vaultDepositorAccountData?.pubkey;
+
+		if (!vaultPubKey || !vaultDepositorPubKey) return;
+
+		invariant(connection, 'No connection');
+		invariant(vaultClient, 'No vault client');
+
+		const response = await fetchLogs(
+			connection,
+			vaultDepositorPubKey,
+			'confirmed',
+			undefined,
+			mostRecentTx
+		);
+
+		if (!response) {
+			set((s) => {
+				s.vaults[vaultPubKey.toString()]!.eventRecords = {
+					records: currentRecords,
+					isLoaded: true,
+				};
+			});
+			return;
+		}
+
+		// @ts-ignore
+		const logParser = new LogParser(vaultClient.program);
+		const records: WrappedEvents = [];
+
+		response.transactionLogs.forEach((log) => {
+			const events = logParser.parseEventsFromLogs(log);
+			events.forEach((event) => {
+				if (event.eventType === 'VaultDepositorRecord') {
+					records.push(event);
+				}
+			});
+		});
+
+		// we want the most recent events first
+		records.reverse();
+
+		set((s) => {
+			s.vaults[vaultPubKey.toString()]!.eventRecords = {
+				records: [...records, ...currentRecords],
+				isLoaded: true,
+			};
+		});
+	};
+
 	const depositVault = async (vaultAddress: PublicKey, amount: BN) => {
 		try {
 			const vaultInfo = get().getVaultAccountData(vaultAddress);
@@ -439,6 +508,7 @@ const createAppActions = (
 		setupVaultClient,
 		fetchVault,
 		initVaultDepositorSubscriber,
+		fetchVaultDepositorEvents,
 		depositVault,
 		requestVaultWithdrawal,
 		cancelRequestWithdraw,
