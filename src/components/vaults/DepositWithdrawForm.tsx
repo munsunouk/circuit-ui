@@ -290,12 +290,12 @@ const DepositForm = () => {
 					{(isWithdrawalInProcess || isNotWhitelistedUser) && (
 						<span
 							className={twMerge(
-								'w-full text-center py-2 text-text-emphasis px-2 bg-button-bg-disabled'
+								'w-full text-center py-2 text-text-emphasis px-2 bg-text-button-link-active'
 							)}
 						>
 							{isNotWhitelistedUser && 'You are not whitelisted'}
 							{isWithdrawalInProcess &&
-								'You have a withdrawal in process, please wait for you withdrawal to complete'}
+								'Deposits are disabled while a withdrawal request is in progress.'}
 						</span>
 					)}
 					<Button
