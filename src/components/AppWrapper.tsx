@@ -45,6 +45,7 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 				walletContext={WalletContext}
 				disable={{
 					idlePollingRateSwitcher: true,
+					geoblocking: true,
 				}}
 			>
 				<SkeletonTheme baseColor="#88c9ff" highlightColor="#fff">
