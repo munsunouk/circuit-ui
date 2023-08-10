@@ -119,7 +119,6 @@ export default function PerformanceGraph({
 		x: number;
 		y: number;
 	}[];
-	bufferXPct?: number;
 }) {
 	const minX = data.reduce((acc, curr) => Math.min(acc, curr.x), Infinity);
 	const maxX = data.reduce((acc, curr) => Math.max(acc, curr.x), -Infinity);

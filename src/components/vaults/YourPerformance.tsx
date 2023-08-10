@@ -16,7 +16,7 @@ import BreakdownRow from './BreakdownRow';
 
 const StatsBox = ({ label, value }: { label: string; value: string }) => {
 	return (
-		<div className="flex flex-col items-center flex-1 gap-1">
+		<div className="flex flex-col items-center flex-1 gap-1 text-center">
 			<span
 				className={twMerge(
 					sourceCodePro.className,

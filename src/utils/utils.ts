@@ -1,3 +1,4 @@
+import { HistoryResolution } from '@drift/common';
 import dayjs from 'dayjs';
 
 export const redeemPeriodToString = (seconds = 0) => {
@@ -24,6 +25,30 @@ export const encodeVaultName = (name: string) => {
 	return encodeURIComponent(name.toLowerCase().replace(/\s/g, '-'));
 };
 
-export const normalizeDate = (unixTs: number) => {
-	return dayjs(dayjs.unix(unixTs).format('MM/DD/YYYY')).unix();
+export const normalizeDate = (
+	unixTs: number,
+	resolution?: HistoryResolution
+) => {
+	if (
+		resolution === HistoryResolution.MONTH ||
+		resolution === HistoryResolution.ALL ||
+		!resolution
+	) {
+		// closest start of day
+		return dayjs(dayjs.unix(unixTs).format('MM/DD/YYYY')).unix();
+	}
+
+	// closest 12 hour
+	if (resolution === HistoryResolution.WEEK) {
+		return dayjs(
+			dayjs.unix(unixTs).format('MM/DD/YYYY HH:00'),
+			'MM/DD/YYYY HH:00'
+		).unix();
+	}
+
+	// closest hour
+	return dayjs(
+		dayjs.unix(unixTs).format('MM/DD/YYYY HH'),
+		'MM/DD/YYYY HH'
+	).unix();
 };

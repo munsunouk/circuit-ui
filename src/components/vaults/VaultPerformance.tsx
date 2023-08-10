@@ -21,12 +21,16 @@ import PerformanceGraph from './PerformanceGraph';
 
 const PERFORMANCE_GRAPH_OPTIONS = [
 	{
+		label: '7 Days',
+		value: HistoryResolution.WEEK, // every 12 hours
+	},
+	{
 		label: '30 Days',
-		value: HistoryResolution.MONTH,
+		value: HistoryResolution.MONTH, // every day
 	},
 	{
 		label: 'All',
-		value: HistoryResolution.ALL,
+		value: HistoryResolution.ALL, // < 3 months = every 2 days | < 6 months = every 3 days | < 1 year = every 2 weeks | > 1 year = every month
 	},
 ];
 
@@ -41,7 +45,10 @@ export default function VaultPerformance() {
 
 	const totalEarnings = vaultStats.totalAllTimePnl;
 
-	const formatPnlHistory = (pnlHistory: UISerializableAccountSnapshot[]) => {
+	const formatPnlHistory = (
+		pnlHistory: UISerializableAccountSnapshot[],
+		resolution: HistoryResolution
+	) => {
 		const formattedHistory = pnlHistory
 			.map((snapshot) => ({
 				x: snapshot.epochTs,
@@ -54,7 +61,7 @@ export default function VaultPerformance() {
 			})
 			.map((point) => ({
 				...point,
-				x: normalizeDate(point.x), // normalize to start of day so that the graph looks consistent
+				x: normalizeDate(point.x, resolution), // normalize to start of day so that the graph looks consistent
 			}));
 
 		return formattedHistory;
@@ -88,7 +95,8 @@ export default function VaultPerformance() {
 					{(vault?.pnlHistory[HistoryResolution.ALL].length ?? 0) > 0 && (
 						<PerformanceGraph
 							data={formatPnlHistory(
-								vault?.pnlHistory[selectedGraphOption.value] ?? []
+								vault?.pnlHistory[selectedGraphOption.value] ?? [],
+								selectedGraphOption.value
 							)}
 						/>
 					)}
