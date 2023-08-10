@@ -41,7 +41,7 @@ const RpcOption = ({
 	return (
 		<FadeInDiv
 			onClick={onClick}
-			className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+			className="flex items-center gap-3 cursor-pointer hover:opacity-60"
 			delay={(index + 1) * 100}
 		>
 			<div className="flex items-center justify-center w-4 h-4">

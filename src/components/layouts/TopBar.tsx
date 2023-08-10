@@ -145,49 +145,39 @@ const TopBar = () => {
 								)}
 							/>
 						</div>
-						{
-							<div
-								className={twMerge(
-									'absolute left-[-1px] right-[-1px] flex flex-col px-8 py-3 font-normal bg-black border border-t-0 top-full transition-[border] duration-300 overflow-hidden',
-									isManageWalletsOpen
-										? 'h-auto border-container-border-selected'
-										: 'h-0 p-0 border-container-border'
-								)}
+						<div
+							className={twMerge(
+								'absolute left-[-1px] right-[-1px] flex flex-col font-normal bg-black border border-t-0 top-full transition-[border] duration-300 overflow-hidden',
+								isManageWalletsOpen
+									? 'h-auto border-container-border-selected'
+									: 'h-0 p-0 border-container-border'
+							)}
+						>
+							<FadeInDiv
+								fadeCondition={isManageWalletsOpen}
+								delay={100}
+								className={
+									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all duration-300'
+								}
+								onClick={openConnectWalletModal}
 							>
-								<FadeInDiv
-									fadeCondition={isManageWalletsOpen}
-									delay={100}
-									className={'py-3'}
-									onClick={openConnectWalletModal}
-								>
-									<span className="transition-opacity duration-300 hover:opacity-80 hover:text-text-emphasis">
-										Switch wallets
-									</span>
-								</FadeInDiv>
-								<FadeInDiv
-									fadeCondition={isManageWalletsOpen}
-									delay={200}
-									className="py-3"
-									onClick={disconnect}
-								>
-									<span className="transition-opacity duration-300 hover:opacity-80 hover:text-text-emphasis">
-										Disconnect
-									</span>
-								</FadeInDiv>
-								<FadeInDiv
-									fadeCondition={isManageWalletsOpen}
-									delay={300}
-									className="py-3 md:hidden"
-								>
-									<Link
-										className="transition-opacity duration-300 hover:opacity-80 hover:text-text-emphasis"
-										href={'/faq'}
-									>
-										FAQ
-									</Link>
-								</FadeInDiv>
-							</div>
-						}
+								<span className="transition-all duration-300 group-hover/item:text-black text-text-emphasis">
+									Switch wallets
+								</span>
+							</FadeInDiv>
+							<FadeInDiv
+								fadeCondition={isManageWalletsOpen}
+								delay={200}
+								className={
+									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all duration-300'
+								}
+								onClick={disconnect}
+							>
+								<span className="transition-all duration-300 group-hover/item:text-black text-text-emphasis">
+									Disconnect
+								</span>
+							</FadeInDiv>
+						</div>
 					</div>
 				) : (
 					<span className="text-sm text-center md:text-xl">Connect Wallet</span>
