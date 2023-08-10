@@ -166,7 +166,8 @@ const createAppActions = (
 				accountLoader: accountLoader,
 			},
 			opts: {
-				preflightCommitment: 'confirmed',
+				// preflightCommitment: 'confirmed',
+				skipPreflight: true,
 			},
 		};
 
