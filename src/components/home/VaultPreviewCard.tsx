@@ -162,7 +162,10 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 
 	const tvl = vaultStats.netUsdValue;
 	const maxCapacity = vaultAccountData?.maxTokens ?? new BN(1);
-	const capacityPct = (tvl.toNumber() / maxCapacity.toNumber()) * 100;
+	const capacityPct = Math.min(
+		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
+		100
+	);
 
 	useEffect(() => {
 		if (vaultPubkey && connection) {
