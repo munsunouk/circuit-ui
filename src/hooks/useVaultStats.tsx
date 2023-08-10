@@ -1,7 +1,10 @@
-import { BN, PublicKey } from '@drift-labs/sdk';
+import { BN, PublicKey, User } from '@drift-labs/sdk';
+import { useEffect, useState } from 'react';
 
 import useAppStore from './useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
+
+const UPDATE_FREQUENCY_MS = 10_000;
 
 interface VaultStats {
 	netUsdValue: BN;
@@ -19,27 +22,37 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	const vaultDriftUser = useAppStore(
 		(s) => s.vaults[vaultPubKey?.toString() ?? '']?.vaultDriftUser
 	);
+	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
 
-	// This is needed to re-render the hook when the user account updates.
-	// Drift user does not update when the user account updates, but user is required
-	// to calculate the stats from the user account, hence we require both states
-	useAppStore(
-		(s) => s.vaults[vaultPubKey?.toString() ?? '']?.vaultDriftUserAccount
-	);
+	useEffect(() => {
+		const newVaultStats = calcVaultStats(vaultDriftUser);
+		setVaultStats(newVaultStats);
 
-	if (!vaultDriftUser) return DEFAULT_VAULT_STATS;
+		const interval = setInterval(() => {
+			const newVaultStats = calcVaultStats(vaultDriftUser);
+			setVaultStats(newVaultStats);
+		}, UPDATE_FREQUENCY_MS);
 
-	const collateral = vaultDriftUser.getNetSpotMarketValue();
-	const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
-	const netUsdValue = collateral.add(unrealizedPNL);
+		return () => clearInterval(interval);
+	}, [vaultDriftUser]);
 
-	const totalAllTimePnl = vaultDriftUser.getTotalAllTimePnl();
+	function calcVaultStats(vaultDriftUser: User | undefined) {
+		if (!vaultDriftUser) return DEFAULT_VAULT_STATS;
 
-	return {
-		netUsdValue,
-		totalAllTimePnl,
-		isLoaded: true,
-	};
+		const collateral = vaultDriftUser.getNetSpotMarketValue();
+		const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
+		const netUsdValue = collateral.add(unrealizedPNL);
+
+		const totalAllTimePnl = vaultDriftUser.getTotalAllTimePnl();
+
+		return {
+			netUsdValue,
+			totalAllTimePnl,
+			isLoaded: true,
+		};
+	}
+
+	return vaultStats;
 }
 
 export function useCurrentVaultStats(): VaultStats {

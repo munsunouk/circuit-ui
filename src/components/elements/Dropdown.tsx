@@ -83,7 +83,7 @@ export default function Dropdown({
 	};
 
 	return (
-		<div className="relative z-[100]" ref={containerRef}>
+		<div className="relative z-40" ref={containerRef}>
 			<Button
 				secondary
 				innerClassName="flex gap-1 font-medium justify-between w-full"
