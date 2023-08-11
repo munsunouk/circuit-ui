@@ -4,6 +4,7 @@ import {
 	HistoryResolution,
 	UISerializableAccountSnapshot,
 } from '@drift/common';
+import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
@@ -11,6 +12,8 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { normalizeDate } from '@/utils/utils';
+
+import { VAULTS } from '@/constants/vaults';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
@@ -21,18 +24,27 @@ import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
 
-const PERFORMANCE_GRAPH_OPTIONS = [
+interface PerformanceGraphOption {
+	label: string;
+	value: HistoryResolution;
+	firstDate: dayjs.Dayjs;
+}
+
+const PERFORMANCE_GRAPH_OPTIONS: PerformanceGraphOption[] = [
 	{
 		label: '7 Days',
 		value: HistoryResolution.WEEK, // every 12 hours
+		firstDate: dayjs().subtract(7, 'day').startOf('day'),
 	},
 	{
 		label: '30 Days',
 		value: HistoryResolution.MONTH, // every day
+		firstDate: dayjs().subtract(30, 'day').startOf('day'),
 	},
 	{
 		label: 'All',
 		value: HistoryResolution.ALL, // < 3 months = every 2 days | < 6 months = every 3 days | < 1 year = every 2 weeks | > 1 year = every month
+		firstDate: dayjs.unix(0),
 	},
 ];
 
@@ -68,42 +80,74 @@ export default function VaultPerformance() {
 	);
 	const [graphView, setGraphView] = useState(GraphView.VaultBalance);
 
+	const uiVaultConfig = VAULTS.find(
+		(vault) => vault.pubkeyString === vaultAccountData?.pubkey.toString()
+	);
 	const totalEarnings = vaultStats.allTimeTotalPnl;
 	const graphData = useMemo(
 		() =>
 			formatPnlHistory(
 				vault?.pnlHistory[selectedGraphOption.value] ?? [],
-				selectedGraphOption.value,
+				selectedGraphOption,
 				GRAPH_VIEW_OPTIONS.find((option) => option.value === graphView)!
 					.snapshotAttribute
 			),
-		[selectedGraphOption, vault?.pnlHistory, graphView, vaultStats]
+		[
+			selectedGraphOption,
+			vault?.pnlHistory,
+			graphView,
+			vaultStats,
+			uiVaultConfig,
+		]
 	);
 
 	function formatPnlHistory(
-		pnlHistory: UISerializableAccountSnapshot[],
-		resolution: HistoryResolution,
+		pnlHistory: Pick<
+			UISerializableAccountSnapshot,
+			'epochTs' | 'allTimeTotalPnl' | 'totalAccountValue'
+		>[],
+		graphOption: PerformanceGraphOption,
 		snapshotAttribute: keyof Pick<
 			UISerializableAccountSnapshot,
 			'totalAccountValue' | 'allTimeTotalPnl'
 		>
 	) {
+		const pastVaultHistory = uiVaultConfig?.pastPerformanceHistory ?? [];
+		const formattedPastHistory = pastVaultHistory.map((snapshot) => ({
+			x: snapshot.epochTs,
+			y: snapshot[snapshotAttribute].toNum(),
+		}));
+		const lastPointInPastHistory = formattedPastHistory[
+			formattedPastHistory.length - 1
+		] ?? { x: 0, y: 0 };
+
 		const formattedHistory = pnlHistory
 			.map((snapshot) => ({
 				x: snapshot.epochTs,
-				// @ts-ignore - snapshot response was not deserialized, hence its default form is already a number
-				y: Number(snapshot[snapshotAttribute]),
+				// @ts-ignore - snapshot response was not deserialized, hence its in string format
+				y: Number(snapshot[snapshotAttribute]) + lastPointInPastHistory.y,
 			}))
+			// add current stats to end of graph
 			.concat({
 				x: Date.now() / 1000,
-				y: vaultStats[snapshotAttribute].toNumber(),
+				y: vaultStats[snapshotAttribute].toNumber() + lastPointInPastHistory.y,
 			})
+			// normalize to start of day/12h so that the graph looks consistent
 			.map((point) => ({
 				...point,
-				x: normalizeDate(point.x, resolution), // normalize to start of day/12h so that the graph looks consistent
-			}));
+				x: normalizeDate(point.x, graphOption.value),
+			}))
+			// prioritize past history over fetched history if the data overlaps
+			.filter((point) =>
+				dayjs.unix(point.x).isAfter(dayjs.unix(lastPointInPastHistory.x))
+			);
 
-		return formattedHistory;
+		const combinedHistory = formattedPastHistory.concat(formattedHistory);
+		const withinResolutionHistory = combinedHistory.filter((point) =>
+			dayjs.unix(point.x).isAfter(graphOption.firstDate)
+		);
+
+		return withinResolutionHistory;
 	}
 
 	return (
@@ -134,7 +178,12 @@ export default function VaultPerformance() {
 					<Dropdown
 						options={PERFORMANCE_GRAPH_OPTIONS}
 						selectedOption={selectedGraphOption}
-						setSelectedOption={setSelectedGraphOption}
+						setSelectedOption={
+							setSelectedGraphOption as (option: {
+								label: string;
+								value: HistoryResolution;
+							}) => void
+						}
 						width={120}
 					/>
 				</div>

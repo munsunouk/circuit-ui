@@ -1,3 +1,6 @@
+import { PerformanceGraphData } from "@/types";
+import { SUPERCHARGER_PAST_DATA } from "./supercharger";
+
 export const TEST_VAULT_PUBKEY = 'BxDh8x17Bf3pDf17uh65kXCwmdMpdNjTj91hVqkmFpAp';
 
 export interface UiVaultConfig {
@@ -8,18 +11,22 @@ export interface UiVaultConfig {
 	permissioned?: boolean;
 	previewBackdropUrl: string;
 	backdropParticlesColor: string;
+	pastPerformanceHistory?: PerformanceGraphData[];
 }
 
+export const SUPERCHARGER_VAULT: UiVaultConfig = {
+	name: 'Supercharger',
+	pubkeyString: TEST_VAULT_PUBKEY,
+	description:
+		'Multiply your yields with delta-neutral market making strategies',
+	permissioned: true,
+	previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
+	backdropParticlesColor: '#88c9ff',
+	pastPerformanceHistory: SUPERCHARGER_PAST_DATA
+};
+
 export const VAULTS: UiVaultConfig[] = [
-	{
-		name: 'Supercharger',
-		pubkeyString: TEST_VAULT_PUBKEY,
-		description:
-			'Multiply your yields with delta-neutral market making strategies',
-		permissioned: true,
-		previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
-		backdropParticlesColor: '#88c9ff',
-	},
+	SUPERCHARGER_VAULT,
 	{
 		name: 'Turbocharger',
 		// pubkey: new PublicKey('2bXtK9phuqUbqsmonWCNYcV87DkFmqyRiDqGen4daZwx'),
