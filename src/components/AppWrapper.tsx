@@ -47,6 +47,11 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 					idlePollingRateSwitcher: true,
 					geoblocking: true,
 				}}
+				additionalDriftClientConfig={{
+					opts: {
+						skipPreflight: true,
+					},
+				}}
 			>
 				<SkeletonTheme baseColor="#88c9ff" highlightColor="#fff">
 					<AppSetup>{children}</AppSetup>

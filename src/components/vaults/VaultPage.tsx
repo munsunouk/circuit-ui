@@ -68,7 +68,7 @@ export default function VaultPage() {
 				<FadeInDiv
 					delay={200}
 					className={twMerge(
-						'flex justify-between w-full gap-8 mt-8 md:mt-16 lg:gap-[130px] flex-col md:flex-row'
+						'flex justify-between w-full gap-8 mt-8 md:mt-16 flex-col md:flex-row'
 					)}
 					fadeCondition={!isLoading}
 				>

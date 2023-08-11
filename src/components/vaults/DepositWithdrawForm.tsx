@@ -2,6 +2,7 @@ import {
 	BN,
 	BigNum,
 	PERCENTAGE_PRECISION,
+	QUOTE_PRECISION,
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
@@ -233,9 +234,6 @@ const DepositForm = () => {
 	const isWithdrawalInProcess =
 		vaultDepositorAccountData?.lastWithdrawRequestShares.gt(ZERO);
 
-	const isButtonDisabled =
-		+amount === 0 || isWithdrawalInProcess || isNotWhitelistedUser;
-
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
 	const tvl = vaultStats.netUsdValue;
@@ -251,6 +249,12 @@ const DepositForm = () => {
 		? usdcBalanceBigNum.toNum()
 		: maxAvailableCapacity.scale(99, 100).toNum();
 	maxDepositAmount = Math.max(0, maxDepositAmount);
+
+	const isButtonDisabled =
+		+amount === 0 ||
+		isWithdrawalInProcess ||
+		isNotWhitelistedUser ||
+		+amount > maxDepositAmount;
 
 	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
 
@@ -356,6 +360,11 @@ const WithdrawForm = () => {
 	const lastRequestedAmount =
 		vaultDepositorAccountData?.lastWithdrawRequestShares ?? new BN(0);
 
+	const isButtonDisabled =
+		(+amount === 0 && withdrawalState === WithdrawalState.UnRequested) ||
+		loading ||
+		+amount > maxSharesUsdcValue.toNumber() / QUOTE_PRECISION.toNumber();
+
 	// we only want to set the max shares once, when all data is available,
 	// to prevent the max amount from constantly updating due to data change subscriptions.
 	useEffect(() => {
@@ -390,10 +399,6 @@ const WithdrawForm = () => {
 			hasCalcMaxSharesOnce.current = true;
 		}
 	}, [vaultDepositorAccount, vaultAccountData, tvl]);
-
-	const isButtonDisabled =
-		(+amount === 0 && withdrawalState === WithdrawalState.UnRequested) ||
-		loading;
 
 	useEffect(() => {
 		const hasRequestedWithdrawal = lastRequestedAmount.toNumber() > 0;
