@@ -1,6 +1,7 @@
-import { normalizeDate } from '@/utils/utils';
 import { BigNum, QUOTE_PRECISION, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import dayjs from 'dayjs';
+
+import { normalizeDate } from '@/utils/utils';
 
 const SUPERCHARGER_PAST_RAW_DATA = [
 	{ date: '12/07/2022', totalAccountValue: 994533.33 },

@@ -6,6 +6,6 @@ export type SnapshotKey = keyof Pick<
 >;
 
 export type PerformanceGraphData = Pick<
-UISerializableAccountSnapshot,
-'epochTs' | 'allTimeTotalPnl' | 'totalAccountValue'
+	UISerializableAccountSnapshot,
+	'epochTs' | 'allTimeTotalPnl' | 'totalAccountValue'
 >;

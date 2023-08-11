@@ -66,19 +66,14 @@ const getDateTicks = (
 const getCustomXAxisTicks = (dataLength: number, firstDateTs: number) => {
 	// if data is in days
 	if (dataLength <= 21) {
-		// return every 2 days
 		return getDateTicks(firstDateTs, 2, 'day');
 	} else if (dataLength <= 60) {
-		// return every week
 		return getDateTicks(firstDateTs, 1, 'week');
 	} else if (dataLength <= 180) {
-		// return every month
 		return getDateTicks(firstDateTs, 1, 'month');
 	} else if (dataLength <= 360) {
-		// return every 2 months
 		return getDateTicks(firstDateTs, 2, 'month');
 	} else {
-		// return every 3 months
 		return getDateTicks(firstDateTs, 3, 'month');
 	}
 };
