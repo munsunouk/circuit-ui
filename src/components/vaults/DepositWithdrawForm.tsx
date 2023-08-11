@@ -236,7 +236,7 @@ const DepositForm = () => {
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
-	const tvl = vaultStats.netUsdValue;
+	const tvl = vaultStats.totalAccountValue;
 	const maxAvailableCapacity = BigNum.from(
 		maxCapacity?.sub(tvl),
 		USDC_MARKET.precisionExp
@@ -348,7 +348,7 @@ const WithdrawForm = () => {
 
 	const hasCalcMaxSharesOnce = useRef(false);
 
-	const tvl = vaultStats.netUsdValue;
+	const tvl = vaultStats.totalAccountValue;
 
 	// withdrawal variables
 	const withdrawalWaitingPeriod = redeemPeriodToString(

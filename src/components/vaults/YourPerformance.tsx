@@ -54,7 +54,7 @@ export default function YourPerformance() {
 	// User's total earnings
 	const userTotalDeposits = vaultDepositorAccData?.totalDeposits.toNumber();
 	const userTotalWithdraws = vaultDepositorAccData?.totalWithdraws.toNumber();
-	const vaultAccountBalance = vaultStats.netUsdValue.toNumber();
+	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
 	let totalEarnings =

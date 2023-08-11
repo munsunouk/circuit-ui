@@ -1,9 +1,10 @@
+import { SnapshotKey } from '@/types';
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import {
 	HistoryResolution,
 	UISerializableAccountSnapshot,
 } from '@drift/common';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
@@ -13,6 +14,7 @@ import { normalizeDate } from '@/utils/utils';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
+import ButtonTabs from '../elements/ButtonTabs';
 import Dropdown from '../elements/Dropdown';
 import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
@@ -34,6 +36,28 @@ const PERFORMANCE_GRAPH_OPTIONS = [
 	},
 ];
 
+enum GraphView {
+	PnL,
+	VaultBalance,
+}
+
+const GRAPH_VIEW_OPTIONS: {
+	label: string;
+	value: GraphView;
+	snapshotAttribute: SnapshotKey;
+}[] = [
+	{
+		label: 'Vault Balance',
+		value: GraphView.VaultBalance,
+		snapshotAttribute: 'totalAccountValue',
+	},
+	{
+		label: 'P&L',
+		value: GraphView.PnL,
+		snapshotAttribute: 'allTimeTotalPnl',
+	},
+];
+
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultAccountData = useCurrentVaultAccountData();
@@ -42,30 +66,45 @@ export default function VaultPerformance() {
 	const [selectedGraphOption, setSelectedGraphOption] = useState(
 		PERFORMANCE_GRAPH_OPTIONS[0]
 	);
+	const [graphView, setGraphView] = useState(GraphView.VaultBalance);
 
-	const totalEarnings = vaultStats.totalAllTimePnl;
+	const totalEarnings = vaultStats.allTimeTotalPnl;
+	const graphData = useMemo(
+		() =>
+			formatPnlHistory(
+				vault?.pnlHistory[selectedGraphOption.value] ?? [],
+				selectedGraphOption.value,
+				GRAPH_VIEW_OPTIONS.find((option) => option.value === graphView)!
+					.snapshotAttribute
+			),
+		[selectedGraphOption, vault?.pnlHistory, graphView, vaultStats]
+	);
 
-	const formatPnlHistory = (
+	function formatPnlHistory(
 		pnlHistory: UISerializableAccountSnapshot[],
-		resolution: HistoryResolution
-	) => {
+		resolution: HistoryResolution,
+		snapshotAttribute: keyof Pick<
+			UISerializableAccountSnapshot,
+			'totalAccountValue' | 'allTimeTotalPnl'
+		>
+	) {
 		const formattedHistory = pnlHistory
 			.map((snapshot) => ({
 				x: snapshot.epochTs,
 				// @ts-ignore - snapshot response was not deserialized, hence its default form is already a number
-				y: Number(snapshot.allTimeTotalPnl),
+				y: Number(snapshot[snapshotAttribute]),
 			}))
 			.concat({
 				x: Date.now() / 1000,
-				y: vaultStats.totalAllTimePnl.toNumber(),
+				y: vaultStats[snapshotAttribute].toNumber(),
 			})
 			.map((point) => ({
 				...point,
-				x: normalizeDate(point.x, resolution), // normalize to start of day so that the graph looks consistent
+				x: normalizeDate(point.x, resolution), // normalize to start of day/12h so that the graph looks consistent
 			}));
 
 		return formattedHistory;
-	};
+	}
 
 	return (
 		<div className="flex flex-col w-full gap-8">
@@ -83,7 +122,15 @@ export default function VaultPerformance() {
 
 			<FadeInDiv className="flex flex-col gap-4" delay={100}>
 				<SectionHeader>Cumulative Performance</SectionHeader>
-				<div className="flex justify-end w-full">
+				<div className="flex justify-between w-full">
+					<ButtonTabs
+						tabs={GRAPH_VIEW_OPTIONS.map((option) => ({
+							label: option.label,
+							selected: graphView === option.value,
+							onSelect: () => setGraphView(option.value),
+						}))}
+						tabClassName="whitespace-nowrap px-4 py-2"
+					/>
 					<Dropdown
 						options={PERFORMANCE_GRAPH_OPTIONS}
 						selectedOption={selectedGraphOption}
@@ -93,12 +140,7 @@ export default function VaultPerformance() {
 				</div>
 				<div className="w-full h-[320px]">
 					{(vault?.pnlHistory[HistoryResolution.ALL].length ?? 0) > 0 && (
-						<PerformanceGraph
-							data={formatPnlHistory(
-								vault?.pnlHistory[selectedGraphOption.value] ?? [],
-								selectedGraphOption.value
-							)}
-						/>
+						<PerformanceGraph data={graphData} />
 					)}
 				</div>
 			</FadeInDiv>

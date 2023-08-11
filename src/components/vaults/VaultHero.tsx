@@ -51,7 +51,7 @@ export default function VaultHero() {
 	);
 
 	const name = decodeName(vaultAccountData?.name ?? []);
-	const tvl = vaultStats.netUsdValue;
+	const tvl = vaultStats.totalAccountValue;
 	const maxCapacity = vaultAccountData?.maxTokens;
 
 	return (

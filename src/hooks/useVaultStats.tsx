@@ -1,3 +1,4 @@
+import { SnapshotKey } from '@/types';
 import { BN, PublicKey, User } from '@drift-labs/sdk';
 import { useEffect, useState } from 'react';
 
@@ -7,14 +8,14 @@ import usePathToVaultPubKey from './usePathToVaultName';
 const UPDATE_FREQUENCY_MS = 10_000;
 
 interface VaultStats {
-	netUsdValue: BN;
-	totalAllTimePnl: BN;
+	totalAccountValue: BN;
+	allTimeTotalPnl: BN;
 	isLoaded: boolean;
 }
 
 const DEFAULT_VAULT_STATS: VaultStats = {
-	netUsdValue: new BN(0),
-	totalAllTimePnl: new BN(0),
+	totalAccountValue: new BN(0),
+	allTimeTotalPnl: new BN(0),
 	isLoaded: false,
 };
 
@@ -41,13 +42,13 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 
 		const collateral = vaultDriftUser.getNetSpotMarketValue();
 		const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
-		const netUsdValue = collateral.add(unrealizedPNL);
+		const totalAccountValue = collateral.add(unrealizedPNL);
 
-		const totalAllTimePnl = vaultDriftUser.getTotalAllTimePnl();
+		const allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
 
 		return {
-			netUsdValue,
-			totalAllTimePnl,
+			totalAccountValue,
+			allTimeTotalPnl,
 			isLoaded: true,
 		};
 	}
