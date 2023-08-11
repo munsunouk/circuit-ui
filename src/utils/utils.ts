@@ -35,7 +35,7 @@ export const normalizeDate = (
 		!resolution
 	) {
 		// closest start of day
-		return dayjs(dayjs.unix(unixTs).startOf('day')).unix();
+		return dayjs.unix(unixTs).startOf('day').unix();
 	}
 
 	// closest 12 hour
@@ -47,8 +47,5 @@ export const normalizeDate = (
 	}
 
 	// closest hour
-	return dayjs(
-		dayjs.unix(unixTs).format('MM/DD/YYYY HH'),
-		'MM/DD/YYYY HH'
-	).unix();
+	return dayjs.unix(unixTs).startOf('hour').unix();
 };

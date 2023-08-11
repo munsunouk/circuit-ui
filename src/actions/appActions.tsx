@@ -34,6 +34,7 @@ import {
 import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
 
@@ -44,6 +45,8 @@ import { normalizeDate, redeemPeriodToString } from '@/utils/utils';
 
 import Env, { ARBITRARY_WALLET } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
+
+dayjs.extend(isSameOrAfter);
 
 const POLLING_FREQUENCY_MS = 1000;
 const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
@@ -528,7 +531,7 @@ const createAppActions = (
 				formattedPastHistory,
 				snapshot[HistoryResolution.DAY],
 				HistoryResolution.DAY,
-				dayjs().subtract(1, 'day').startOf('day')
+				dayjs().subtract(2, 'day').startOf('day')
 			),
 			[HistoryResolution.WEEK]: combineVaultHistoriesForResolution(
 				formattedPastHistory,
@@ -554,6 +557,10 @@ const createAppActions = (
 		return formattedSnapshotHistory;
 	};
 
+	// Combines a vault's past history with snapshot history.
+	// If there is overlap in data, e.g. both histories have a snapshot on 2021-08-01,
+	// it will sum the values of both histories (on the assumption that funds is being
+	// flowed from an old vault to a new vault)
 	const combineVaultHistoriesForResolution = (
 		pastHistory: SerializedPerformanceHistory[],
 		snapshotHistory: UISerializableAccountSnapshot[],
@@ -563,24 +570,54 @@ const createAppActions = (
 		const lastPointInPastHistory = pastHistory[pastHistory.length - 1] ?? {
 			totalAccountValue: 0,
 			allTimeTotalPnl: 0,
+			epochTs: 0,
 		};
-		const formattedSnapshotHistory = snapshotHistory
-			.map((snapshot) => ({
-				...snapshot,
-				epochTs: normalizeDate(snapshot.epochTs, resolution),
-				// allow for data continuation from past history
-				totalAccountValue:
-					+snapshot.totalAccountValue +
-					lastPointInPastHistory.totalAccountValue,
-				allTimeTotalPnl:
-					+snapshot.allTimeTotalPnl + lastPointInPastHistory.allTimeTotalPnl,
-			}))
-			// prioritize past history over fetched history if the data overlaps
-			.filter((snapshot) => snapshot.epochTs > lastPointInPastHistory.epochTs);
+		let firstOverlappingPointIndex = -1;
 
-		const combinedHistory = pastHistory.concat(formattedSnapshotHistory);
+		const formattedSnapshotHistory = snapshotHistory
+			// if data overlap, add point in past history that corresponds to the date of data point
+			// if data don't overlap, add last point in past history to data point
+			.map((snapshot) => {
+				const currentDate = normalizeDate(snapshot.epochTs);
+				const overlappingPastHistoryDataPointIndex = pastHistory.findIndex(
+					(history) => history.epochTs === currentDate
+				);
+
+				if (overlappingPastHistoryDataPointIndex >= 0) {
+					const overlappingPastHistoryDataPoint =
+						pastHistory[overlappingPastHistoryDataPointIndex];
+					if (firstOverlappingPointIndex === -1) {
+						firstOverlappingPointIndex = overlappingPastHistoryDataPointIndex;
+					}
+
+					return {
+						epochTs: normalizeDate(snapshot.epochTs, resolution),
+						totalAccountValue:
+							+snapshot.totalAccountValue +
+							overlappingPastHistoryDataPoint.totalAccountValue,
+						allTimeTotalPnl:
+							overlappingPastHistoryDataPoint.allTimeTotalPnl +
+							+snapshot.allTimeTotalPnl,
+					};
+				} else {
+					return {
+						epochTs: normalizeDate(snapshot.epochTs, resolution),
+						// allow for data continuation from past history
+						totalAccountValue:
+							+snapshot.totalAccountValue +
+							lastPointInPastHistory.totalAccountValue,
+						allTimeTotalPnl:
+							+snapshot.allTimeTotalPnl +
+							lastPointInPastHistory.allTimeTotalPnl,
+					};
+				}
+			});
+
+		const combinedHistory = pastHistory
+			.slice(0, firstOverlappingPointIndex)
+			.concat(formattedSnapshotHistory);
 		const withinResolutionHistory = combinedHistory.filter((point) =>
-			dayjs.unix(point.epochTs).isAfter(firstDate)
+			dayjs.unix(point.epochTs).isSameOrAfter(firstDate)
 		);
 
 		return withinResolutionHistory;

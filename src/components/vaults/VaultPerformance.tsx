@@ -81,6 +81,8 @@ export default function VaultPerformance() {
 	const uiVaultConfig = VAULTS.find(
 		(vault) => vault.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
+	const pastHistoryLastDataPoint =
+		uiVaultConfig?.pastPerformanceHistory?.slice(-1)[0];
 	const totalEarnings = vaultStats.allTimeTotalPnl;
 	const graphData = useMemo(
 		() =>
@@ -105,10 +107,17 @@ export default function VaultPerformance() {
 			'totalAccountValue' | 'allTimeTotalPnl'
 		>
 	) {
-		return pnlHistory.map((snapshot) => ({
-			x: snapshot.epochTs,
-			y: snapshot[snapshotAttribute],
-		}));
+		return pnlHistory
+			.map((snapshot) => ({
+				x: snapshot.epochTs,
+				y: snapshot[snapshotAttribute],
+			}))
+			.concat({
+				x: dayjs().unix(),
+				y:
+					vaultStats[snapshotAttribute].toNumber() +
+					(pastHistoryLastDataPoint?.[snapshotAttribute].toNum() ?? 0), // add the last data point from the past history (if any) to allow continuation of data
+			});
 	}
 
 	return (
