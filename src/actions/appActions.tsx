@@ -1,3 +1,4 @@
+import { SerializedPerformanceHistory } from '@/types';
 import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,
@@ -27,19 +28,22 @@ import {
 import {
 	COMMON_UI_UTILS,
 	HistoryResolution,
+	UISerializableAccountSnapshot,
 	UISnapshotHistory,
 } from '@drift/common';
 import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
+import dayjs from 'dayjs';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
 
 import NOTIFICATION_UTILS, { ToastWithMessage } from '@/utils/notifications';
-import { redeemPeriodToString } from '@/utils/utils';
+import { normalizeDate, redeemPeriodToString } from '@/utils/utils';
 
 import Env, { ARBITRARY_WALLET } from '@/constants/environment';
+import { VAULTS } from '@/constants/vaults';
 
 const POLLING_FREQUENCY_MS = 1000;
 const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
@@ -87,7 +91,11 @@ const createAppActions = (
 			initVaultSubscriber(vaultAddress),
 		]);
 
-		const vaultSnapshots = await fetchAndSetVaultSnapshots(vaultAccount.user);
+		const vaultSnapshots = await fetchVaultSnapshots(vaultAccount.user);
+		const combinedSnapshotsHistories = combineVaultHistories(
+			vaultAddress.toString(),
+			vaultSnapshots
+		);
 		const currentVaultState = get().vaults[vaultAddress.toString()];
 		const updatedVaultState = {
 			vaultDriftClient,
@@ -95,7 +103,7 @@ const createAppActions = (
 			vaultDriftUserAccount,
 			vaultAccount: vaultSubscriber,
 			vaultAccountData: vaultAccount,
-			pnlHistory: vaultSnapshots,
+			pnlHistory: combinedSnapshotsHistories,
 		};
 
 		set((s) => {
@@ -110,7 +118,7 @@ const createAppActions = (
 		});
 	};
 
-	const fetchAndSetVaultSnapshots = async (userAccount: PublicKey) => {
+	const fetchVaultSnapshots = async (userAccount: PublicKey) => {
 		try {
 			const res = await axios.get<{ data: UISnapshotHistory[] }>(
 				`${
@@ -499,6 +507,83 @@ const createAppActions = (
 		const tx = await vaultClient.withdraw(vaultDepositor.pubkey);
 
 		return tx;
+	};
+
+	const combineVaultHistories = (
+		vaultAddress: string,
+		snapshot: UISnapshotHistory
+	) => {
+		const uiVaultConfig = VAULTS.find(
+			(vault) => vault.pubkeyString === vaultAddress
+		);
+		const pastVaultHistory = uiVaultConfig?.pastPerformanceHistory ?? [];
+		const formattedPastHistory = pastVaultHistory.map((history) => ({
+			...history,
+			totalAccountValue: history.totalAccountValue.toNum(),
+			allTimeTotalPnl: history.allTimeTotalPnl.toNum(),
+		}));
+
+		const formattedSnapshotHistory = {
+			[HistoryResolution.DAY]: combineVaultHistoriesForResolution(
+				formattedPastHistory,
+				snapshot[HistoryResolution.DAY],
+				HistoryResolution.DAY,
+				dayjs().subtract(1, 'day').startOf('day')
+			),
+			[HistoryResolution.WEEK]: combineVaultHistoriesForResolution(
+				formattedPastHistory,
+				snapshot[HistoryResolution.WEEK],
+				HistoryResolution.WEEK,
+				dayjs().subtract(1, 'week').startOf('day')
+			),
+			[HistoryResolution.MONTH]: combineVaultHistoriesForResolution(
+				formattedPastHistory,
+				snapshot[HistoryResolution.MONTH],
+				HistoryResolution.MONTH,
+				dayjs().subtract(1, 'month').startOf('day')
+			),
+			[HistoryResolution.ALL]: combineVaultHistoriesForResolution(
+				formattedPastHistory,
+				snapshot[HistoryResolution.ALL],
+				HistoryResolution.ALL,
+				dayjs.unix(0)
+			),
+			dailyAllTimePnls: snapshot.dailyAllTimePnls,
+		};
+
+		return formattedSnapshotHistory;
+	};
+
+	const combineVaultHistoriesForResolution = (
+		pastHistory: SerializedPerformanceHistory[],
+		snapshotHistory: UISerializableAccountSnapshot[],
+		resolution: HistoryResolution,
+		firstDate: dayjs.Dayjs
+	) => {
+		const lastPointInPastHistory = pastHistory[pastHistory.length - 1] ?? {
+			totalAccountValue: 0,
+			allTimeTotalPnl: 0,
+		};
+		const formattedSnapshotHistory = snapshotHistory
+			.map((snapshot) => ({
+				...snapshot,
+				epochTs: normalizeDate(snapshot.epochTs, resolution),
+				// allow for data continuation from past history
+				totalAccountValue:
+					+snapshot.totalAccountValue +
+					lastPointInPastHistory.totalAccountValue,
+				allTimeTotalPnl:
+					+snapshot.allTimeTotalPnl + lastPointInPastHistory.allTimeTotalPnl,
+			}))
+			// prioritize past history over fetched history if the data overlaps
+			.filter((snapshot) => snapshot.epochTs > lastPointInPastHistory.epochTs);
+
+		const combinedHistory = pastHistory.concat(formattedSnapshotHistory);
+		const withinResolutionHistory = combinedHistory.filter((point) =>
+			dayjs.unix(point.epochTs).isAfter(firstDate)
+		);
+
+		return withinResolutionHistory;
 	};
 
 	return {

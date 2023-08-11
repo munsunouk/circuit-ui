@@ -9,3 +9,9 @@ export type PerformanceGraphData = Pick<
 	UISerializableAccountSnapshot,
 	'epochTs' | 'allTimeTotalPnl' | 'totalAccountValue'
 >;
+
+export type SerializedPerformanceHistory = {
+	totalAccountValue: number;
+	allTimeTotalPnl: number;
+	epochTs: number;
+};

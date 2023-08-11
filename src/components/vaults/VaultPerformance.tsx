@@ -1,4 +1,4 @@
-import { SnapshotKey } from '@/types';
+import { SerializedPerformanceHistory, SnapshotKey } from '@/types';
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import {
 	HistoryResolution,
@@ -10,8 +10,6 @@ import { useMemo, useState } from 'react';
 import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
-
-import { normalizeDate } from '@/utils/utils';
 
 import { VAULTS } from '@/constants/vaults';
 
@@ -88,7 +86,6 @@ export default function VaultPerformance() {
 		() =>
 			formatPnlHistory(
 				vault?.pnlHistory[selectedGraphOption.value] ?? [],
-				selectedGraphOption,
 				GRAPH_VIEW_OPTIONS.find((option) => option.value === graphView)!
 					.snapshotAttribute
 			),
@@ -102,52 +99,16 @@ export default function VaultPerformance() {
 	);
 
 	function formatPnlHistory(
-		pnlHistory: Pick<
-			UISerializableAccountSnapshot,
-			'epochTs' | 'allTimeTotalPnl' | 'totalAccountValue'
-		>[],
-		graphOption: PerformanceGraphOption,
+		pnlHistory: SerializedPerformanceHistory[],
 		snapshotAttribute: keyof Pick<
 			UISerializableAccountSnapshot,
 			'totalAccountValue' | 'allTimeTotalPnl'
 		>
 	) {
-		const pastVaultHistory = uiVaultConfig?.pastPerformanceHistory ?? [];
-		const formattedPastHistory = pastVaultHistory.map((snapshot) => ({
+		return pnlHistory.map((snapshot) => ({
 			x: snapshot.epochTs,
-			y: snapshot[snapshotAttribute].toNum(),
+			y: snapshot[snapshotAttribute],
 		}));
-		const lastPointInPastHistory = formattedPastHistory[
-			formattedPastHistory.length - 1
-		] ?? { x: 0, y: 0 };
-
-		const formattedHistory = pnlHistory
-			.map((snapshot) => ({
-				x: snapshot.epochTs,
-				// @ts-ignore - snapshot response was not deserialized, hence its in string format
-				y: Number(snapshot[snapshotAttribute]) + lastPointInPastHistory.y,
-			}))
-			// add current stats to end of graph
-			.concat({
-				x: Date.now() / 1000,
-				y: vaultStats[snapshotAttribute].toNumber() + lastPointInPastHistory.y,
-			})
-			// normalize to start of day/12h so that the graph looks consistent
-			.map((point) => ({
-				...point,
-				x: normalizeDate(point.x, graphOption.value),
-			}))
-			// prioritize past history over fetched history if the data overlaps
-			.filter((point) =>
-				dayjs.unix(point.x).isAfter(dayjs.unix(lastPointInPastHistory.x))
-			);
-
-		const combinedHistory = formattedPastHistory.concat(formattedHistory);
-		const withinResolutionHistory = combinedHistory.filter((point) =>
-			dayjs.unix(point.x).isAfter(graphOption.firstDate)
-		);
-
-		return withinResolutionHistory;
 	}
 
 	return (
