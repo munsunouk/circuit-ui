@@ -1,3 +1,4 @@
+import { useCommonDriftStore } from '@drift-labs/react';
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -35,9 +36,12 @@ const BUFFER = 0.01 * 10 ** QUOTE_PRECISION_EXP;
 
 export default function YourPerformance() {
 	const { connected } = useWallet();
+	const authority = useCommonDriftStore((s) => s.authority);
 	const vaultDepositorAccData = useCurrentVaultDepositorAccData();
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
+
+	const showUserInfo = connected || !!authority;
 
 	// User's vault share proportion
 	const totalVaultShares = vaultAccountData?.totalShares.toNumber();
@@ -77,12 +81,12 @@ export default function YourPerformance() {
 				<div className="flex items-center justify-center w-full gap-4">
 					<StatsBox
 						label="Your Deposit"
-						value={connected ? userNetDepositsString : '--'}
+						value={showUserInfo ? userNetDepositsString : '--'}
 					/>
 					<div className="h-12 border-r border-container-border" />
 					<StatsBox
 						label="Total Earnings (All Time)"
-						value={connected ? totalEarningsString : '--'}
+						value={showUserInfo ? totalEarningsString : '--'}
 					/>
 				</div>
 			</FadeInDiv>
@@ -108,7 +112,7 @@ export default function YourPerformance() {
 			<FadeInDiv delay={200}>
 				<TransactionHistory />
 			</FadeInDiv>
-			{!connected && (
+			{!showUserInfo && (
 				<>
 					<div className="absolute inset-0 flex flex-col items-center backdrop-blur-sm">
 						<ConnectButton className="max-w-[400px] mt-60 h-auto " />

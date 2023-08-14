@@ -63,14 +63,16 @@ export default function ConnectWalletModal() {
 	return (
 		<Modal onClose={handleOnClose} header="Connect Wallet">
 			<div className="flex flex-col gap-6 min-w-[300px]">
-				{walletContext?.wallets?.map((wallet, index) => (
-					<WalletOption
-						key={wallet.adapter.name.toString()}
-						wallet={wallet}
-						onClick={() => handleConnectWallet(wallet)}
-						index={index}
-					/>
-				))}
+				{walletContext?.wallets?.length > 0
+					? walletContext?.wallets?.map((wallet, index) => (
+							<WalletOption
+								key={wallet.adapter.name.toString()}
+								wallet={wallet}
+								onClick={() => handleConnectWallet(wallet)}
+								index={index}
+							/>
+					  ))
+					: 'No Solana wallets found.'}
 			</div>
 		</Modal>
 	);

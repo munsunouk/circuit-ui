@@ -53,9 +53,11 @@ const TopBar = () => {
 	const manageWalletPopup = useRef<HTMLDivElement>(null);
 
 	const currentMainPath = pathname.split('/')[1];
-	const shortPublicKey = `${authority?.toString().slice(0, 4)}...${authority
-		?.toString()
-		.slice(40, 44)}`;
+	const shortPublicKey = authority
+		? `${authority?.toString().slice(0, 4)}...${authority
+				?.toString()
+				.slice(40, 44)}`
+		: '...';
 
 	useEffect(() => {
 		// Close the manage wallets popup when clicking outside of it
@@ -126,7 +128,7 @@ const TopBar = () => {
 				onClick={handleManageWalletClick}
 				ref={manageWalletPopup}
 			>
-				{connected && authority ? (
+				{connected || authority ? (
 					<div className="flex flex-col">
 						<div className="flex items-center gap-1">
 							<span
