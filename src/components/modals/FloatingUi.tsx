@@ -6,11 +6,11 @@ import useAppStore from '@/hooks/useAppStore';
 
 import ConnectWalletModal from './ConnectWalletModal';
 import RpcSwitcherModal from './RpcSwitcherModal';
+import StoreModal from './StoreModal';
 
 function FloatingUi() {
-	const { showConnectWalletModal, showRpcSwitcherModal } = useAppStore(
-		(s) => s.modals
-	);
+	const { showConnectWalletModal, showRpcSwitcherModal, showStoreModal } =
+		useAppStore((s) => s.modals);
 
 	return (
 		<>
@@ -18,6 +18,8 @@ function FloatingUi() {
 				<ConnectWalletModal />
 			) : showRpcSwitcherModal ? (
 				<RpcSwitcherModal />
+			) : showStoreModal ? (
+				<StoreModal />
 			) : (
 				<></>
 			)}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useDevSwitchIsOn } from '@drift-labs/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
@@ -18,6 +19,7 @@ import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import FadeInDiv from '../elements/FadeInDiv';
 import Loading from '../elements/Loading';
+import DevFunctions from './DevFunction';
 
 export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(
@@ -25,6 +27,7 @@ export default function VaultPage() {
 	);
 	const vaultAccountData = useCurrentVaultAccountData();
 	const currentVaultPubKey = usePathToVaultPubKey();
+	const { devSwitchIsOn } = useDevSwitchIsOn();
 
 	useFetchEventRecords(currentVaultPubKey);
 
@@ -78,6 +81,7 @@ export default function VaultPage() {
 					<div className="flex flex-col gap-7 max-w-[456px] min-w-[340px]">
 						<DepositWithdrawForm />
 						<WhiteGloveDetails />
+						{devSwitchIsOn && <DevFunctions />}
 					</div>
 				</FadeInDiv>
 			</div>

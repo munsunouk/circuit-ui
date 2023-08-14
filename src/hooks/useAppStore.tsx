@@ -16,6 +16,7 @@ export interface AppStoreState {
 	modals: {
 		showConnectWalletModal: boolean;
 		showRpcSwitcherModal: boolean;
+		showStoreModal: boolean;
 	};
 	vaultClient: VaultClient | undefined;
 	vaults: {
@@ -59,6 +60,7 @@ const DEFAULT_APP_STORE_STATE = {
 	modals: {
 		showConnectWalletModal: false,
 		showRpcSwitcherModal: false,
+		showStoreModal: false,
 	},
 	vaultClient: undefined,
 	vaultDriftClient: undefined,

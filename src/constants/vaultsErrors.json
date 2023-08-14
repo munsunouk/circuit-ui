@@ -91,9 +91,19 @@
 			"msg": "PermissionedVault"
 		},
 		"InvalidVaultDeposit": {
-			"code": 6018,
+			"code": 6020,
 			"name": "InvalidVaultDeposit",
 			"msg": "InvalidVaultDeposit"
+		},
+		"WithdrawInProgress": {
+			"code": 6018,
+			"name": "WithdrawInProgress",
+			"msg": "WithdrawInProgress"
+		},
+		"SharesPercentTooLarge": {
+			"code": 6019,
+			"name": "SharesPercentTooLarge",
+			"msg": "SharesPercentTooLarge"
 		}
 	},
 	"errorCodesMap": {
@@ -115,6 +125,8 @@
 		"6015": "InvalidVaultInitialization",
 		"6016": "InvalidVaultUpdate",
 		"6017": "PermissionedVault",
-		"6018": "InvalidVaultDeposit"
+		"6018": "WithdrawInProgress",
+		"6019": "SharesPercentTooLarge",
+		"6020": "InvalidVaultDeposit"
 	}
 }
