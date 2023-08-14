@@ -5,6 +5,7 @@ import {
 	initializeDriftStore,
 	useAllRpcLatencies,
 	useCommonDriftStore,
+	useEmulation,
 } from '@drift-labs/react';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
@@ -25,6 +26,7 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useFetchVault();
 	useUsdcBalance();
 	useAllRpcLatencies();
+	useEmulation();
 
 	return <>{children}</>;
 };

@@ -1,4 +1,3 @@
-import { SnapshotKey } from '@/types';
 import { BN, PublicKey, User } from '@drift-labs/sdk';
 import { useEffect, useState } from 'react';
 
