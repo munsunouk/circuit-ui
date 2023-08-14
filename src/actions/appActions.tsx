@@ -40,6 +40,7 @@ import { StoreApi } from 'zustand';
 
 import { AppStoreState } from '@/hooks/useAppStore';
 
+import { TransactionErrorHandler } from '@/utils/TransactionErrorHandler';
 import NOTIFICATION_UTILS, { ToastWithMessage } from '@/utils/notifications';
 import { normalizeDate, redeemPeriodToString } from '@/utils/utils';
 
@@ -438,7 +439,7 @@ const createAppActions = (
 			return tx;
 		} catch (err) {
 			console.error(err);
-			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
+			TransactionErrorHandler.handle(err);
 		}
 	};
 
@@ -473,7 +474,7 @@ const createAppActions = (
 			return tx;
 		} catch (err) {
 			console.error(err);
-			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
+			TransactionErrorHandler.handle(err);
 		}
 	};
 
@@ -495,7 +496,7 @@ const createAppActions = (
 			return tx;
 		} catch (err) {
 			console.error(err);
-			NOTIFICATION_UTILS.toast.error('Something went wrong. Please try again.');
+			TransactionErrorHandler.handle(err);
 		}
 	};
 

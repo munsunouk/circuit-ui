@@ -1,0 +1,120 @@
+{
+	"errorsList": {
+		"Default": {
+			"code": 6000,
+			"name": "Default",
+			"msg": "Default"
+		},
+		"InvalidVaultRebase": {
+			"code": 6001,
+			"name": "InvalidVaultRebase",
+			"msg": "InvalidVaultRebase"
+		},
+		"InvalidVaultSharesDetected": {
+			"code": 6002,
+			"name": "InvalidVaultSharesDetected",
+			"msg": "InvalidVaultSharesDetected"
+		},
+		"CannotWithdrawBeforeRedeemPeriodEnd": {
+			"code": 6003,
+			"name": "CannotWithdrawBeforeRedeemPeriodEnd",
+			"msg": "CannotWithdrawBeforeRedeemPeriodEnd"
+		},
+		"InvalidVaultWithdraw": {
+			"code": 6004,
+			"name": "InvalidVaultWithdraw",
+			"msg": "InvalidVaultWithdraw"
+		},
+		"InsufficientVaultShares": {
+			"code": 6005,
+			"name": "InsufficientVaultShares",
+			"msg": "InsufficientVaultShares"
+		},
+		"InvalidVaultWithdrawSize": {
+			"code": 6006,
+			"name": "InvalidVaultWithdrawSize",
+			"msg": "InvalidVaultWithdrawSize"
+		},
+		"InvalidVaultForNewDepositors": {
+			"code": 6007,
+			"name": "InvalidVaultForNewDepositors",
+			"msg": "InvalidVaultForNewDepositors"
+		},
+		"VaultWithdrawRequestInProgress": {
+			"code": 6008,
+			"name": "VaultWithdrawRequestInProgress",
+			"msg": "VaultWithdrawRequestInProgress"
+		},
+		"VaultIsAtCapacity": {
+			"code": 6009,
+			"name": "VaultIsAtCapacity",
+			"msg": "VaultIsAtCapacity"
+		},
+		"InvalidVaultDepositorInitialization": {
+			"code": 6010,
+			"name": "InvalidVaultDepositorInitialization",
+			"msg": "InvalidVaultDepositorInitialization"
+		},
+		"DelegateNotAvailableForLiquidation": {
+			"code": 6011,
+			"name": "DelegateNotAvailableForLiquidation",
+			"msg": "DelegateNotAvailableForLiquidation"
+		},
+		"InvalidEquityValue": {
+			"code": 6012,
+			"name": "InvalidEquityValue",
+			"msg": "InvalidEquityValue"
+		},
+		"VaultInLiquidation": {
+			"code": 6013,
+			"name": "VaultInLiquidation",
+			"msg": "VaultInLiquidation"
+		},
+		"DriftError": {
+			"code": 6014,
+			"name": "DriftError",
+			"msg": "DriftError"
+		},
+		"InvalidVaultInitialization": {
+			"code": 6015,
+			"name": "InvalidVaultInitialization",
+			"msg": "InvalidVaultInitialization"
+		},
+		"InvalidVaultUpdate": {
+			"code": 6016,
+			"name": "InvalidVaultUpdate",
+			"msg": "InvalidVaultUpdate"
+		},
+		"PermissionedVault": {
+			"code": 6017,
+			"name": "PermissionedVault",
+			"msg": "PermissionedVault"
+		},
+		"InvalidVaultDeposit": {
+			"code": 6018,
+			"name": "InvalidVaultDeposit",
+			"msg": "InvalidVaultDeposit"
+		}
+	},
+	"errorCodesMap": {
+		"6000": "Default",
+		"6001": "InvalidVaultRebase",
+		"6002": "InvalidVaultSharesDetected",
+		"6003": "CannotWithdrawBeforeRedeemPeriodEnd",
+		"6004": "InvalidVaultWithdraw",
+		"6005": "InsufficientVaultShares",
+		"6006": "InvalidVaultWithdrawSize",
+		"6007": "InvalidVaultForNewDepositors",
+		"6008": "VaultWithdrawRequestInProgress",
+		"6009": "VaultIsAtCapacity",
+		"6010": "InvalidVaultDepositorInitialization",
+		"6011": "DelegateNotAvailableForLiquidation",
+		"6012": "InvalidEquityValue",
+		"6013": "VaultInLiquidation",
+		"6014": "DriftError",
+		"6015": "InvalidVaultInitialization",
+		"6016": "InvalidVaultUpdate",
+		"6017": "PermissionedVault",
+		"6018": "InvalidVaultDeposit"
+	}
+}
