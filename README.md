@@ -1,4 +1,24 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Circuits UI
+
+## Vaults
+
+Read more about the Vaults program [here](https://github.com/drift-labs/drift-vaults/wiki).
+
+## Setup
+
+Run the following command to setup the project:
+
+`sh ./initial-setup.sh`
+
+This will pull the relevant git submodules, install dependencies, and build the submodules.
+
+If you need to update any submodules, change directory to the submodule, pull the relevant changes, and then run `yarn build` to build the submodule.
+
+## Development
+
+`sh ./build_all_sm.sh` - shortcut to build all submodules and dependencies.
+`yarn convert-icons` - place any new icons in `app/public/icons` and run this command to convert them to React components.
+`yarn build-vaults` - use this command in the root directory to quickly build the Vaults TS SDK.
 
 ## Getting Started
 
@@ -15,8 +35,6 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
 ## Learn More
 
