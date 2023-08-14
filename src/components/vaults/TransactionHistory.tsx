@@ -10,7 +10,7 @@ import { useState } from 'react';
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import useCurrentVault from '@/hooks/useCurrentVault';
+import { useCurrentVault } from '@/hooks/useVault';
 
 import { OrderedSpotMarkets } from '@/constants/environment';
 import { SOLANA_TXN_EXPLORER_URL } from '@/constants/misc';
@@ -137,7 +137,7 @@ function TransactionHistory() {
 			two: number | undefined,
 			three: number | undefined;
 
-		if (eventRecords?.length === 0) {
+		if (eventRecords?.length === 0 || lastPage === 0) {
 			return null;
 		} else if (lastPage < 3) {
 			one = 0;

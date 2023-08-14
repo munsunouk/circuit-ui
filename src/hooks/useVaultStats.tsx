@@ -1,8 +1,10 @@
-import { BN, PublicKey, User } from '@drift-labs/sdk';
+import { BN, PublicKey } from '@drift-labs/sdk';
 import { useEffect, useState } from 'react';
 
-import useAppStore from './useAppStore';
+import { VAULTS } from '@/constants/vaults';
+
 import usePathToVaultPubKey from './usePathToVaultName';
+import { useVault } from './useVault';
 
 const UPDATE_FREQUENCY_MS = 10_000;
 
@@ -19,31 +21,47 @@ const DEFAULT_VAULT_STATS: VaultStats = {
 };
 
 export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
-	const vaultDriftUser = useAppStore(
-		(s) => s.vaults[vaultPubKey?.toString() ?? '']?.vaultDriftUser
-	);
+	const vault = useVault(vaultPubKey);
+	const vaultDriftUser = vault?.vaultDriftUser;
+
 	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
 
+	const uiVaultConfig = VAULTS.find(
+		(vault) => vault.pubkeyString === vaultPubKey?.toString()
+	);
+
 	useEffect(() => {
-		const newVaultStats = calcVaultStats(vaultDriftUser);
+		const newVaultStats = calcVaultStats();
 		setVaultStats(newVaultStats);
 
 		const interval = setInterval(() => {
-			const newVaultStats = calcVaultStats(vaultDriftUser);
+			const newVaultStats = calcVaultStats();
 			setVaultStats(newVaultStats);
 		}, UPDATE_FREQUENCY_MS);
 
 		return () => clearInterval(interval);
-	}, [vaultDriftUser]);
+	}, [vaultDriftUser, uiVaultConfig]);
 
-	function calcVaultStats(vaultDriftUser: User | undefined) {
+	function calcVaultStats() {
 		if (!vaultDriftUser) return DEFAULT_VAULT_STATS;
 
 		const collateral = vaultDriftUser.getNetSpotMarketValue();
 		const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
-		const totalAccountValue = collateral.add(unrealizedPNL);
+		let totalAccountValue = collateral.add(unrealizedPNL);
 
-		const allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
+		let allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
+
+		if (uiVaultConfig?.pastPerformanceHistory) {
+			const lastPastHistoryPoint =
+				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
+
+			totalAccountValue = totalAccountValue.add(
+				new BN(lastPastHistoryPoint.totalAccountValue.toNum())
+			);
+			allTimeTotalPnl = allTimeTotalPnl.add(
+				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
+			);
+		}
 
 		return {
 			totalAccountValue,

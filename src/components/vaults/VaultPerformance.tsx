@@ -7,8 +7,8 @@ import {
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 
-import useCurrentVault from '@/hooks/useCurrentVault';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
+import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { VAULTS } from '@/constants/vaults';
@@ -81,8 +81,6 @@ export default function VaultPerformance() {
 	const uiVaultConfig = VAULTS.find(
 		(vault) => vault.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
-	const pastHistoryLastDataPoint =
-		uiVaultConfig?.pastPerformanceHistory?.slice(-1)[0];
 	const totalEarnings = vaultStats.allTimeTotalPnl;
 	const graphData = useMemo(
 		() =>
@@ -114,9 +112,7 @@ export default function VaultPerformance() {
 			}))
 			.concat({
 				x: dayjs().unix(),
-				y:
-					vaultStats[snapshotAttribute].toNumber() +
-					(pastHistoryLastDataPoint?.[snapshotAttribute].toNum() ?? 0), // add the last data point from the past history (if any) to allow continuation of data
+				y: vaultStats[snapshotAttribute].toNumber(),
 			});
 	}
 
