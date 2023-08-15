@@ -11,12 +11,16 @@ const UPDATE_FREQUENCY_MS = 10_000;
 interface VaultStats {
 	totalAccountValue: BN;
 	allTimeTotalPnl: BN;
+	totalAccountValueWithHistory: BN;
+	allTimeTotalPnlWithHistory: BN;
 	isLoaded: boolean;
 }
 
 const DEFAULT_VAULT_STATS: VaultStats = {
 	totalAccountValue: new BN(0),
 	allTimeTotalPnl: new BN(0),
+	totalAccountValueWithHistory: new BN(0),
+	allTimeTotalPnlWithHistory: new BN(0),
 	isLoaded: false,
 };
 
@@ -47,18 +51,20 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 
 		const collateral = vaultDriftUser.getNetSpotMarketValue();
 		const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
-		let totalAccountValue = collateral.add(unrealizedPNL);
+		const totalAccountValue = collateral.add(unrealizedPNL);
+		const allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
 
-		let allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
+		let totalAccountValueWithHistory = totalAccountValue;
+		let allTimeTotalPnlWithHistory = allTimeTotalPnl;
 
 		if (uiVaultConfig?.pastPerformanceHistory) {
 			const lastPastHistoryPoint =
 				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
 
-			totalAccountValue = totalAccountValue.add(
+			totalAccountValueWithHistory = totalAccountValueWithHistory.add(
 				new BN(lastPastHistoryPoint.totalAccountValue.toNum())
 			);
-			allTimeTotalPnl = allTimeTotalPnl.add(
+			allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
 				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
 			);
 		}
@@ -66,6 +72,8 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		return {
 			totalAccountValue,
 			allTimeTotalPnl,
+			totalAccountValueWithHistory,
+			allTimeTotalPnlWithHistory,
 			isLoaded: true,
 		};
 	}

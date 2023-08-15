@@ -81,7 +81,7 @@ export default function VaultPerformance() {
 	const uiVaultConfig = VAULTS.find(
 		(vault) => vault.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
-	const totalEarnings = vaultStats.allTimeTotalPnl;
+	const totalEarnings = vaultStats.allTimeTotalPnlWithHistory;
 	const graphData = useMemo(
 		() =>
 			formatPnlHistory(
@@ -112,7 +112,7 @@ export default function VaultPerformance() {
 			}))
 			.concat({
 				x: dayjs().unix(),
-				y: vaultStats[snapshotAttribute].toNumber(),
+				y: vaultStats[`${snapshotAttribute}WithHistory`].toNumber(),
 			});
 	}
 

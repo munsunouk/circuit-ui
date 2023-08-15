@@ -207,7 +207,7 @@ function TransactionHistory() {
 			<SectionHeader>Transaction History</SectionHeader>
 			<div
 				className={twMerge(
-					'flex flex-col gap-2 items-center justify-center w-full',
+					'flex flex-col gap-2 items-center w-full',
 					lastPage !== 0 && 'min-h-[352px]'
 				)}
 			>

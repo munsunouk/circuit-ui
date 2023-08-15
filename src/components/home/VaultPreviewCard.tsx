@@ -160,7 +160,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 
 	const [isHover, setIsHover] = useState(false);
 
-	const tvl = vaultStats.totalAccountValue;
+	const tvl = vaultStats.totalAccountValueWithHistory;
 	const maxCapacity = vaultAccountData?.maxTokens ?? new BN(1);
 	const capacityPct = Math.min(
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
