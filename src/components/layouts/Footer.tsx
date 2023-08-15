@@ -35,20 +35,20 @@ export default function Footer() {
 			<div className="flex items-center justify-end gap-2 md:justify-center">
 				<Link
 					className="transition duration-300 cursor-pointer hover:opacity-80"
-					href="https://docs.circuit.trade/faq"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					FAQ
-				</Link>
-				<span className="h-2 border-r border-container-border-light" />
-				<Link
-					className="transition duration-300 cursor-pointer hover:opacity-80"
 					href="https://docs.circuit.trade/"
 					target="_blank"
 					rel="noopener noreferrer"
 				>
 					Docs
+				</Link>
+				<span className="h-2 border-r border-container-border-light" />
+				<Link
+					className="transition duration-300 cursor-pointer hover:opacity-80"
+					href="https://medium.com/@circuittrading_"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Blog
 				</Link>
 				<span className="h-2 border-r border-container-border-light" />
 				<Link
