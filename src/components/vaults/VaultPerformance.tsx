@@ -25,24 +25,24 @@ import PerformanceGraph from './PerformanceGraph';
 interface PerformanceGraphOption {
 	label: string;
 	value: HistoryResolution;
-	firstDate: dayjs.Dayjs;
+	days: number;
 }
 
 const PERFORMANCE_GRAPH_OPTIONS: PerformanceGraphOption[] = [
 	{
 		label: '7 Days',
 		value: HistoryResolution.WEEK, // every 12 hours
-		firstDate: dayjs().subtract(7, 'day').startOf('day'),
+		days: 7,
 	},
 	{
 		label: '30 Days',
 		value: HistoryResolution.MONTH, // every day
-		firstDate: dayjs().subtract(30, 'day').startOf('day'),
+		days: 30,
 	},
 	{
 		label: 'All',
-		value: HistoryResolution.ALL, // < 3 months = every 2 days | < 6 months = every 3 days | < 1 year = every 2 weeks | > 1 year = every month
-		firstDate: dayjs.unix(0),
+		value: HistoryResolution.ALL,
+		days: 0,
 	},
 ];
 
@@ -82,10 +82,10 @@ export default function VaultPerformance() {
 		(vault) => vault.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
 	const totalEarnings = vaultStats.allTimeTotalPnlWithHistory;
-	const graphData = useMemo(
+	const formattedPnlHistory = useMemo(
 		() =>
 			formatPnlHistory(
-				vault?.pnlHistory[selectedGraphOption.value] ?? [],
+				vault?.pnlHistory.dailyAllTimePnls ?? [],
 				GRAPH_VIEW_OPTIONS.find((option) => option.value === graphView)!
 					.snapshotAttribute
 			),
@@ -96,6 +96,10 @@ export default function VaultPerformance() {
 			vaultStats,
 			uiVaultConfig,
 		]
+	);
+
+	const displayedPnlHistory = formattedPnlHistory.slice(
+		-1 * selectedGraphOption.days
 	);
 
 	function formatPnlHistory(
@@ -154,8 +158,8 @@ export default function VaultPerformance() {
 					/>
 				</div>
 				<div className="w-full h-[320px]">
-					{(vault?.pnlHistory[HistoryResolution.ALL].length ?? 0) > 0 && (
-						<PerformanceGraph data={graphData} />
+					{(displayedPnlHistory.length ?? 0) > 0 && (
+						<PerformanceGraph data={displayedPnlHistory} />
 					)}
 				</div>
 			</FadeInDiv>
