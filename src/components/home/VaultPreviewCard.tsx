@@ -238,7 +238,8 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						<span className={twMerge(syne.className, 'text-4xl font-bold')}>
 							{vault.name}
 						</span>
-						<div className="flex items-center gap-2">
+						<div className="flex flex-col items-center gap-2">
+							<span>{vault.description}</span>
 							{vault.permissioned && (
 								<Badge>
 									<div className="flex items-center justify-center gap-1 whitespace-nowrap">
@@ -247,7 +248,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									</div>
 								</Badge>
 							)}
-							<span>{vault.description}</span>
 						</div>
 					</div>
 					<div className="w-full grow flex flex-col items-center justify-end h-[136px]">
