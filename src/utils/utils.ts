@@ -1,3 +1,4 @@
+import { SerializedPerformanceHistory } from '@/types';
 import { HistoryResolution } from '@drift/common';
 import dayjs from 'dayjs';
 
@@ -48,4 +49,23 @@ export const normalizeDate = (
 
 	// closest hour
 	return dayjs.unix(unixTs).startOf('hour').unix();
+};
+
+export const getMaxDailyDrawdown = (
+	history: SerializedPerformanceHistory[]
+) => {
+	let maxDrawdown = 0;
+
+	for (let i = 0; i < history.length - 1; i++) {
+		const currentDayValue = history[i].totalAccountValue;
+		const nextDayValue = history[i + 1].totalAccountValue;
+
+		if (nextDayValue > currentDayValue) continue;
+
+		const drawdown = (nextDayValue - currentDayValue) / (currentDayValue || 1);
+
+		if (drawdown < maxDrawdown) maxDrawdown = drawdown;
+	}
+
+	return maxDrawdown;
 };

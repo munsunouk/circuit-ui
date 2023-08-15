@@ -1,5 +1,9 @@
 import { SerializedPerformanceHistory, SnapshotKey } from '@/types';
-import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import {
+	BigNum,
+	PERCENTAGE_PRECISION,
+	QUOTE_PRECISION_EXP,
+} from '@drift-labs/sdk';
 import {
 	HistoryResolution,
 	UISerializableAccountSnapshot,
@@ -10,6 +14,8 @@ import { useMemo, useState } from 'react';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
+
+import { getMaxDailyDrawdown } from '@/utils/utils';
 
 import { VAULTS } from '@/constants/vaults';
 
@@ -102,6 +108,15 @@ export default function VaultPerformance() {
 		-1 * selectedGraphOption.days
 	);
 
+	const cumulativeReturnsPct =
+		// @ts-ignore - api did not deserialize this to a BigNum
+		+(vault?.pnlHistory.dailyAllTimePnls.slice(-1)[0]
+			?.allTimeTotalPnlPct as string) / PERCENTAGE_PRECISION.toNumber();
+
+	const maxDailyDrawdown = getMaxDailyDrawdown(
+		vault?.pnlHistory.dailyAllTimePnls ?? []
+	);
+
 	function formatPnlHistory(
 		pnlHistory: SerializedPerformanceHistory[],
 		snapshotAttribute: keyof Pick<
@@ -129,8 +144,14 @@ export default function VaultPerformance() {
 						label="Total Earnings (All Time)"
 						value={BigNum.from(totalEarnings, QUOTE_PRECISION_EXP).toNotional()}
 					/>
-					<BreakdownRow label="Cumulative Return" value="$0.00" />
-					<BreakdownRow label="Max Daily Drawdown" value="$0.00" />
+					<BreakdownRow
+						label="Cumulative Return"
+						value={`${(cumulativeReturnsPct * 100).toFixed(2)}%`}
+					/>
+					<BreakdownRow
+						label="Max Daily Drawdown"
+						value={`${(maxDailyDrawdown * 100).toFixed(2)}%`}
+					/>
 				</div>
 			</FadeInDiv>
 

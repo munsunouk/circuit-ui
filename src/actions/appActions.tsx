@@ -525,6 +525,7 @@ const createAppActions = (
 			...history,
 			totalAccountValue: history.totalAccountValue.toNum(),
 			allTimeTotalPnl: history.allTimeTotalPnl.toNum(),
+			allTimeTotalPnlPct: 0,
 		}));
 
 		const formattedSnapshotHistory = {
@@ -575,22 +576,23 @@ const createAppActions = (
 					return {
 						epochTs: normalizeDate(snapshot.epochTs, resolution),
 						totalAccountValue:
-							+snapshot.totalAccountValue +
+							snapshot.totalAccountValue +
 							overlappingPastHistoryDataPoint.totalAccountValue,
 						allTimeTotalPnl:
 							overlappingPastHistoryDataPoint.allTimeTotalPnl +
-							+snapshot.allTimeTotalPnl,
+							snapshot.allTimeTotalPnl,
+						allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
 					};
 				} else {
 					return {
 						epochTs: normalizeDate(snapshot.epochTs, resolution),
 						// allow for data continuation from past history
 						totalAccountValue:
-							+snapshot.totalAccountValue +
+							snapshot.totalAccountValue +
 							lastPointInPastHistory.totalAccountValue,
 						allTimeTotalPnl:
-							+snapshot.allTimeTotalPnl +
-							lastPointInPastHistory.allTimeTotalPnl,
+							snapshot.allTimeTotalPnl + lastPointInPastHistory.allTimeTotalPnl,
+						allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
 					};
 				}
 			});

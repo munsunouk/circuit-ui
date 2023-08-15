@@ -13,5 +13,6 @@ export type PerformanceGraphData = Pick<
 export type SerializedPerformanceHistory = {
 	totalAccountValue: number;
 	allTimeTotalPnl: number;
+	allTimeTotalPnlPct: number;
 	epochTs: number;
 };
