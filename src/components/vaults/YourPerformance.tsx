@@ -74,8 +74,18 @@ export default function YourPerformance() {
 		QUOTE_PRECISION_EXP
 	).toNotional();
 
+	// User fees
+	const profitShareFeePaid = BigNum.from(
+		vaultDepositorAccData?.profitShareFeePaid,
+		QUOTE_PRECISION_EXP
+	);
+	const highWaterMark = BigNum.from(
+		vaultDepositorAccData?.cumulativeProfitShareAmount,
+		QUOTE_PRECISION_EXP
+	);
+
 	return (
-		<div className={'relative flex flex-col gap-8 md:gap-16'}>
+		<div className={'relative flex flex-col gap-8'}>
 			<FadeInDiv>
 				<SectionHeader className="mb-9">Summary</SectionHeader>
 				<div className="flex items-center justify-center w-full gap-4">
@@ -110,6 +120,19 @@ export default function YourPerformance() {
 				</div>
 			</FadeInDiv>
 			<FadeInDiv delay={200}>
+				<SectionHeader className="mb-4">Fees Breakdown</SectionHeader>
+				<div className="flex flex-col gap-2">
+					<BreakdownRow
+						label="Profit Share Fees Paid"
+						value={profitShareFeePaid.toNotional()}
+					/>
+					<BreakdownRow
+						label="High-Water Mark"
+						value={highWaterMark.toNotional()}
+					/>
+				</div>
+			</FadeInDiv>
+			<FadeInDiv delay={300}>
 				<TransactionHistory />
 			</FadeInDiv>
 			{!showUserInfo && (

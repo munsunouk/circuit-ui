@@ -160,8 +160,18 @@ export default function StoreModal() {
 										: '-'
 								}
 							/>
-							<Row label="User Shares" value={vault?.userShares.toString()} />
-							<Row label="Total Shares" value={vault?.totalShares.toString()} />
+							<Row
+								label="User Shares"
+								value={BigNum.from(vault?.userShares, 6)
+									.toNum()
+									.toString()}
+							/>
+							<Row
+								label="Total Shares"
+								value={BigNum.from(vault?.totalShares, 6)
+									.toNum()
+									.toString()}
+							/>
 							<Row
 								label="Net Deposits"
 								value={BigNum.from(
@@ -250,9 +260,7 @@ export default function StoreModal() {
 							/>
 							<Row
 								label="Minimum Deposit"
-								value={`${
-									(vault?.managementFee ?? 0) / PERCENTAGE_PRECISION.toNumber()
-								}%`}
+								value={`${vault?.minimumDeposit.toNumber()}`}
 							/>
 							<Row label="Hurdle Rate" value={vault?.hurdleRate.toString()} />
 						</>
