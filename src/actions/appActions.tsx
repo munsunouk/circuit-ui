@@ -489,17 +489,19 @@ const createAppActions = (
 	};
 
 	const executeVaultWithdrawal = async (vaultAddress: PublicKey) => {
-		const vaultClient = get().vaultClient;
-		const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
+		try {
+			const vaultClient = get().vaultClient;
+			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
-		invariant(vaultClient, 'No vault client');
-		invariant(vaultDepositor, 'No vault depositor');
+			invariant(vaultClient, 'No vault client');
+			invariant(vaultDepositor, 'No vault depositor');
 
-		const tx = await vaultClient
-			.withdraw(vaultDepositor.pubkey)
-			.catch((err) => TransactionErrorHandler.handle(err));
+			const tx = await vaultClient.withdraw(vaultDepositor.pubkey);
 
-		return tx;
+			return tx;
+		} catch (err) {
+			TransactionErrorHandler.handle(err);
+		}
 	};
 
 	const initVaultLiquidation = async (vaultAddress: PublicKey) => {

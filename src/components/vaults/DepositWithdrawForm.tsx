@@ -348,7 +348,7 @@ const WithdrawForm = () => {
 
 	const hasCalcMaxSharesOnce = useRef(false);
 
-	const tvl = vaultStats.totalAccountValueWithHistory;
+	const tvl = vaultStats.totalAccountValue;
 
 	// withdrawal variables
 	const withdrawalWaitingPeriod = redeemPeriodToString(
