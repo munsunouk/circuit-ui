@@ -33,6 +33,10 @@ export class TransactionErrorHandler {
 	): void {
 		console.error(error);
 
+		if (error?.logs) {
+			console.error(error.logs);
+		}
+
 		// Common errors
 		const commonError = COMMON_ERRORS.find(
 			(commonError) => !!error?.message?.match(commonError.match)
