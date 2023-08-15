@@ -19,7 +19,7 @@ import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import FadeInDiv from '../elements/FadeInDiv';
 import Loading from '../elements/Loading';
-import DevFunctions from './DevFunction';
+import DevFunctions from './DevFunctions';
 
 export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(

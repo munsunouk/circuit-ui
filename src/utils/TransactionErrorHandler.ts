@@ -31,6 +31,8 @@ export class TransactionErrorHandler {
 			toastId?: string;
 		}
 	): void {
+		console.error(error);
+
 		// Common errors
 		const commonError = COMMON_ERRORS.find(
 			(commonError) => !!error?.message?.match(commonError.match)

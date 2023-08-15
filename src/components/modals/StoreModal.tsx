@@ -9,7 +9,6 @@ import { useState } from 'react';
 import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
-import { useCurrentVault } from '@/hooks/useVault';
 
 import { redeemPeriodToString } from '@/utils/utils';
 
@@ -58,14 +57,14 @@ export default function StoreModal() {
 				<ButtonTabs
 					tabs={[
 						{
-							label: 'Vault Depositor',
-							selected: tab === Tab.VaultDepositor,
-							onSelect: () => setTab(Tab.VaultDepositor),
-						},
-						{
 							label: 'Vault',
 							selected: tab === Tab.Vault,
 							onSelect: () => setTab(Tab.Vault),
+						},
+						{
+							label: 'Vault Depositor',
+							selected: tab === Tab.VaultDepositor,
+							onSelect: () => setTab(Tab.VaultDepositor),
 						},
 					]}
 					className="mb-4"

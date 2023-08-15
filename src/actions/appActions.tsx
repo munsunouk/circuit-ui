@@ -61,9 +61,8 @@ const createAppActions = (
 	const setupVaultClient = () => {
 		const state = getCommon();
 
-		if (!state.connection || !state.driftClient.client) {
-			throw new Error('No connection');
-		}
+		invariant(state.connection, 'No connection');
+		invariant(state.driftClient.client, 'No drift client');
 
 		const vaultClient = getVaultClient(
 			state.connection,
@@ -83,9 +82,8 @@ const createAppActions = (
 	const fetchVault = async (vaultAddress: PublicKey) => {
 		const state = getCommon();
 
-		if (!state.connection || !state.driftClient.client) {
-			throw new Error('No connection');
-		}
+		invariant(state.connection, 'No connection');
+		invariant(state.driftClient.client, 'No drift client');
 
 		const [
 			{ vaultDriftClient, vaultDriftUser, vaultDriftUserAccount },
@@ -149,9 +147,7 @@ const createAppActions = (
 	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {
 		const commonState = getCommon();
 
-		if (!commonState.connection) {
-			throw new Error('No connection');
-		}
+		invariant(commonState.connection, 'No connection');
 
 		// Create Vault's DriftClient
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultPubKey);
@@ -184,7 +180,7 @@ const createAppActions = (
 			vaultPubKey
 		);
 
-		if (!userAccounts) {
+		if (!userAccounts || userAccounts.length === 0) {
 			throw new Error(
 				'No user account found for vault:' + vaultPubKey.toString()
 			);
@@ -230,7 +226,7 @@ const createAppActions = (
 	const initVaultSubscriber = async (vaultAddress: PublicKey) => {
 		const connection = getCommon().connection;
 
-		if (!connection) throw new Error('No connection');
+		invariant(connection, 'No connection');
 
 		const accountLoader = new BulkAccountLoader(
 			connection,
@@ -389,7 +385,7 @@ const createAppActions = (
 			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 			const connection = getCommon().connection;
 
-			if (!connection) throw new Error('No connection');
+			invariant(connection, 'No connection');
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
 				NOTIFICATION_UTILS.toast.error(
@@ -399,10 +395,7 @@ const createAppActions = (
 			}
 
 			const vaultClient = get().vaultClient;
-
-			if (!vaultClient) {
-				throw new Error('No vault client');
-			}
+			invariant(vaultClient, 'No vault client');
 
 			let tx: string;
 			if (!vaultDepositor) {
@@ -438,7 +431,6 @@ const createAppActions = (
 
 			return tx;
 		} catch (err) {
-			console.error(err);
 			TransactionErrorHandler.handle(err);
 		}
 	};
@@ -452,9 +444,8 @@ const createAppActions = (
 			const vaultAccountData = get().getVaultAccountData(vaultAddress);
 			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
-			if (!vaultClient || !vaultDepositor) {
-				throw new Error('No vault client/vault depositor found');
-			}
+			invariant(vaultClient, 'No vault client');
+			invariant(vaultDepositor, 'No vault depositor');
 
 			const tx = await vaultClient.requestWithdraw(
 				vaultDepositor.pubkey,
@@ -473,7 +464,6 @@ const createAppActions = (
 
 			return tx;
 		} catch (err) {
-			console.error(err);
 			TransactionErrorHandler.handle(err);
 		}
 	};
@@ -483,9 +473,8 @@ const createAppActions = (
 			const vaultClient = get().vaultClient;
 			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
-			if (!vaultClient || !vaultDepositor) {
-				throw new Error('No vault client/vault depositor found');
-			}
+			invariant(vaultClient, 'No vault client');
+			invariant(vaultDepositor, 'No vault depositor');
 
 			const tx = await vaultClient.cancelRequestWithdraw(vaultDepositor.pubkey);
 
@@ -495,7 +484,6 @@ const createAppActions = (
 
 			return tx;
 		} catch (err) {
-			console.error(err);
 			TransactionErrorHandler.handle(err);
 		}
 	};
@@ -504,11 +492,26 @@ const createAppActions = (
 		const vaultClient = get().vaultClient;
 		const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
 
-		if (!vaultClient || !vaultDepositor) {
-			throw new Error('No vault client/vault depositor found');
-		}
+		invariant(vaultClient, 'No vault client');
+		invariant(vaultDepositor, 'No vault depositor');
 
-		const tx = await vaultClient.withdraw(vaultDepositor.pubkey);
+		const tx = await vaultClient
+			.withdraw(vaultDepositor.pubkey)
+			.catch((err) => TransactionErrorHandler.handle(err));
+
+		return tx;
+	};
+
+	const initVaultLiquidation = async (vaultAddress: PublicKey) => {
+		const vaultClient = get().vaultClient;
+		const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
+
+		invariant(vaultClient, 'No vault client');
+		invariant(vaultDepositor, 'No vault depositor');
+
+		const tx = await vaultClient
+			.liquidate(vaultDepositor.pubkey)
+			.catch((err) => TransactionErrorHandler.handle(err));
 
 		return tx;
 	};
@@ -633,6 +636,7 @@ const createAppActions = (
 		requestVaultWithdrawal,
 		cancelRequestWithdraw,
 		executeVaultWithdrawal,
+		initVaultLiquidation,
 	};
 };
 
