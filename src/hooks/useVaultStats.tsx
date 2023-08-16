@@ -1,8 +1,9 @@
-import { BN, PublicKey } from '@drift-labs/sdk';
+import { BN, PublicKey, ZERO } from '@drift-labs/sdk';
 import { useEffect, useState } from 'react';
 
 import { VAULTS } from '@/constants/vaults';
 
+import useAppStore from './useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 import { useVault } from './useVault';
 
@@ -13,6 +14,7 @@ interface VaultStats {
 	allTimeTotalPnl: BN;
 	totalAccountValueWithHistory: BN;
 	allTimeTotalPnlWithHistory: BN;
+	netDepositsWithHistory: BN;
 	isLoaded: boolean;
 }
 
@@ -21,12 +23,16 @@ const DEFAULT_VAULT_STATS: VaultStats = {
 	allTimeTotalPnl: new BN(0),
 	totalAccountValueWithHistory: new BN(0),
 	allTimeTotalPnlWithHistory: new BN(0),
+	netDepositsWithHistory: new BN(0),
 	isLoaded: false,
 };
 
 export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	const vault = useVault(vaultPubKey);
 	const vaultDriftUser = vault?.vaultDriftUser;
+	const vaultAccountData = useAppStore((s) =>
+		s.getVaultAccountData(vaultPubKey)
+	);
 
 	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
 
@@ -44,7 +50,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		}, UPDATE_FREQUENCY_MS);
 
 		return () => clearInterval(interval);
-	}, [vaultDriftUser, uiVaultConfig]);
+	}, [vaultDriftUser, uiVaultConfig, vaultAccountData]);
 
 	function calcVaultStats() {
 		if (!vaultDriftUser) return DEFAULT_VAULT_STATS;
@@ -56,6 +62,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 
 		let totalAccountValueWithHistory = totalAccountValue;
 		let allTimeTotalPnlWithHistory = allTimeTotalPnl;
+		let netDepositsWithHistory = vaultAccountData?.netDeposits || ZERO;
 
 		if (uiVaultConfig?.pastPerformanceHistory) {
 			const lastPastHistoryPoint =
@@ -67,6 +74,9 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 			allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
 				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
 			);
+			netDepositsWithHistory = netDepositsWithHistory.add(
+				new BN(lastPastHistoryPoint.netDeposits.toString())
+			);
 		}
 
 		return {
@@ -74,6 +84,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 			allTimeTotalPnl,
 			totalAccountValueWithHistory,
 			allTimeTotalPnlWithHistory,
+			netDepositsWithHistory,
 			isLoaded: true,
 		};
 	}

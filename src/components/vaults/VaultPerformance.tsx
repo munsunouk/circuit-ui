@@ -1,6 +1,8 @@
 import { SerializedPerformanceHistory, SnapshotKey } from '@/types';
 import {
+	BN,
 	BigNum,
+	ONE,
 	PERCENTAGE_PRECISION,
 	QUOTE_PRECISION_EXP,
 } from '@drift-labs/sdk';
@@ -108,10 +110,20 @@ export default function VaultPerformance() {
 		-1 * selectedGraphOption.days
 	);
 
-	const cumulativeReturnsPct =
-		// @ts-ignore - api did not deserialize this to a BigNum
-		+(vault?.pnlHistory.dailyAllTimePnls.slice(-1)[0]
-			?.allTimeTotalPnlPct as string) / PERCENTAGE_PRECISION.toNumber();
+	const totalAccountValueBigNum = BigNum.from(
+		vaultStats.totalAccountValueWithHistory,
+		QUOTE_PRECISION_EXP
+	);
+	const netDepositsBigNum = BigNum.from(
+		vaultStats.netDepositsWithHistory,
+		QUOTE_PRECISION_EXP
+	);
+
+	const cumulativeReturnsPct = totalAccountValueBigNum
+		.sub(netDepositsBigNum)
+		.mul(PERCENTAGE_PRECISION)
+		.div(BN.max(netDepositsBigNum.val, ONE))
+		.toNum();
 
 	const maxDailyDrawdown = getMaxDailyDrawdown(
 		vault?.pnlHistory.dailyAllTimePnls ?? []
