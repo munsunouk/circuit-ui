@@ -63,6 +63,7 @@
     "@svgr/cli": "^8.0.1",
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "eslint-plugin-unused-imports": "^3.0.0",
     "husky": "^8.0.0",
     "prettier": "^3.0.0"
   }

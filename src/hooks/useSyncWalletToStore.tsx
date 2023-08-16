@@ -3,7 +3,6 @@ import { BASE_PRECISION_EXP, BigNum } from '@drift-labs/sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 
-import { useAppActions } from './useAppActions';
 import useAppStore from './useAppStore';
 
 /**

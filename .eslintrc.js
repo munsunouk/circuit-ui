@@ -2,7 +2,7 @@ module.exports = {
 	parserOptions: {
 		sourceType: 'module',
 	},
-	plugins: ['react-hooks'],
+	plugins: ['react-hooks', 'unused-imports'],
 	extends: ['plugin:react/recommended', 'next'],
 	env: {
 		es6: true,
@@ -24,6 +24,7 @@ module.exports = {
 		'react-hooks/exhaustive-deps': 'off',
 		'react/no-unknown-property': 'off',
 		'react/react-in-jsx-scope': 0,
+		'unused-imports/no-unused-imports': 'error',
 		'no-restricted-imports': [
 			'error',
 			{
