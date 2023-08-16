@@ -3,6 +3,7 @@
 import { useCommonDriftStore } from '@drift-labs/react';
 import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
+import dayjs from 'dayjs';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
@@ -11,9 +12,10 @@ import { twMerge } from 'tailwind-merge';
 
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
+import { useCurrentVault, useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
-import { encodeVaultName } from '@/utils/utils';
+import { encodeVaultName, getHistoricalApy } from '@/utils/utils';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { UiVaultConfig } from '@/constants/vaults';
@@ -52,18 +54,13 @@ function VaultStat({
 }
 
 interface VaultStatsProps {
-	thirtyDayReturn: string;
+	apy: string;
 	tvl: string;
 	capacity: number;
 	loading: boolean;
 }
 
-function VaultStats({
-	thirtyDayReturn,
-	tvl,
-	capacity,
-	loading,
-}: VaultStatsProps) {
+function VaultStats({ apy, tvl, capacity, loading }: VaultStatsProps) {
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
@@ -73,11 +70,7 @@ function VaultStats({
 	return (
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
-				{/* <VaultStat
-					label={'30D Return'}
-					value={thirtyDayReturn}
-					loading={loading}
-				/> */}
+				<VaultStat label={'APY'} value={apy} loading={loading} />
 				<VaultStat label={'TVL'} value={`$${tvl}`} loading={loading} />
 				<VaultStat
 					label={'Capacity'}
@@ -153,10 +146,13 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	const vaultPubkey = vault.pubkeyString
 		? new PublicKey(vault.pubkeyString)
 		: undefined;
+	const vaultStore = useVault(vaultPubkey);
 	const vaultAccountData = useAppStore((s) =>
 		s.getVaultAccountData(vaultPubkey)
 	);
 	const vaultStats = useVaultStats(vaultPubkey);
+	const pnlHistory = vaultStore?.pnlHistory.dailyAllTimePnls ?? [];
+	const firstPnl = pnlHistory[0];
 
 	const [isHover, setIsHover] = useState(false);
 
@@ -165,6 +161,11 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	const capacityPct = Math.min(
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
 		100
+	);
+	const historicalApy = getHistoricalApy(
+		vaultStats.netDepositsWithHistory.toNumber(),
+		vaultStats.totalAccountValueWithHistory.toNumber(),
+		firstPnl?.epochTs ?? dayjs().subtract(1, 'year').unix()
 	);
 
 	useEffect(() => {
@@ -233,7 +234,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 			>
 				{/** Background blur + grayscale (separated to allow isolation of inner content from grayscale ) */}
 				<div className="absolute inset-0 backdrop-blur" />
-				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-16 md:py-10 isolate grow">
+				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-8 md:py-10 isolate grow">
 					<div className="flex flex-col items-center gap-2">
 						<span className={twMerge(syne.className, 'text-4xl font-bold')}>
 							{vault.name}
@@ -264,7 +265,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						{!!vault?.pubkeyString && (
 							<div className="flex flex-col items-center justify-end w-full">
 								<VaultStats
-									thirtyDayReturn="12%"
+									apy={`${(historicalApy * 100).toFixed(2)}%`}
 									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toMillified()}
 									capacity={capacityPct}
 									loading={!vaultStats.isLoaded}

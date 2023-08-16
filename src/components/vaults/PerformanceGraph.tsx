@@ -55,7 +55,7 @@ const getDateTicks = (
 	const firstDate = dayjs.unix(firstDateTs);
 	const ticks = [];
 
-	while (currentDate.isAfter(firstDate)) {
+	while (currentDate.isSameOrAfter(firstDate)) {
 		ticks.push(currentDate.unix());
 		currentDate = currentDate.subtract(interval, unit);
 	}
@@ -224,6 +224,7 @@ export default function PerformanceGraph({
 						`$${BigNum.from(tick, QUOTE_PRECISION_EXP).toMillified()}`
 					}
 					tickMargin={8}
+					domain={['auto', 'auto']}
 				/>
 				<Tooltip
 					/* @ts-ignore */

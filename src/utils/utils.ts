@@ -125,3 +125,13 @@ export const getUserMaxDailyDrawdown = (
 
 	return maxDrawdown;
 };
+
+export const getHistoricalApy = (
+	netDeposits: number,
+	totalAccountValue: number,
+	startTs: number
+) => {
+	const days = (dayjs().unix() - startTs) / 60 / 60 / 24;
+	const apy = ((totalAccountValue - netDeposits) / netDeposits) * (365 / days);
+	return apy;
+};
