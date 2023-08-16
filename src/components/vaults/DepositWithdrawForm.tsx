@@ -357,8 +357,11 @@ const WithdrawForm = () => {
 	const withdrawalAvailableTs =
 		vaultDepositorAccountData?.lastWithdrawRequestTs.toNumber() +
 		vaultAccountData?.redeemPeriod.toNumber();
-	const lastRequestedAmount =
+	const lastRequestedShares =
 		vaultDepositorAccountData?.lastWithdrawRequestShares ?? new BN(0);
+	const lastRequestedUsdcValue =
+		lastRequestedShares.mul(tvl).div(vaultAccountData?.totalShares) ??
+		new BN(0);
 
 	const isButtonDisabled =
 		(+amount === 0 && withdrawalState === WithdrawalState.UnRequested) ||
@@ -401,7 +404,7 @@ const WithdrawForm = () => {
 	}, [vaultDepositorAccount, vaultAccountData, tvl]);
 
 	useEffect(() => {
-		const hasRequestedWithdrawal = lastRequestedAmount.toNumber() > 0;
+		const hasRequestedWithdrawal = lastRequestedShares.toNumber() > 0;
 		const isBeforeWithdrawalAvailableDate = dayjs().isBefore(
 			dayjs.unix(withdrawalAvailableTs)
 		);
@@ -415,7 +418,7 @@ const WithdrawForm = () => {
 		} else {
 			setWithdrawalState(WithdrawalState.UnRequested);
 		}
-	}, [withdrawalAvailableTs, lastRequestedAmount.toNumber()]);
+	}, [withdrawalAvailableTs, lastRequestedShares.toNumber()]);
 
 	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
 
@@ -481,12 +484,12 @@ const WithdrawForm = () => {
 								)}
 							>
 								{BigNum.from(
-									lastRequestedAmount,
-									VAULT_SHARES_PRECISION_EXP
-								).toPrecision(VAULT_SHARES_PRECISION_EXP)}{' '}
+									lastRequestedUsdcValue,
+									QUOTE_PRECISION_EXP
+								).toPrecision(QUOTE_PRECISION_EXP)}{' '}
 								{withdrawalState === WithdrawalState.Requested
-									? 'shares withdrawal requested'
-									: 'shares available for withdrawal'}
+									? 'USDC withdrawal requested'
+									: 'USDC available for withdrawal'}
 							</span>
 						)}
 						<Button
