@@ -30,6 +30,7 @@ import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { ToastContent } from 'react-toastify';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
 
@@ -424,7 +425,8 @@ const createAppActions = (
 				tx = await vaultClient.deposit(vaultDepositor.pubkey, amount);
 			}
 
-			NOTIFICATION_UTILS.toast.success(
+			await handleSentTxn(
+				tx,
 				`You have successfully deposited ${BigNum.from(
 					amount,
 					QUOTE_PRECISION_EXP
@@ -455,7 +457,8 @@ const createAppActions = (
 				WithdrawUnit.SHARES_PERCENT
 			);
 
-			NOTIFICATION_UTILS.toast.success(
+			await handleSentTxn(
+				tx,
 				<ToastWithMessage
 					title="Withdrawal Requested"
 					message={`You may make your withdrawal in ${redeemPeriodToString(
@@ -480,7 +483,8 @@ const createAppActions = (
 
 			const tx = await vaultClient.cancelRequestWithdraw(vaultDepositor.pubkey);
 
-			NOTIFICATION_UTILS.toast.success(
+			await handleSentTxn(
+				tx,
 				'You have successfully cancelled your withdrawal request'
 			);
 
@@ -499,6 +503,8 @@ const createAppActions = (
 			invariant(vaultDepositor, 'No vault depositor');
 
 			const tx = await vaultClient.withdraw(vaultDepositor.pubkey);
+
+			await handleSentTxn(tx, 'You have successfully withdrew your funds.');
 
 			return tx;
 		} catch (err) {
@@ -614,6 +620,40 @@ const createAppActions = (
 		);
 
 		return withinResolutionHistory;
+	};
+
+	/**
+	 * Checks if the given tx is confirmed, and if so, shows a success toast.
+	 * Used when `skipPreflight` is true. This allows a failed txn to still be sent
+	 * to the blockchain, allowing for easy on-chain debugging.
+	 */
+	const handleSentTxn = async (
+		tx: string,
+		successMessage: ToastContent<unknown>
+	) => {
+		const connection = getCommon().connection;
+		const driftClient = getCommon().driftClient;
+
+		invariant(connection, 'No connection');
+
+		const latestBlockhash = await connection.getLatestBlockhash(
+			driftClient.client?.opts?.commitment ?? 'confirmed'
+		);
+		const confirmedTx = await connection.confirmTransaction({
+			signature: tx,
+			...latestBlockhash,
+		});
+		if (confirmedTx.value.err) {
+			const error = new Error(confirmedTx.value.err.toString());
+			if ((confirmedTx.value.err as any).InstructionError?.[1].Custom) {
+				// @ts-ignore
+				error.code = (confirmedTx.value.err as any).InstructionError?.[1]
+					.Custom;
+			}
+			throw error;
+		}
+
+		NOTIFICATION_UTILS.toast.success(successMessage);
 	};
 
 	return {
