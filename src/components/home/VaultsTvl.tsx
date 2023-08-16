@@ -19,9 +19,22 @@ export default function VaultTvl() {
 	const isLoading = numOfUiVaults !== Object.keys(allVaults).length;
 
 	const combinedTvl = Object.values(allVaults).reduce((sum, vault) => {
+		const uiVaultConfig = VAULTS.find(
+			(v) => v.pubkeyString === vault?.vaultAccountData?.pubkey.toString()
+		);
+
 		const collateral = vault?.vaultDriftUser.getNetSpotMarketValue();
 		const unrealizedPNL = vault?.vaultDriftUser.getUnrealizedPNL();
-		const netUsdValue = collateral.add(unrealizedPNL);
+		let netUsdValue = collateral.add(unrealizedPNL);
+
+		if (uiVaultConfig?.pastPerformanceHistory) {
+			const lastPastHistoryPoint =
+				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
+
+			netUsdValue = netUsdValue.add(
+				new BN(lastPastHistoryPoint.totalAccountValue.toNum())
+			);
+		}
 
 		return sum.add(netUsdValue);
 	}, new BN(0));
