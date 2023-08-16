@@ -101,6 +101,10 @@ const createAppActions = (
 			vaultAccount: vaultSubscriber,
 			vaultAccountData: vaultAccount,
 			pnlHistory: combinedSnapshotsHistories,
+			eventRecords: {
+				records: [],
+				isLoaded: false,
+			},
 		};
 
 		set((s) => {
@@ -290,6 +294,9 @@ const createAppActions = (
 		if (!vaultDepositorAccountData) {
 			console.log('User is not a vault depositor');
 			await vaultDepositorAccount.unsubscribe();
+			set((s) => {
+				s.vaults[vaultAddress.toString()]!.eventRecords.isLoaded = true;
+			});
 			return;
 		}
 

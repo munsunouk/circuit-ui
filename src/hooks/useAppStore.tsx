@@ -28,7 +28,7 @@ export interface AppStoreState {
 					vaultAccountData: Vault; // we store the actual account data so we know when it updates
 					vaultDepositorAccount?: VaultDepositorAccount;
 					vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
-					eventRecords?: { records: WrappedEvents; isLoaded: boolean };
+					eventRecords: { records: WrappedEvents; isLoaded: boolean };
 					pnlHistory: {
 						dailyAllTimePnls: SerializedPerformanceHistory[];
 					};

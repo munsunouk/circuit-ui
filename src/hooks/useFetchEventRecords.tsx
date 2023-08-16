@@ -13,7 +13,7 @@ export default function useFetchEventRecords(
 	);
 
 	useEffect(() => {
-		if (vaultPubKey && vaultDepositorAccountData) {
+		if (vaultPubKey) {
 			appActions.fetchVaultDepositorEvents(vaultPubKey);
 		}
 	}, [vaultPubKey, vaultDepositorAccountData]);

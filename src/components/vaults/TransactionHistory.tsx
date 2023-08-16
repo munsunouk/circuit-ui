@@ -1,4 +1,4 @@
-import { BigNum } from '@drift-labs/sdk';
+import { BigNum, ZERO } from '@drift-labs/sdk';
 import {
 	EventType,
 	VaultDepositorAction,
@@ -37,10 +37,20 @@ const getLabel = (record: WrappedEvent<EventType>) => {
 				spotMarket.precisionExp
 			).toNum()} ${spotMarket.symbol}`;
 		case enumToStr(VaultDepositorAction.WITHDRAW):
-			return `Withdrew ${BigNum.from(
-				record.amount,
-				spotMarket.precisionExp
-			).toNum()} ${spotMarket.symbol}`;
+			const isFullWithdrawal = record.vaultSharesAfter.eq(ZERO);
+
+			return (
+				<>
+					<span>
+						Withdrew{' '}
+						{BigNum.from(record.amount, spotMarket.precisionExp).toNum()}{' '}
+						{spotMarket.symbol}
+					</span>
+					<span className="opacity-60">
+						{isFullWithdrawal ? ' [Full Withdrawal]' : ''}
+					</span>
+				</>
+			);
 		case enumToStr(VaultDepositorAction.CANCEL_WITHDRAW_REQUEST):
 			return `Cancel withdrawal request`;
 		case enumToStr(VaultDepositorAction.WITHDRAW_REQUEST):
