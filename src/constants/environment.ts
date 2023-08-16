@@ -34,10 +34,11 @@ const Env: EnvironmentVariables = {
 		? Number(process.env.NEXT_PUBLIC_BASE_POLLING_RATE_MS)
 		: 1000,
 	rpcOverride: process.env.NEXT_PUBLIC_RPC_OVERRIDE,
-	historyServerUrl:
-		process.env.NEXT_PUBLIC_DRIFT_ENV === 'mainnet-beta'
-			? EnvironmentConstants.historyServerUrl.mainnet
-			: EnvironmentConstants.historyServerUrl.dev,
+	historyServerUrl: process.env.NEXT_PUBLIC_EXCHANGE_HISTORY_SERVER_URL
+		? process.env.NEXT_PUBLIC_EXCHANGE_HISTORY_SERVER_URL
+		: process.env.NEXT_PUBLIC_DRIFT_ENV === 'mainnet-beta'
+		? EnvironmentConstants.historyServerUrl.mainnet
+		: EnvironmentConstants.historyServerUrl.dev,
 };
 
 export const OrderedSpotMarkets = [...MainnetSpotMarkets].sort(

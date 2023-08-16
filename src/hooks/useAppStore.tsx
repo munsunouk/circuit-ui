@@ -8,7 +8,6 @@ import {
 	VaultDepositorAccount,
 	WrappedEvents,
 } from '@drift-labs/vaults-sdk';
-import { HistoryResolution, UISnapshotHistory } from '@drift/common';
 import { produce } from 'immer';
 import { create } from 'zustand';
 
@@ -31,11 +30,7 @@ export interface AppStoreState {
 					vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
 					eventRecords?: { records: WrappedEvents; isLoaded: boolean };
 					pnlHistory: {
-						[HistoryResolution.DAY]: SerializedPerformanceHistory[];
-						[HistoryResolution.WEEK]: SerializedPerformanceHistory[];
-						[HistoryResolution.MONTH]: SerializedPerformanceHistory[];
-						[HistoryResolution.ALL]: SerializedPerformanceHistory[];
-						dailyAllTimePnls: UISnapshotHistory['dailyAllTimePnls'];
+						dailyAllTimePnls: SerializedPerformanceHistory[];
 					};
 			  }
 			| undefined;

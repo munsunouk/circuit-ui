@@ -6,7 +6,10 @@ import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
+import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
+
+import { getUserMaxDailyDrawdown } from '@/utils/utils';
 
 import { sourceCodePro } from '@/constants/fonts';
 
@@ -40,6 +43,7 @@ export default function YourPerformance() {
 	const vaultDepositorAccData = useCurrentVaultDepositorAccData();
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
+	const vault = useCurrentVault();
 
 	const showUserInfo = connected || !!authority;
 
@@ -63,16 +67,20 @@ export default function YourPerformance() {
 		vaultAccountBalance * userSharesProportion;
 	let totalEarnings =
 		userTotalWithdraws - userTotalDeposits + userAccountBalanceProportion;
-
 	// prevent $-0.00
 	if (totalEarnings < 0 && totalEarnings > -BUFFER) {
 		totalEarnings = 0;
 	}
-
 	const totalEarningsString = BigNum.from(
 		totalEarnings,
 		QUOTE_PRECISION_EXP
 	).toNotional();
+
+	// Max daily drawdown
+	const maxDailyDrawdown = getUserMaxDailyDrawdown(
+		vault?.pnlHistory.dailyAllTimePnls ?? [],
+		vault?.eventRecords?.records ?? []
+	);
 
 	// User fees
 	const profitShareFeePaid = BigNum.from(
@@ -116,7 +124,10 @@ export default function YourPerformance() {
 							)
 						)}%`}
 					/>
-					<BreakdownRow label="Max Daily Drawdown" value="-3.41%" />
+					<BreakdownRow
+						label="Max Daily Drawdown"
+						value={`${(maxDailyDrawdown * 100).toFixed(2)}%`}
+					/>
 				</div>
 			</FadeInDiv>
 			<FadeInDiv delay={200}>

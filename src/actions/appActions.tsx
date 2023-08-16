@@ -25,12 +25,7 @@ import {
 	getVaultClient,
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
-import {
-	COMMON_UI_UTILS,
-	HistoryResolution,
-	UISerializableAccountSnapshot,
-	UISnapshotHistory,
-} from '@drift/common';
+import { COMMON_UI_UTILS, HistoryResolution } from '@drift/common';
 import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -122,23 +117,23 @@ const createAppActions = (
 
 	const fetchVaultSnapshots = async (userAccount: PublicKey) => {
 		try {
-			const res = await axios.get<{ data: UISnapshotHistory[] }>(
+			const dailyAllTimePnlRes = await axios.get<{
+				data: SerializedPerformanceHistory[][];
+			}>(
 				`${
 					Env.historyServerUrl
-				}/userSnapshots/?userPubKeys=${userAccount.toString()}`
+				}/dailyAllTimeUserSnapshots/?userPubKeys=${userAccount.toString()}`
 			);
 
-			const snapshots = res.data.data;
+			const result = {
+				dailyAllTimePnls: dailyAllTimePnlRes.data.data[0],
+			};
 
-			return snapshots[0];
+			return result;
 		} catch (err) {
 			console.error(err);
 
 			return {
-				[HistoryResolution.DAY]: [],
-				[HistoryResolution.WEEK]: [],
-				[HistoryResolution.MONTH]: [],
-				[HistoryResolution.ALL]: [],
 				dailyAllTimePnls: [],
 			};
 		}
@@ -520,7 +515,9 @@ const createAppActions = (
 
 	const combineVaultHistories = (
 		vaultAddress: string,
-		snapshot: UISnapshotHistory
+		snapshot: {
+			dailyAllTimePnls: SerializedPerformanceHistory[];
+		}
 	) => {
 		const uiVaultConfig = VAULTS.find(
 			(vault) => vault.pubkeyString === vaultAddress
@@ -530,34 +527,16 @@ const createAppActions = (
 			...history,
 			totalAccountValue: history.totalAccountValue.toNum(),
 			allTimeTotalPnl: history.allTimeTotalPnl.toNum(),
+			allTimeTotalPnlPct: 0,
 		}));
 
 		const formattedSnapshotHistory = {
-			[HistoryResolution.DAY]: combineVaultHistoriesForResolution(
+			dailyAllTimePnls: combineVaultHistoriesForResolution(
 				formattedPastHistory,
-				snapshot[HistoryResolution.DAY],
-				HistoryResolution.DAY,
-				dayjs().subtract(2, 'day').startOf('day')
-			),
-			[HistoryResolution.WEEK]: combineVaultHistoriesForResolution(
-				formattedPastHistory,
-				snapshot[HistoryResolution.WEEK],
-				HistoryResolution.WEEK,
-				dayjs().subtract(1, 'week').startOf('day')
-			),
-			[HistoryResolution.MONTH]: combineVaultHistoriesForResolution(
-				formattedPastHistory,
-				snapshot[HistoryResolution.MONTH],
-				HistoryResolution.MONTH,
-				dayjs().subtract(1, 'month').startOf('day')
-			),
-			[HistoryResolution.ALL]: combineVaultHistoriesForResolution(
-				formattedPastHistory,
-				snapshot[HistoryResolution.ALL],
+				snapshot.dailyAllTimePnls,
 				HistoryResolution.ALL,
 				dayjs.unix(0)
 			),
-			dailyAllTimePnls: snapshot.dailyAllTimePnls,
 		};
 
 		return formattedSnapshotHistory;
@@ -569,7 +548,7 @@ const createAppActions = (
 	// flowed from an old vault to a new vault)
 	const combineVaultHistoriesForResolution = (
 		pastHistory: SerializedPerformanceHistory[],
-		snapshotHistory: UISerializableAccountSnapshot[],
+		snapshotHistory: SerializedPerformanceHistory[],
 		resolution: HistoryResolution,
 		firstDate: dayjs.Dayjs
 	) => {
@@ -599,22 +578,23 @@ const createAppActions = (
 					return {
 						epochTs: normalizeDate(snapshot.epochTs, resolution),
 						totalAccountValue:
-							+snapshot.totalAccountValue +
+							snapshot.totalAccountValue +
 							overlappingPastHistoryDataPoint.totalAccountValue,
 						allTimeTotalPnl:
 							overlappingPastHistoryDataPoint.allTimeTotalPnl +
-							+snapshot.allTimeTotalPnl,
+							snapshot.allTimeTotalPnl,
+						allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
 					};
 				} else {
 					return {
 						epochTs: normalizeDate(snapshot.epochTs, resolution),
 						// allow for data continuation from past history
 						totalAccountValue:
-							+snapshot.totalAccountValue +
+							snapshot.totalAccountValue +
 							lastPointInPastHistory.totalAccountValue,
 						allTimeTotalPnl:
-							+snapshot.allTimeTotalPnl +
-							lastPointInPastHistory.allTimeTotalPnl,
+							snapshot.allTimeTotalPnl + lastPointInPastHistory.allTimeTotalPnl,
+						allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
 					};
 				}
 			});
