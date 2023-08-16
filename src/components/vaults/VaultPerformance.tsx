@@ -1,4 +1,4 @@
-import { SerializedPerformanceHistory, SnapshotKey } from '@/types';
+import { SnapshotKey } from '@/types';
 import {
 	BN,
 	BigNum,
@@ -6,20 +6,15 @@ import {
 	PERCENTAGE_PRECISION,
 	QUOTE_PRECISION_EXP,
 } from '@drift-labs/sdk';
-import {
-	HistoryResolution,
-	UISerializableAccountSnapshot,
-} from '@drift/common';
+import { HistoryResolution } from '@drift/common';
 import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
-import { getHistoricalApy, getMaxDailyDrawdown } from '@/utils/utils';
-
-import { VAULTS } from '@/constants/vaults';
+import { getHistoricalApy, getMaxDailyDrawdown } from '@/utils/vaults';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
@@ -84,27 +79,26 @@ export default function VaultPerformance() {
 	const [selectedGraphOption, setSelectedGraphOption] = useState(
 		PERFORMANCE_GRAPH_OPTIONS[0]
 	);
-	const [graphView, setGraphView] = useState(GraphView.VaultBalance);
+	const [graphView, setGraphView] = useState(GRAPH_VIEW_OPTIONS[0]);
 
-	const uiVaultConfig = VAULTS.find(
-		(vault) => vault.pubkeyString === vaultAccountData?.pubkey.toString()
-	);
 	const totalEarnings = vaultStats.allTimeTotalPnlWithHistory;
-	const formattedPnlHistory = useMemo(
-		() =>
-			formatPnlHistory(
-				vault?.pnlHistory.dailyAllTimePnls ?? [],
-				GRAPH_VIEW_OPTIONS.find((option) => option.value === graphView)!
-					.snapshotAttribute
-			),
-		[
-			selectedGraphOption,
-			vault?.pnlHistory,
-			graphView,
-			vaultStats,
-			uiVaultConfig,
-		]
-	);
+	const allTimePnlHistory =
+		vault?.pnlHistory.dailyAllTimePnls
+			.map((pnl) => ({
+				totalAccountValue: pnl.totalAccountValue,
+				allTimeTotalPnl: pnl.allTimeTotalPnl,
+				epochTs: pnl.epochTs,
+			}))
+			.concat({
+				totalAccountValue: vaultStats.totalAccountValueWithHistory.toNumber(),
+				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
+				epochTs: dayjs().unix(),
+			}) ?? [];
+
+	const formattedPnlHistory = allTimePnlHistory.map((snapshot) => ({
+		x: snapshot.epochTs,
+		y: snapshot[graphView.snapshotAttribute],
+	}));
 
 	const displayedPnlHistory = formattedPnlHistory.slice(
 		-1 * selectedGraphOption.days
@@ -130,27 +124,7 @@ export default function VaultPerformance() {
 		vaultStats.totalAccountValueWithHistory.toNumber(),
 		formattedPnlHistory[0]?.x ?? dayjs().subtract(1, 'year').unix()
 	);
-	const maxDailyDrawdown = getMaxDailyDrawdown(
-		vault?.pnlHistory.dailyAllTimePnls ?? []
-	);
-
-	function formatPnlHistory(
-		pnlHistory: SerializedPerformanceHistory[],
-		snapshotAttribute: keyof Pick<
-			UISerializableAccountSnapshot,
-			'totalAccountValue' | 'allTimeTotalPnl'
-		>
-	) {
-		return pnlHistory
-			.map((snapshot) => ({
-				x: snapshot.epochTs,
-				y: snapshot[snapshotAttribute],
-			}))
-			.concat({
-				x: dayjs().unix(),
-				y: vaultStats[`${snapshotAttribute}WithHistory`].toNumber(),
-			});
-	}
+	const maxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
 
 	return (
 		<div className="flex flex-col w-full gap-8">
@@ -182,8 +156,8 @@ export default function VaultPerformance() {
 					<ButtonTabs
 						tabs={GRAPH_VIEW_OPTIONS.map((option) => ({
 							label: option.label,
-							selected: graphView === option.value,
-							onSelect: () => setGraphView(option.value),
+							selected: graphView.value === option.value,
+							onSelect: () => setGraphView(option),
 						}))}
 						tabClassName="whitespace-nowrap px-4 py-2"
 					/>

@@ -9,7 +9,7 @@ import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAcc
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
-import { getUserMaxDailyDrawdown } from '@/utils/utils';
+import { getUserMaxDailyDrawdown } from '@/utils/vaults';
 
 import { sourceCodePro } from '@/constants/fonts';
 

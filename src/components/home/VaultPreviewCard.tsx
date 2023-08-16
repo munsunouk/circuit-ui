@@ -12,10 +12,11 @@ import { twMerge } from 'tailwind-merge';
 
 import { useAppActions } from '@/hooks/useAppActions';
 import useAppStore from '@/hooks/useAppStore';
-import { useCurrentVault, useVault } from '@/hooks/useVault';
+import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
-import { encodeVaultName, getHistoricalApy } from '@/utils/utils';
+import { encodeVaultName } from '@/utils/utils';
+import { getHistoricalApy } from '@/utils/vaults';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { UiVaultConfig } from '@/constants/vaults';

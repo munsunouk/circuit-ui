@@ -1,3 +1,7 @@
+import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+
+import { getUiVaultConfig } from '@/utils/vaults';
+
 import ButtonTabs from '../elements/ButtonTabs';
 
 export enum VaultTab {
@@ -28,9 +32,16 @@ export default function VaultTabs({
 	selectedTab: VaultTab;
 	setSelectedTab: (tab: VaultTab) => void;
 }) {
+	const vaultPublicKey = usePathToVaultPubKey();
+	const uiVaultConfig = getUiVaultConfig(vaultPublicKey);
+
+	const filteredTabs = VAULT_TABS.filter((tab) => {
+		return !(!uiVaultConfig?.vaultOverview && tab.tab === VaultTab.Overview);
+	});
+
 	return (
 		<ButtonTabs
-			tabs={VAULT_TABS.map((tab) => ({
+			tabs={filteredTabs.map((tab) => ({
 				label: tab.label,
 				selected: selectedTab === tab.tab,
 				onSelect: () => setSelectedTab(tab.tab),
