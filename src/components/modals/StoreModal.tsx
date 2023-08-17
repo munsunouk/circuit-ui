@@ -116,17 +116,20 @@ export default function StoreModal() {
 							<Row
 								label="Last Withdraw Request Timestamp"
 								value={dayjs
-									.unix(vaultDepositor?.lastWithdrawRequestTs.toNumber())
+									.unix(vaultDepositor?.lastWithdrawRequest.ts.toNumber())
 									.format('DD MMM YYYY HH:mm:ss')}
 							/>
 							<Row
 								label="Last Withdraw Request Shares"
-								value={vaultDepositor?.lastWithdrawRequestShares?.toString()}
+								value={BigNum.from(
+									vaultDepositor?.lastWithdrawRequest.shares,
+									QUOTE_PRECISION_EXP
+								).toPrecision(QUOTE_PRECISION_EXP)}
 							/>
 							<Row
 								label="Last Withdraw Request Value"
 								value={BigNum.from(
-									vaultDepositor?.lastWithdrawRequestValue,
+									vaultDepositor?.lastWithdrawRequest.value,
 									QUOTE_PRECISION_EXP
 								).toPrecision(QUOTE_PRECISION_EXP)}
 							/>
@@ -260,7 +263,7 @@ export default function StoreModal() {
 							/>
 							<Row
 								label="Minimum Deposit"
-								value={`${vault?.minimumDeposit.toNumber()}`}
+								value={`${vault?.minDepositAmount.toNumber()}`}
 							/>
 							<Row label="Hurdle Rate" value={vault?.hurdleRate.toString()} />
 						</>

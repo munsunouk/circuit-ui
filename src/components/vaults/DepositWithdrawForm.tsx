@@ -232,7 +232,7 @@ const DepositForm = () => {
 	const isNotWhitelistedUser =
 		!!vaultAccountData?.permissioned && !vaultDepositorAccountData;
 	const isWithdrawalInProcess =
-		vaultDepositorAccountData?.lastWithdrawRequestShares.gt(ZERO);
+		vaultDepositorAccountData?.lastWithdrawRequest.shares.gt(ZERO);
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
@@ -355,10 +355,10 @@ const WithdrawForm = () => {
 		vaultAccountData?.redeemPeriod.toNumber()
 	);
 	const withdrawalAvailableTs =
-		vaultDepositorAccountData?.lastWithdrawRequestTs.toNumber() +
+		vaultDepositorAccountData?.lastWithdrawRequest.ts.toNumber() +
 		vaultAccountData?.redeemPeriod.toNumber();
 	const lastRequestedShares =
-		vaultDepositorAccountData?.lastWithdrawRequestShares ?? new BN(0);
+		vaultDepositorAccountData?.lastWithdrawRequest.shares ?? new BN(0);
 	const lastRequestedUsdcValue =
 		lastRequestedShares.mul(tvl).div(vaultAccountData?.totalShares) ??
 		new BN(0);
