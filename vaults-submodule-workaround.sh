@@ -27,13 +27,13 @@ set -e
 # vercel deployment has some issue whereby it always takes the commit from master branch,
 # hence we hardcode the commit instead
 
-output=`git submodule status | grep drift-vaults | awk '{print $1}' | head -n 1` # get submodule info
-echo "git submodule commit = $output"
-no_prefix=${output#*[+-]} # get rid of the prefix
-echo "no_prefix = $no_prefix"
-COMMIT=${no_prefix} # get rid of the suffix
+# output=`git submodule status | grep drift-vaults | awk '{print $1}' | head -n 1` # get submodule info
+# echo "git submodule commit = $output"
+# no_prefix=${output#*[+-]} # get rid of the prefix
+# echo "no_prefix = $no_prefix"
+# COMMIT=${no_prefix} # get rid of the suffix
 
-# COMMIT='c717124e28adb9e1f0ea3e4894b6bca35100218a'
+COMMIT='c717124e28adb9e1f0ea3e4894b6bca35100218a'
 
 echo "TRYING TO USE SUBMODULE COMMIT: $COMMIT"
 
