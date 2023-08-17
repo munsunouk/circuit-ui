@@ -153,7 +153,7 @@ export default function RpcSwitcherModal() {
 
 					<FadeInDiv
 						className={twMerge(
-							'flex transition-[all] duration-300 overflow-hidden',
+							'flex transition-all overflow-hidden',
 							selectedRpcLabel === CUSTOM_LABEL
 								? 'h-[44px] mt-0 pb-1'
 								: 'h-0 -mt-2 delay-100'
@@ -163,7 +163,7 @@ export default function RpcSwitcherModal() {
 						<div className="h-1 w-7" />
 						<Input
 							className={twMerge(
-								'h-10 text-sm transition-opacity duration-300 px-3',
+								'h-10 text-sm transition-opacity px-3',
 								selectedRpcLabel === CUSTOM_LABEL ? 'opacity-100' : 'opacity-0'
 							)}
 							placeholder="Enter RPC URL"

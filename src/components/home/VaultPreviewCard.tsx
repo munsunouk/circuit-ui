@@ -44,7 +44,7 @@ function VaultStat({
 				<span
 					className={twMerge(
 						sourceCodePro.className,
-						'transition-all duration-300 md:text-3xl group-hover:md:text-2xl text-xl group-hover:text-lg'
+						'transition-all md:text-3xl group-hover:md:text-2xl text-xl group-hover:text-lg'
 					)}
 				>
 					{value}
@@ -207,7 +207,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		>
 			{/** Background image (separated to allow isolation of the brightness feature) */}
 			<div
-				className="absolute inset-0 z-10 transition-all duration-300 group-hover:brightness-125"
+				className="absolute inset-0 z-10 transition-all group-hover:brightness-125"
 				style={{
 					backgroundImage: `url(${vault.previewBackdropUrl})`,
 					backgroundSize: 'cover',
@@ -227,7 +227,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 			</div>
 
 			{/** Radial background on hover */}
-			<div className="absolute inset-x-0 top-0 transition-all duration-300 bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0" />
+			<div className="absolute inset-x-0 top-0 transition-all bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0" />
 
 			<div
 				className="relative z-20 flex flex-col isolate grow"
@@ -271,7 +271,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									capacity={capacityPct}
 									loading={!vaultStats.isLoaded}
 								/>
-								<div className="overflow-hidden transition-all duration-300 group-hover:mt-5 w-full group-hover:h-[32px] h-0">
+								<div className="overflow-hidden transition-all group-hover:mt-5 w-full group-hover:h-[32px] h-0">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>
 								</div>
 							</div>

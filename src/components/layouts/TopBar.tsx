@@ -33,7 +33,7 @@ const Tab = (props: TabProps) => {
 		<Link
 			href={props.route}
 			className={twMerge(
-				'flex items-center justify-center w-40 h-full cursor-pointer hover:bg-main-blue hover:text-black font-normal text-xl transition duration-300',
+				'flex items-center justify-center w-40 h-full cursor-pointer hover:bg-main-blue hover:text-black font-normal text-xl transition',
 				props.selected && 'bg-container-bg-selected text-text-selected'
 			)}
 		>
@@ -121,7 +121,7 @@ const TopBar = () => {
 
 			<span
 				className={twMerge(
-					'relative flex items-center justify-center h-full px-8 text-sm md:text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition duration-300 w-[160px] md:w-[220px] hover:bg-main-blue group',
+					'relative flex items-center justify-center h-full px-8 text-sm md:text-xl font-semibold border-x cursor-pointer border-container-border border-r-transparent text-text-emphasis transition  w-[160px] md:w-[220px] hover:bg-main-blue group',
 					isManageWalletsOpen &&
 						'bg-container-bg-selected border border-b-0 border-container-border-selected hover:bg-container-bg-selected hover:text-text-emphasis'
 				)}
@@ -133,7 +133,7 @@ const TopBar = () => {
 						<div className="flex items-center gap-1">
 							<span
 								className={twMerge(
-									'transition duration-300 group-hover:text-black',
+									'transition  group-hover:text-black',
 									isManageWalletsOpen && 'group-hover:text-text-emphasis'
 								)}
 							>
@@ -142,14 +142,14 @@ const TopBar = () => {
 							<Chevron
 								open={isManageWalletsOpen}
 								className={twMerge(
-									'w-6 h-6 md:w-9 md:h-9 group-hover:[&>path]:fill-black [&>path]:transition-all [&>path]:duration-300',
+									'w-6 h-6 md:w-9 md:h-9 group-hover:[&>path]:fill-black [&>path]:transition-all [&>path]:',
 									isManageWalletsOpen && 'group-hover:[&>path]:fill-white'
 								)}
 							/>
 						</div>
 						<div
 							className={twMerge(
-								'absolute left-[-1px] right-[-1px] flex flex-col font-normal bg-black border border-t-0 top-full transition-[border] duration-300 overflow-hidden',
+								'absolute left-[-1px] right-[-1px] flex flex-col font-normal bg-black border border-t-0 top-full transition-[border]  overflow-hidden',
 								isManageWalletsOpen
 									? 'h-auto border-container-border-selected'
 									: 'h-0 p-0 border-container-border'
@@ -159,11 +159,11 @@ const TopBar = () => {
 								fadeCondition={isManageWalletsOpen}
 								delay={100}
 								className={
-									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all duration-300'
+									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all '
 								}
 								onClick={openConnectWalletModal}
 							>
-								<span className="transition-all duration-300 group-hover/item:text-black text-text-emphasis">
+								<span className="transition-all group-hover/item:text-black text-text-emphasis">
 									Switch wallets
 								</span>
 							</FadeInDiv>
@@ -171,11 +171,11 @@ const TopBar = () => {
 								fadeCondition={isManageWalletsOpen}
 								delay={200}
 								className={
-									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all duration-300'
+									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all '
 								}
 								onClick={disconnect}
 							>
-								<span className="transition-all duration-300 group-hover/item:text-black text-text-emphasis">
+								<span className="transition-all group-hover/item:text-black text-text-emphasis">
 									Disconnect
 								</span>
 							</FadeInDiv>

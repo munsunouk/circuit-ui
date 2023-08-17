@@ -95,7 +95,7 @@ const FormTab = ({
 	return (
 		<span
 			className={twMerge(
-				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-main-blue hover:text-black transition duration-300',
+				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-main-blue hover:text-black transition',
 				selected &&
 					'bg-container-bg-selected text-text-selected border-container-border-selected'
 			)}

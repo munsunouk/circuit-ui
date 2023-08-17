@@ -74,7 +74,7 @@ const TransactionRow = ({ record }: { record: WrappedEvent<EventType> }) => {
 		>
 			<span>{getLabel(record)}</span>
 			<Link
-				className="flex items-center gap-1 transition-all duration-300 cursor-pointer hover:opacity-60 shrink-0 whitespace-nowrap"
+				className="flex items-center gap-1 transition-all cursor-pointer hover:opacity-60 shrink-0 whitespace-nowrap"
 				href={`${SOLANA_TXN_EXPLORER_URL}/${record.txSig}`}
 				target="_blank"
 				rel="noopener noreferrer"
@@ -105,7 +105,7 @@ const PaginationButton = ({
 				selected && 'bg-container-bg-hover border-container-border-hover'
 			)}
 			innerClassName={twMerge(
-				'text-text-default text-sm md:text-base group-hover:text-black transition-all duration-300',
+				'text-text-default text-sm md:text-base group-hover:text-black transition-all',
 				selected && 'text-black'
 			)}
 			onClick={onClick}
@@ -173,7 +173,7 @@ function TransactionHistory() {
 			<>
 				{showExtremes && (
 					<PaginationButton onClick={() => setPageIndex(0)} selected={false}>
-						<PageArrow className="w-5 h-6 group-hover:[&>path]:fill-black [&>path]:transition-all [&>path]:duration-300" />
+						<PageArrow className="w-5 h-6 group-hover:[&>path]:fill-black [&>path]:transition-all" />
 					</PaginationButton>
 				)}
 				{one !== undefined && (
@@ -205,7 +205,7 @@ function TransactionHistory() {
 						onClick={() => setPageIndex(lastPage)}
 						selected={false}
 					>
-						<PageArrow className="w-5 h-6 rotate-180 group-hover:[&>path]:fill-black [&>path]:transition-all [&>path]:duration-300" />
+						<PageArrow className="w-5 h-6 rotate-180 group-hover:[&>path]:fill-black [&>path]:transition-all" />
 					</PaginationButton>
 				)}
 			</>

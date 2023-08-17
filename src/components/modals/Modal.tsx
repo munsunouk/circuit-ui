@@ -145,7 +145,7 @@ export const Modal = ({
 						<span className="text-xl">{header}</span>
 						<button
 							onClick={onClose}
-							className="flex items-center justify-around transition-opacity duration-300 hover:opacity-80"
+							className="flex items-center justify-around transition-opacity hover:opacity-80"
 						>
 							<Close className="w-6 h-6" />
 						</button>

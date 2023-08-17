@@ -15,9 +15,9 @@ const ButtonLink = ({
 			<Icon
 				width={24}
 				height={24}
-				className="group-hover:[&>path]:stroke-text-button-link-hover group-active:[&>path]:stroke-text-button-link-active [&>path]:transition-all [&>path]:duration-300"
+				className="group-hover:[&>path]:stroke-text-button-link-hover group-active:[&>path]:stroke-text-button-link-active [&>path]:transition-all"
 			/>
-			<span className="transition-all duration-300 text-text-emphasis group-hover:text-text-button-link-hover group-active:text-text-button-link-active">
+			<span className="transition-all text-text-emphasis group-hover:text-text-button-link-hover group-active:text-text-button-link-active">
 				{label}
 			</span>
 		</span>

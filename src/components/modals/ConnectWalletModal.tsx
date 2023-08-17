@@ -19,7 +19,7 @@ const WalletOption = ({
 	return (
 		<FadeInDiv
 			onClick={onClick}
-			className="flex justify-between transition-opacity duration-300 cursor-pointer hover:opacity-60"
+			className="flex justify-between transition-opacity cursor-pointer hover:opacity-60"
 			delay={(index + 1) * 100}
 		>
 			<div className="flex gap-2">

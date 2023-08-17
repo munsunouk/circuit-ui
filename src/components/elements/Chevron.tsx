@@ -11,7 +11,7 @@ export default function Chevron({ open, ...rest }: ChevronProps) {
 	return (
 		<span
 			className={twMerge(
-				'transition-transform duration-300',
+				'transition-transform',
 				open ? 'rotate-180' : 'rotate-0'
 			)}
 		>

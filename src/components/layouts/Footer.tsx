@@ -34,7 +34,7 @@ export default function Footer() {
 			</div>
 			<div className="flex items-center justify-end gap-2 md:justify-center">
 				<Link
-					className="transition duration-300 cursor-pointer hover:opacity-80"
+					className="transition cursor-pointer hover:opacity-80"
 					href="https://docs.circuit.trade/"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -43,7 +43,7 @@ export default function Footer() {
 				</Link>
 				<span className="h-2 border-r border-container-border-light" />
 				<Link
-					className="transition duration-300 cursor-pointer hover:opacity-80"
+					className="transition cursor-pointer hover:opacity-80"
 					href="https://medium.com/@circuittrading_"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -52,7 +52,7 @@ export default function Footer() {
 				</Link>
 				<span className="h-2 border-r border-container-border-light" />
 				<Link
-					className="transition duration-300 cursor-pointer hover:opacity-80"
+					className="transition cursor-pointer hover:opacity-80"
 					href="https://docs.circuit.trade/misc/terms-and-conditions"
 					target="_blank"
 					rel="noopener noreferrer"

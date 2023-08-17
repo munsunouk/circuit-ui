@@ -96,7 +96,7 @@ export default function Dropdown({
 			>
 				<span>{selectedOption.label}</span>
 				<Chevron
-					className="w-6 h-6 group-hover:[&>path]:fill-black group-active:[&>path]:fill-white [&>path]:transition-all [&>path]:duration-300"
+					className="w-6 h-6 group-hover:[&>path]:fill-black group-active:[&>path]:fill-white [&>path]:transition-all"
 					open={isOpen}
 				/>
 			</Button>
