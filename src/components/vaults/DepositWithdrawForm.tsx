@@ -30,6 +30,7 @@ import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
 import GradientBorderBox from '../elements/GradientBorderBox';
 import Input from '../elements/Input';
+import { ExternalLink } from '../icons';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
 	{ label: '25%', value: 0.25 },
@@ -44,20 +45,52 @@ enum WithdrawalState {
 	AvailableForWithdrawal, // a withdrawal request has been made and is available
 }
 
+const WITHDRAW_FLUCTUATION_DOC =
+	'https://docs.circuit.trade/product-guides/deposit-and-withdraw-into-circuit-vaults';
+
 const getWithdrawalDetails = (state: WithdrawalState) => {
 	switch (state) {
 		case WithdrawalState.UnRequested:
 		case WithdrawalState.AvailableForWithdrawal:
-			return 'Withdrawals can be requested at any time and will be available at the end of each quarter.';
+			return (
+				<span>
+					Withdrawals can be requested at any time and will be available at the
+					end of each quarter.
+					<br />
+					<br />
+					The final amount received may differ from the amount requested.{' '}
+					<a
+						className="inline-flex items-center gap-1 underline transition-opacity cursor-pointer hover:opacity-80"
+						href={WITHDRAW_FLUCTUATION_DOC}
+						target="_blank"
+						rel="noreferrer noopener"
+					>
+						<span>Learn More</span>
+						<ExternalLink />
+					</a>
+				</span>
+			);
 		case WithdrawalState.Requested:
 			return (
 				<span>
 					Only one withdrawal request can be made at a time.
 					<br />
 					<br />
-					The vault manager <span className="underline">may</span> transfer your
-					funds over once the withdrawal becomes available. If not, you can
+					The vault manager <span className="font-semibold">may</span> transfer
+					your funds over once the withdrawal becomes available. If not, you can
 					return and initiate the withdrawal yourself.
+					<br />
+					<br />
+					The final amount received may differ from the amount requested.{' '}
+					<a
+						className="inline-flex items-center gap-1 underline transition-opacity cursor-pointer hover:opacity-80"
+						href={WITHDRAW_FLUCTUATION_DOC}
+						target="_blank"
+						rel="noreferrer noopener"
+					>
+						<span>Learn More</span>
+						<ExternalLink />
+					</a>
 				</span>
 			);
 		default:
@@ -403,6 +436,7 @@ const WithdrawForm = () => {
 		}
 	}, [vaultDepositorAccount, vaultAccountData, tvl]);
 
+	// update withdrawal state
 	useEffect(() => {
 		const hasRequestedWithdrawal = lastRequestedShares.toNumber() > 0;
 		const isBeforeWithdrawalAvailableDate = dayjs().isBefore(
@@ -522,6 +556,17 @@ const WithdrawForm = () => {
 
 const DepositWithdrawForm = () => {
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
+	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
+
+	const isWithdrawalInProcess =
+		vaultDepositorAccountData?.lastWithdrawRequest.shares.gt(ZERO);
+
+	// default to withdrawal tab if withdrawal state is requested/available
+	useEffect(() => {
+		if (isWithdrawalInProcess) {
+			setSelectedTab(Tab.Withdraw);
+		}
+	}, [isWithdrawalInProcess]);
 
 	return (
 		<GradientBorderBox className="w-full bg-black">
