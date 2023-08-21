@@ -53,18 +53,17 @@ export default function YourPerformance() {
 	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
 	// User's net deposits
-	const userNetDeposits = vaultDepositorAccData?.netDeposits.toNumber();
-	const userNetDepositsString = BigNum.from(
-		userNetDeposits,
+	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
+	const userAccountBalanceProportion =
+		vaultAccountBalance * userSharesProportion;
+	const userAccountValueString = BigNum.from(
+		userAccountBalanceProportion,
 		QUOTE_PRECISION_EXP
 	).toNotional();
 
 	// User's total earnings
 	const userTotalDeposits = vaultDepositorAccData?.totalDeposits.toNumber();
 	const userTotalWithdraws = vaultDepositorAccData?.totalWithdraws.toNumber();
-	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
-	const userAccountBalanceProportion =
-		vaultAccountBalance * userSharesProportion;
 	let totalEarnings =
 		userTotalWithdraws - userTotalDeposits + userAccountBalanceProportion;
 	// prevent $-0.00
@@ -99,7 +98,7 @@ export default function YourPerformance() {
 				<div className="flex items-center justify-center w-full gap-4">
 					<StatsBox
 						label="Your Deposit"
-						value={showUserInfo ? userNetDepositsString : '--'}
+						value={showUserInfo ? userAccountValueString : '--'}
 					/>
 					<div className="h-12 border-r border-container-border" />
 					<StatsBox
@@ -115,7 +114,7 @@ export default function YourPerformance() {
 						label="Total Earnings (All Time)"
 						value={totalEarningsString}
 					/>
-					<BreakdownRow label="Your Deposits" value={userNetDepositsString} />
+					<BreakdownRow label="Your Deposits" value={userAccountValueString} />
 					<BreakdownRow
 						label="Vault Share"
 						value={`${Number(
