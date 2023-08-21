@@ -107,7 +107,9 @@ export default function StoreModal() {
 							/>
 							<Row
 								label="Vault Shares"
-								value={vaultDepositor?.vaultShares.toString()}
+								value={BigNum.from(vaultDepositor?.vaultShares, 6)
+									.toNum()
+									.toString()}
 							/>
 							<Row
 								label="Profit Share Fee Paid"
