@@ -8,15 +8,19 @@ Read more about the Vaults program [here](https://github.com/drift-labs/drift-va
 
 Run the following command to setup the project:
 
-`sh ./initial-setup.sh`
+`sh ./initial-setup.sh` (note : this uses yarn links in the submodules, may screw with symlinks if you're using them in another local repo)
 
 This will pull the relevant git submodules, install dependencies, and build the submodules.
 
 If you need to update any submodules, change directory to the submodule, pull the relevant changes, and then run `yarn build` to build the submodule.
 
+## Env File
+
+add a .env.local file to be able to run the project locally. You can see example config in `.env.example`
+
 ## Development
 
-`sh ./build_all_sm.sh` - shortcut to build all submodules and dependencies.
+`sh ./build_all_sm.sh` - shortcut to build all submodules and dependencies. (note : this uses yarn links in the submodules, may screw with symlinks if you're using them in another local repo)
 `yarn convert-icons` - place any new icons in `app/public/icons` and run this command to convert them to React components.
 `yarn build-vaults` - use this command in the root directory to quickly build the Vaults TS SDK.
 
