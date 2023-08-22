@@ -69,10 +69,6 @@ const getLabel = (record: WrappedEvent<EventType>) => {
 };
 
 const TransactionRow = ({ record }: { record: WrappedEvent<EventType> }) => {
-	console.log(
-		'🚀 ~ file: TransactionHistory.tsx:72 ~ TransactionRow ~ record:',
-		record
-	);
 	const setAppStore = useAppStore((s) => s.set);
 	const { devSwitchIsOn } = useDevSwitchIsOn();
 
