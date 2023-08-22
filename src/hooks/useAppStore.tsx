@@ -1,11 +1,13 @@
 import { SerializedPerformanceHistory } from '@/types';
 import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
+	EventType,
 	Vault,
 	VaultAccount,
 	VaultClient,
 	VaultDepositor,
 	VaultDepositorAccount,
+	WrappedEvent,
 	WrappedEvents,
 } from '@drift-labs/vaults-sdk';
 import { produce } from 'immer';
@@ -16,6 +18,12 @@ export interface AppStoreState {
 		showConnectWalletModal: boolean;
 		showRpcSwitcherModal: boolean;
 		showStoreModal: boolean;
+		showActionRecordModal:
+			| {
+					show: true;
+					actionRecord: WrappedEvent<EventType>;
+			  }
+			| { show: false };
 	};
 	vaultClient: VaultClient | undefined;
 	vaults: {
@@ -56,9 +64,11 @@ const DEFAULT_APP_STORE_STATE = {
 		showConnectWalletModal: false,
 		showRpcSwitcherModal: false,
 		showStoreModal: false,
+		showActionRecordModal: {
+			show: false as false,
+		},
 	},
 	vaultClient: undefined,
-	vaultDriftClient: undefined,
 	vaults: {},
 	balances: {
 		usdc: 0,

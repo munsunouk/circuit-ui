@@ -1,3 +1,4 @@
+import { useDevSwitchIsOn } from '@drift-labs/react';
 import { BigNum, ZERO } from '@drift-labs/sdk';
 import {
 	EventType,
@@ -10,6 +11,7 @@ import { useState } from 'react';
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import useAppStore from '@/hooks/useAppStore';
 import { useCurrentVault } from '@/hooks/useVault';
 
 import { OrderedSpotMarkets } from '@/constants/environment';
@@ -67,23 +69,46 @@ const getLabel = (record: WrappedEvent<EventType>) => {
 };
 
 const TransactionRow = ({ record }: { record: WrappedEvent<EventType> }) => {
+	console.log(
+		'🚀 ~ file: TransactionHistory.tsx:72 ~ TransactionRow ~ record:',
+		record
+	);
+	const setAppStore = useAppStore((s) => s.set);
+	const { devSwitchIsOn } = useDevSwitchIsOn();
+
+	const openActionRecordModal = () => {
+		setAppStore((s) => {
+			s.modals.showActionRecordModal = {
+				show: true,
+				actionRecord: record,
+			};
+		});
+	};
+
 	return (
 		<FadeInDiv
 			className="flex justify-between w-full gap-1 text-base md:text-lg"
 			delay={100}
 		>
 			<span>{getLabel(record)}</span>
-			<Link
-				className="flex items-center gap-1 transition-all cursor-pointer hover:opacity-60 shrink-0 whitespace-nowrap"
-				href={`${SOLANA_TXN_EXPLORER_URL}/${record.txSig}`}
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				{dayjs.unix(record.ts.toNumber()).format('DD MMM YYYY')}
-				<span>
-					<ExternalLink className="w-3 h-3" />
-				</span>
-			</Link>
+			<span className="flex items-center gap-1">
+				<Link
+					className="flex items-center gap-1 transition-all cursor-pointer hover:opacity-60 shrink-0 whitespace-nowrap"
+					href={`${SOLANA_TXN_EXPLORER_URL}/${record.txSig}`}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{dayjs.unix(record.ts.toNumber()).format('DD MMM YYYY')}
+					<span>
+						<ExternalLink className="w-3 h-3" />
+					</span>
+				</Link>
+				{devSwitchIsOn && (
+					<Button className="p-1 text-sm" onClick={openActionRecordModal}>
+						View
+					</Button>
+				)}
+			</span>
 		</FadeInDiv>
 	);
 };

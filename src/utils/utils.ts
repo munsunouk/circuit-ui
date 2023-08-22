@@ -49,3 +49,8 @@ export const normalizeDate = (
 	// closest hour
 	return dayjs.unix(unixTs).startOf('hour').unix();
 };
+
+export function shortenPubkey(pubkey: string | undefined, length = 4) {
+	if (!pubkey) return '';
+	return `${pubkey.slice(0, length)}...${pubkey.slice(44 - length, 44)}`;
+}

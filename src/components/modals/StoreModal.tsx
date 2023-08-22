@@ -10,23 +10,11 @@ import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 
-import { redeemPeriodToString } from '@/utils/utils';
+import { redeemPeriodToString, shortenPubkey } from '@/utils/utils';
 
 import ButtonTabs from '../elements/ButtonTabs';
+import Row from '../elements/Row';
 import { Modal } from './Modal';
-
-const Row = ({
-	label,
-	value,
-}: {
-	label: string;
-	value: string | undefined;
-}) => (
-	<div className="flex justify-between w-full">
-		<div>{label}</div>
-		<div>{value}</div>
-	</div>
-);
 
 enum Tab {
 	VaultDepositor,
@@ -45,11 +33,6 @@ export default function StoreModal() {
 			s.modals.showStoreModal = false;
 		});
 	};
-
-	function shortenPubkey(pubkey: string | undefined) {
-		if (!pubkey) return '';
-		return `${pubkey.slice(0, 8)}...${pubkey.slice(36, 44)}`;
-	}
 
 	return (
 		<Modal onClose={handleOnClose} header="Vault's Store" className="w-[500px]">
@@ -74,7 +57,7 @@ export default function StoreModal() {
 						<>
 							<Row
 								label="Vault Depositor Address"
-								value={shortenPubkey(vaultDepositor?.pubkey.toString())}
+								value={shortenPubkey(vaultDepositor?.pubkey.toString(), 8)}
 							/>
 							<Row
 								label="Net Deposits"
@@ -141,19 +124,19 @@ export default function StoreModal() {
 						<>
 							<Row
 								label="Vault Manager"
-								value={shortenPubkey(vault?.manager.toString())}
+								value={shortenPubkey(vault?.manager.toString(), 8)}
 							/>
 							<Row
 								label="User Account"
-								value={shortenPubkey(vault?.user.toString())}
+								value={shortenPubkey(vault?.user.toString(), 8)}
 							/>
 							<Row
 								label="Delegate"
-								value={shortenPubkey(vault?.delegate.toString())}
+								value={shortenPubkey(vault?.delegate.toString(), 8)}
 							/>
 							<Row
 								label="Liquidation Delegate"
-								value={shortenPubkey(vault?.liquidationDelegate.toString())}
+								value={shortenPubkey(vault?.liquidationDelegate.toString(), 8)}
 							/>
 							<Row
 								label="Liquidation Start Timestamp"
