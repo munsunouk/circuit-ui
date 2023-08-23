@@ -96,7 +96,10 @@ export default function StoreModal() {
 							/>
 							<Row
 								label="Profit Share Fee Paid"
-								value={vaultDepositor?.profitShareFeePaid?.toString() ?? '0'}
+								value={BigNum.from(
+									vaultDepositor?.profitShareFeePaid,
+									QUOTE_PRECISION_EXP
+								).toPrecision(QUOTE_PRECISION_EXP)}
 							/>
 							<Row
 								label="Last Withdraw Request Timestamp"

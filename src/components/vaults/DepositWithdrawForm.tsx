@@ -1,3 +1,4 @@
+import { useDevSwitchIsOn } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
@@ -19,6 +20,7 @@ import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { redeemPeriodToString } from '@/utils/utils';
@@ -366,11 +368,13 @@ const WithdrawForm = () => {
 	const vaultPubkey = usePathToVaultPubKey();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultAccountData = useCurrentVaultAccountData();
+	const vault = useCurrentVault();
 	const appActions = useAppActions();
 	const vaultStats = useCurrentVaultStats();
 	const vaultDepositorAccount = useAppStore(
 		(s) => s.vaults[vaultPubkey?.toString() ?? '']?.vaultDepositorAccount
 	);
+	const { devSwitchIsOn } = useDevSwitchIsOn();
 
 	const [maxSharesUsdcValue, setMaxSharesUsdcValue] = useState(new BN(0));
 	const [amount, setAmount] = useState('');
@@ -392,9 +396,7 @@ const WithdrawForm = () => {
 		vaultAccountData?.redeemPeriod.toNumber();
 	const lastRequestedShares =
 		vaultDepositorAccountData?.lastWithdrawRequest.shares ?? new BN(0);
-	const lastRequestedUsdcValue =
-		lastRequestedShares.mul(tvl).div(vaultAccountData?.totalShares) ??
-		new BN(0);
+	const lastRequestedUsdcValue = calcLastRequestedUsdcValue();
 
 	const isButtonDisabled =
 		(+amount === 0 && withdrawalState === WithdrawalState.UnRequested) ||
@@ -470,6 +472,7 @@ const WithdrawForm = () => {
 				await appActions.cancelRequestWithdraw(vaultPubkey);
 			} else {
 				await appActions.executeVaultWithdrawal(vaultPubkey);
+				hasCalcMaxSharesOnce.current = false;
 			}
 		} catch (err) {
 			console.error(err);
@@ -477,6 +480,17 @@ const WithdrawForm = () => {
 			setLoading(false);
 		}
 	};
+
+	function calcLastRequestedUsdcValue() {
+		if (!vault?.vaultAccount || tvl.eq(ZERO)) return ZERO;
+
+		const { totalShares } =
+			vault.vaultAccount.calcSharesAfterManagementFee(tvl);
+		const lastRequestedUsdcValue =
+			lastRequestedShares.mul(tvl).div(totalShares) ?? ZERO;
+
+		return lastRequestedUsdcValue;
+	}
 
 	return (
 		<FadeInDiv
@@ -503,27 +517,95 @@ const WithdrawForm = () => {
 			)}
 
 			{connected ? (
-				<div className="flex flex-col items-center gap-4">
+				<div className="flex flex-col items-center gap-4 text-center">
 					<div className="flex flex-col w-full">
 						{(withdrawalState === WithdrawalState.Requested ||
 							withdrawalState === WithdrawalState.AvailableForWithdrawal) && (
-							<span
-								className={twMerge(
-									'w-full text-center py-2 text-text-emphasis px-2',
-									withdrawalState === WithdrawalState.Requested &&
-										'bg-button-bg-disabled',
-									withdrawalState === WithdrawalState.AvailableForWithdrawal &&
-										'bg-success-green-bg font-semibold'
+							<>
+								{/** Start of debugging */}
+								{devSwitchIsOn && (
+									<div className="flex flex-col w-full">
+										<span className="flex justify-between w-full">
+											<span>TVL:</span>
+											<span>
+												{BigNum.from(tvl, QUOTE_PRECISION_EXP).toNum()} USDC
+											</span>
+										</span>
+										<span className="flex justify-between w-full">
+											<span>Last Withdraw Requested Shares:</span>
+											<span>
+												{BigNum.from(
+													lastRequestedShares,
+													QUOTE_PRECISION_EXP
+												).toNum()}{' '}
+											</span>
+										</span>
+										<span className="flex justify-between w-full">
+											<span>Total Shares (Before M-Fee):</span>
+											<span>
+												{BigNum.from(
+													vaultAccountData?.totalShares,
+													QUOTE_PRECISION_EXP
+												).toNum()}{' '}
+											</span>
+										</span>
+										<span className="flex justify-between w-full">
+											<span>Total Shares (After M-Fee):</span>
+											<span>
+												{!tvl.eq(ZERO) &&
+													BigNum.from(
+														vault?.vaultAccount.calcSharesAfterManagementFee(
+															tvl
+														).totalShares ?? ZERO,
+														QUOTE_PRECISION_EXP
+													).toNum()}{' '}
+											</span>
+										</span>
+										<span className="flex justify-between w-full">
+											<span>Withdrawal Value (Before M-Fee):</span>
+											<span>
+												{BigNum.from(
+													vaultDepositorAccountData?.lastWithdrawRequest.shares
+														.mul(tvl)
+														.div(vaultAccountData?.totalShares ?? ZERO) ?? ZERO,
+													QUOTE_PRECISION_EXP
+												).toNum()}{' '}
+												USDC
+											</span>
+										</span>
+										<span className="flex justify-between w-full">
+											<span>Withdrawal Value (After M-Fee):</span>
+											<span>
+												{BigNum.from(
+													lastRequestedUsdcValue,
+													QUOTE_PRECISION_EXP
+												).toNum()}{' '}
+												USDC
+											</span>
+										</span>
+									</div>
 								)}
-							>
-								{BigNum.from(
-									lastRequestedUsdcValue,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}{' '}
-								{withdrawalState === WithdrawalState.Requested
-									? 'USDC withdrawal requested'
-									: 'USDC available for withdrawal'}
-							</span>
+								{/** Start of debugging */}
+
+								<span
+									className={twMerge(
+										'w-full text-center py-2 text-text-emphasis px-2',
+										withdrawalState === WithdrawalState.Requested &&
+											'bg-button-bg-disabled',
+										withdrawalState ===
+											WithdrawalState.AvailableForWithdrawal &&
+											'bg-success-green-bg font-semibold'
+									)}
+								>
+									{BigNum.from(
+										lastRequestedUsdcValue,
+										QUOTE_PRECISION_EXP
+									).toPrecision(QUOTE_PRECISION_EXP)}{' '}
+									{withdrawalState === WithdrawalState.Requested
+										? 'USDC withdrawal requested'
+										: 'USDC available for withdrawal'}
+								</span>
+							</>
 						)}
 						<Button
 							className="text-xl"
@@ -538,7 +620,7 @@ const WithdrawForm = () => {
 						<span>Withdrawal waiting period: {withdrawalWaitingPeriod}</span>
 					)}
 					{withdrawalState === WithdrawalState.Requested && (
-						<span className="text-center">
+						<span>
 							Withdrawal available on:{' '}
 							{dayjs(withdrawalAvailableTs * 1000).format(
 								'ddd, DD MMM YYYY HH:mm (Z)'
