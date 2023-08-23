@@ -407,14 +407,19 @@ const WithdrawForm = () => {
 	// to prevent the max amount from constantly updating due to data change subscriptions.
 	useEffect(() => {
 		if (
+			vault?.vaultAccount &&
 			vaultAccountData &&
 			vaultDepositorAccount !== undefined &&
 			!tvl.eq(new BN(0)) &&
 			!hasCalcMaxSharesOnce.current
 		) {
+			// apply management fee first
+			const { totalShares: totalSharesAfterMgmtFees } =
+				vault.vaultAccount.calcSharesAfterManagementFee(tvl);
+
 			// user variables
 			const userShares = vaultDepositorAccountData?.vaultShares ?? new BN(0);
-			const userEquity = userShares.mul(tvl).div(vaultAccountData.totalShares);
+			const userEquity = userShares.mul(tvl).div(totalSharesAfterMgmtFees);
 
 			// profit share fee variables
 			const vaultProfitShareFee = new BN(vaultAccountData.profitShare);
@@ -430,7 +435,7 @@ const WithdrawForm = () => {
 
 			const maxSharesUsdcValue = userSharesAfterFees
 				.mul(tvl)
-				.div(vaultAccountData?.totalShares);
+				.div(totalSharesAfterMgmtFees);
 
 			setMaxSharesUsdcValue(maxSharesUsdcValue);
 			hasCalcMaxSharesOnce.current = true;
