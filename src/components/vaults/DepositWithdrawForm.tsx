@@ -271,9 +271,9 @@ const DepositForm = () => {
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
-	const tvl = vaultStats.totalAccountValueWithHistory;
+	const tvlWithoutHistory = vaultStats.totalAccountValue;
 	const maxAvailableCapacity = BigNum.from(
-		maxCapacity?.sub(tvl),
+		maxCapacity?.sub(tvlWithoutHistory),
 		USDC_MARKET.precisionExp
 	);
 	const usdcBalanceBigNum = BigNum.fromPrint(

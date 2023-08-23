@@ -224,7 +224,7 @@ export default function PerformanceGraph({
 						`$${BigNum.from(tick, QUOTE_PRECISION_EXP).toMillified()}`
 					}
 					tickMargin={8}
-					domain={['auto', 'auto']}
+					// domain={['auto', 'auto']}
 				/>
 				<Tooltip
 					/* @ts-ignore */
