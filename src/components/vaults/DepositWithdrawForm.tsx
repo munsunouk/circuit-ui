@@ -416,11 +416,10 @@ const WithdrawForm = () => {
 
 			// profit share fee variables
 			const vaultProfitShareFee = new BN(vaultAccountData.profitShare);
-			const profitSharingFeePct =
-				vaultDepositorAccount.calcProfitShareFeesProportion(
-					vaultProfitShareFee,
-					userEquity
-				);
+			const profitSharingFeePct = vaultDepositorAccount.calcProfitShareFeesPct(
+				vaultProfitShareFee,
+				userEquity
+			);
 
 			const profitShareFeeShares = userShares
 				.mul(profitSharingFeePct)

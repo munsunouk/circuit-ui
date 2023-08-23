@@ -33,6 +33,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	const vaultAccountData = useAppStore((s) =>
 		s.getVaultAccountData(vaultPubKey)
 	);
+	const vaultClient = useAppStore((s) => s.vaultClient);
 
 	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
 
@@ -41,23 +42,26 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	);
 
 	useEffect(() => {
-		const newVaultStats = calcVaultStats();
-		setVaultStats(newVaultStats);
+		calcVaultStats().then((newVaultStats) => {
+			setVaultStats(newVaultStats);
+		});
 
 		const interval = setInterval(() => {
-			const newVaultStats = calcVaultStats();
-			setVaultStats(newVaultStats);
+			calcVaultStats().then((newVaultStats) => {
+				setVaultStats(newVaultStats);
+			});
 		}, UPDATE_FREQUENCY_MS);
 
 		return () => clearInterval(interval);
-	}, [vaultDriftUser, uiVaultConfig, vaultAccountData]);
+	}, [vaultDriftUser, uiVaultConfig, vaultAccountData, vaultClient, vault]);
 
-	function calcVaultStats() {
-		if (!vaultDriftUser) return DEFAULT_VAULT_STATS;
+	async function calcVaultStats() {
+		if (!vaultDriftUser || !vaultClient || !vault.vaultAccount)
+			return DEFAULT_VAULT_STATS;
 
-		const collateral = vaultDriftUser.getNetSpotMarketValue();
-		const unrealizedPNL = vaultDriftUser.getUnrealizedPNL();
-		const totalAccountValue = collateral.add(unrealizedPNL);
+		const totalAccountValue = await vaultClient.calculateVaultEquity({
+			vault: vault.vaultAccountData,
+		});
 		const allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
 
 		let totalAccountValueWithHistory = totalAccountValue;
