@@ -72,9 +72,15 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 			const lastPastHistoryPoint =
 				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
 
-			totalAccountValueWithHistory = totalAccountValueWithHistory.add(
-				new BN(lastPastHistoryPoint.totalAccountValue.toNum())
-			);
+			// totalAccountValueWithHistory = totalAccountValueWithHistory.add(
+			// 	new BN(lastPastHistoryPoint.totalAccountValue.toNum())
+			// );
+			totalAccountValueWithHistory = // hardcode tvl until all funds have moved over
+				new BN(
+					uiVaultConfig?.pastPerformanceHistory
+						?.slice(-1)[0]
+						?.totalAccountValue.toNum()
+				) ?? ZERO;
 			allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
 				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
 			);
