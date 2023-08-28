@@ -1,4 +1,4 @@
-import { useDevSwitchIsOn } from '@drift-labs/react';
+import { useCommonDriftStore, useDevSwitchIsOn } from '@drift-labs/react';
 import { BigNum, ZERO } from '@drift-labs/sdk';
 import {
 	EventType,
@@ -138,7 +138,7 @@ const PaginationButton = ({
 
 function TransactionHistory() {
 	const vault = useCurrentVault();
-
+	const authority = useCommonDriftStore((s) => s.authority);
 	const [pageIndex, setPageIndex] = useState(0);
 
 	const eventRecords = vault?.eventRecords?.records ?? [];
@@ -150,9 +150,9 @@ function TransactionHistory() {
 	const isLoading = !vault?.eventRecords?.isLoaded;
 
 	const renderRecords = () => {
-		if (isLoading) {
-			return <Loading />;
-		}
+		if (!authority) return null;
+
+		if (isLoading) return <Loading />;
 
 		if (eventRecords.length === 0) {
 			return <div className="text-base md:text-lg">No transactions yet.</div>;

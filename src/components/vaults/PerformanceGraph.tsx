@@ -119,6 +119,10 @@ export default function PerformanceGraph({
 	const maxX = data.reduce((acc, curr) => Math.max(acc, curr.x), -Infinity);
 	const xDomain = [minX, maxX];
 
+	const minY = data.reduce((acc, curr) => Math.min(acc, curr.y), Infinity);
+	const maxY = data.reduce((acc, curr) => Math.max(acc, curr.y), -Infinity);
+	const yDomain = getYDomain(minY, maxY);
+
 	/**
 	 * The color of the area under the graph/line of graph works as such:
 	 *
@@ -174,6 +178,17 @@ export default function PerformanceGraph({
 		);
 	};
 
+	function getYDomain(minY: number, maxY: number) {
+		if (minY >= 0) {
+			const difference = maxY - minY;
+			const offset = difference * 2; // make the curve look less steep
+
+			return [minY - offset, 'auto'];
+		}
+
+		return [minY, 'auto'];
+	}
+
 	return (
 		<ResponsiveContainer width={'100%'} height={320}>
 			<AreaChart data={data}>
@@ -224,7 +239,8 @@ export default function PerformanceGraph({
 						`$${BigNum.from(tick, QUOTE_PRECISION_EXP).toMillified()}`
 					}
 					tickMargin={8}
-					// domain={['auto', 'auto']}
+					// @ts-ignore
+					domain={yDomain}
 				/>
 				<Tooltip
 					/* @ts-ignore */
