@@ -14,6 +14,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 
 import useAppStore from '@/hooks/useAppStore';
 import useFetchVault from '@/hooks/useFetchVault';
+import useShowAcknowledgeModal from '@/hooks/useShowAcknowledgeModal';
 import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
 import useUsdcBalance from '@/hooks/useUsdcBalance';
 
@@ -27,6 +28,7 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useUsdcBalance();
 	useAllRpcLatencies();
 	useEmulation();
+	useShowAcknowledgeModal();
 
 	return <>{children}</>;
 };

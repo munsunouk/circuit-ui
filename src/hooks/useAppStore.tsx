@@ -24,6 +24,7 @@ export interface AppStoreState {
 					actionRecord: WrappedEvent<EventType>;
 			  }
 			| { show: false };
+		showAcknowledgeTermsModal: boolean;
 	};
 	vaultClient: VaultClient | undefined;
 	vaults: {
@@ -67,6 +68,7 @@ const DEFAULT_APP_STORE_STATE = {
 		showActionRecordModal: {
 			show: false as false,
 		},
+		showAcknowledgeTermsModal: false,
 	},
 	vaultClient: undefined,
 	vaults: {},

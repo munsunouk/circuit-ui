@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import useAppStore from '@/hooks/useAppStore';
+import useOpenConnectWalletModal from '@/hooks/useOpenConnectWalletModal';
 
 import { syne } from '@/constants/fonts';
 
@@ -43,7 +43,6 @@ const Tab = (props: TabProps) => {
 };
 
 const TopBar = () => {
-	const setAppStore = useAppStore((s) => s.set);
 	const authority = useCommonDriftStore((s) => s.authority);
 	const pathname = usePathname();
 	const { connected, disconnect, connecting, disconnecting } = useWallet();
@@ -51,6 +50,7 @@ const TopBar = () => {
 	const [isManageWalletsOpen, setIsManageWalletsOpen] = useState(false);
 
 	const manageWalletPopup = useRef<HTMLDivElement>(null);
+	const openConnectWalletModal = useOpenConnectWalletModal();
 
 	const currentMainPath = pathname.split('/')[1];
 	const shortPublicKey = authority
@@ -74,12 +74,6 @@ const TopBar = () => {
 			document.removeEventListener('mousedown', handleClickOutside);
 		};
 	}, []);
-
-	const openConnectWalletModal = () => {
-		setAppStore((s) => {
-			s.modals.showConnectWalletModal = true;
-		});
-	};
 
 	const handleManageWalletClick = () => {
 		if (connecting || disconnecting) return;
