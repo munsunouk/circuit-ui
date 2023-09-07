@@ -53,10 +53,10 @@ export default function AcknowledgeTermsModal() {
 					rel="noopener noreferrer"
 				>
 					Circuit&apos;s Terms
-				</a>{' '}
-				together with any further terms set out on the interface or specific
-				vault interface. Circuit will not be liable for any claims, damages,
-				losses, errors, bugs, disruptions, or delays.
+				</a>
+				, together with any further terms set out on the interface or on the
+				specific vault interface. You agree that Circuit will not be liable for
+				any losses, claims, damages, errors, bugs, disruptions, and/or delays.
 			</div>
 
 			<Button onClick={handleAgree} className="py-2 mt-4">
