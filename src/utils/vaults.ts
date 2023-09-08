@@ -47,6 +47,8 @@ export const getUserMaxDailyDrawdown = (
 	history: SerializedPerformanceHistory[],
 	eventRecords: WrappedEvents
 ) => {
+	if (eventRecords.length === 0) return 0;
+
 	const periodsOfActiveDeposits: { startTs: number; endTs: number }[] = [];
 	let startOfCurrentPeriodTs = 0;
 	const ascendingEventRecords = [...eventRecords].reverse();
