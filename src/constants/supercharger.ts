@@ -234,6 +234,44 @@ const SUPERCHARGER_PAST_RAW_DATA = [
 	{ date: '07/29/2023', totalAccountValue: 1523457.02 },
 	{ date: '07/30/2023', totalAccountValue: 1524218.75 },
 	{ date: '07/31/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/01/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/02/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/03/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/04/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/05/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/06/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/07/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/08/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/09/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/10/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/11/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/12/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/13/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/14/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/15/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/16/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/17/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/18/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/19/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/20/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/21/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/22/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/23/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/24/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/25/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/26/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/27/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/28/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/29/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/30/2023', totalAccountValue: 1524911.25 },
+	{ date: '08/31/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/01/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/02/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/03/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/04/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/05/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/06/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/07/2023', totalAccountValue: 1524911.25 },
 ];
 
 export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
@@ -254,3 +292,6 @@ export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
 		),
 	};
 });
+
+export const SUPERCHARGER_VAULT_PUBKEY =
+	'CB4u8FfQEY6jjs8sMGkqLCYXtAFQvf1n81cRqxJJ9pL3';

@@ -1,8 +1,9 @@
 import { PerformanceGraphData } from '@/types';
 
-import { SUPERCHARGER_PAST_DATA } from './supercharger';
-
-export const TEST_VAULT_PUBKEY = 'BxDh8x17Bf3pDf17uh65kXCwmdMpdNjTj91hVqkmFpAp';
+import {
+	SUPERCHARGER_PAST_DATA,
+	SUPERCHARGER_VAULT_PUBKEY,
+} from './supercharger';
 
 export interface OverviewSection {
 	title: string;
@@ -29,7 +30,7 @@ export interface UiVaultConfig {
 
 export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	name: 'Supercharger',
-	pubkeyString: TEST_VAULT_PUBKEY,
+	pubkeyString: SUPERCHARGER_VAULT_PUBKEY,
 	description:
 		'Multiply your yields with delta-neutral market making strategies',
 	permissioned: true,

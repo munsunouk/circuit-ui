@@ -104,6 +104,11 @@
 			"code": 6019,
 			"name": "SharesPercentTooLarge",
 			"msg": "SharesPercentTooLarge"
+		},
+		"OngoingLiquidation": {
+			"code": 6021,
+			"name": "OngoingLiquidation",
+			"msg": "OngoingLiquidation"
 		}
 	},
 	"errorCodesMap": {
@@ -127,6 +132,7 @@
 		"6017": "PermissionedVault",
 		"6018": "WithdrawInProgress",
 		"6019": "SharesPercentTooLarge",
-		"6020": "InvalidVaultDeposit"
+		"6020": "InvalidVaultDeposit",
+		"6021": "OngoingLiquidation"
 	}
 }
