@@ -428,6 +428,12 @@ const WithdrawForm = () => {
 	// we only want to set the max shares once, when all data is available,
 	// to prevent the max amount from constantly updating due to data change subscriptions.
 	useEffect(() => {
+		if (!vaultDepositorAccount) {
+			hasCalcMaxSharesOnce.current = false;
+			setMaxSharesUsdcValue(ZERO);
+			return;
+		}
+
 		if (
 			vault?.vaultAccount &&
 			vaultAccountData &&
