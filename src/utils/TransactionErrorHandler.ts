@@ -21,6 +21,10 @@ const COMMON_ERRORS = [
 		match: /User rejected the request/,
 		message: 'You rejected the transaction request',
 	},
+	{
+		match: /is below vault min_deposit_amount/,
+		message: 'You did not hit the minimum deposit.',
+	},
 ];
 
 export class TransactionErrorHandler {
