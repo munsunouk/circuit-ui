@@ -297,6 +297,10 @@ const createAppActions = (
 			await vaultDepositorAccount.unsubscribe();
 			set((s) => {
 				s.vaults[vaultAddress.toString()]!.eventRecords.isLoaded = true;
+				s.vaults[vaultAddress.toString()]!.eventRecords.records = [];
+				s.vaults[vaultAddress.toString()]!.vaultDepositorAccount = undefined;
+				s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
+					undefined;
 			});
 			return;
 		}

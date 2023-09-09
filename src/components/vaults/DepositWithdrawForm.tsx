@@ -50,14 +50,17 @@ enum WithdrawalState {
 const WITHDRAW_FLUCTUATION_DOC =
 	'https://docs.circuit.trade/product-guides/deposit-and-withdraw-into-circuit-vaults';
 
-const getWithdrawalDetails = (state: WithdrawalState) => {
+const getWithdrawalDetails = (
+	state: WithdrawalState,
+	withdrawalWaitingPeriod: string
+) => {
 	switch (state) {
 		case WithdrawalState.UnRequested:
 		case WithdrawalState.AvailableForWithdrawal:
 			return (
 				<span>
-					Withdrawals can be requested at any time and will be available at the
-					end of each quarter.
+					Withdrawals can be requested at any time and will be available after{' '}
+					{withdrawalWaitingPeriod}.
 					<br />
 					<br />
 					The final amount received may differ from the amount requested.{' '}
@@ -260,6 +263,7 @@ const DepositForm = () => {
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultStats = useCurrentVaultStats();
+	const vault = useCurrentVault();
 
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -268,6 +272,12 @@ const DepositForm = () => {
 		!!vaultAccountData?.permissioned && !vaultDepositorAccountData;
 	const isWithdrawalInProcess =
 		vaultDepositorAccountData?.lastWithdrawRequest.shares.gt(ZERO);
+	const isFirstTimeDeposit = !vault?.eventRecords?.records.length;
+	const isBelowMinDepositAmount =
+		+amount > 0 &&
+		+amount * QUOTE_PRECISION.toNumber() <
+			vaultAccountData?.minDepositAmount.toNumber() &&
+		isFirstTimeDeposit;
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
@@ -289,7 +299,8 @@ const DepositForm = () => {
 		+amount === 0 ||
 		isWithdrawalInProcess ||
 		isNotWhitelistedUser ||
-		+amount > maxDepositAmount;
+		+amount > maxDepositAmount ||
+		isBelowMinDepositAmount;
 
 	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
 
@@ -314,6 +325,33 @@ const DepositForm = () => {
 		setAmount('');
 	};
 
+	const getExtraInfo = () => {
+		let text = '';
+
+		if (isNotWhitelistedUser) {
+			text = 'You are not whitelisted';
+		} else if (isWithdrawalInProcess) {
+			text = 'Deposits are disabled while a withdrawal request is in progress.';
+		} else if (isBelowMinDepositAmount) {
+			text = `The minimum deposit amount is ${BigNum.from(
+				vaultAccountData?.minDepositAmount,
+				USDC_MARKET.precisionExp
+			).toNum()} USDC.`;
+		}
+
+		if (!text) return null;
+
+		return (
+			<span
+				className={twMerge(
+					'w-full text-center py-2 text-text-emphasis px-2 bg-text-button-link-active'
+				)}
+			>
+				{text}
+			</span>
+		);
+	};
+
 	return (
 		<FadeInDiv className="flex flex-col justify-between h-[400px] gap-9">
 			<Form
@@ -326,17 +364,7 @@ const DepositForm = () => {
 
 			{connected ? (
 				<div className="flex flex-col w-full">
-					{(isWithdrawalInProcess || isNotWhitelistedUser) && (
-						<span
-							className={twMerge(
-								'w-full text-center py-2 text-text-emphasis px-2 bg-text-button-link-active'
-							)}
-						>
-							{isNotWhitelistedUser && 'You are not whitelisted'}
-							{isWithdrawalInProcess &&
-								'Deposits are disabled while a withdrawal request is in progress.'}
-						</span>
-					)}
+					{getExtraInfo()}
 					<Button
 						className="text-xl"
 						disabled={isButtonDisabled}
@@ -406,6 +434,12 @@ const WithdrawForm = () => {
 	// we only want to set the max shares once, when all data is available,
 	// to prevent the max amount from constantly updating due to data change subscriptions.
 	useEffect(() => {
+		if (!vaultDepositorAccount) {
+			hasCalcMaxSharesOnce.current = false;
+			setMaxSharesUsdcValue(ZERO);
+			return;
+		}
+
 		if (
 			vault?.vaultAccount &&
 			vaultAccountData &&
@@ -502,7 +536,7 @@ const WithdrawForm = () => {
 			className={'flex flex-col justify-between h-full gap-9 min-h-[400px]'}
 		>
 			<span className="text-text-emphasis">
-				{getWithdrawalDetails(withdrawalState)}
+				{getWithdrawalDetails(withdrawalState, withdrawalWaitingPeriod)}
 			</span>
 
 			{withdrawalState === WithdrawalState.UnRequested && (

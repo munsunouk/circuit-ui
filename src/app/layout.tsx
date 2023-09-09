@@ -32,6 +32,24 @@ export default function RootLayout({
 								{children}
 							</div>
 						</div>
+						<div className="flex justify-center w-full mt-10">
+							<div className="max-w-[1440px] w-full xl:px-[146px] px-5 pb-20 text-gray-500">
+								<div className="h-[1px] mb-2 bg-gray-700 w-full" />
+								<span className="underline">Disclaimer</span>
+								<br />
+								Any figures or numerical statements expressed on this interface
+								such as total earnings, return or annual percentage yield are
+								for estimation and informational purposes only and is not
+								guaranteed. Users should consult with qualified professionals
+								before making a decision to use this interface. Your use of the
+								interface is subject to market risk and may result in a negative
+								return. While we make every effort to ensure the interface is up
+								to date, we do not guarantee the accuracy, completeness or
+								currency of the information on this interface. Users are
+								expected to exercise due diligence and verify information
+								independently.
+							</div>
+						</div>
 						<Footer />
 						<FloatingUi />
 						<ToastContainer />

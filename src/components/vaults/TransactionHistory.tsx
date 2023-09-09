@@ -155,7 +155,11 @@ function TransactionHistory() {
 		if (isLoading) return <Loading />;
 
 		if (eventRecords.length === 0) {
-			return <div className="text-base md:text-lg">No transactions yet.</div>;
+			return (
+				<div className="text-base md:text-lg text-left w-full">
+					No transactions yet.
+				</div>
+			);
 		}
 
 		return displayedRecords.map((record) => {
