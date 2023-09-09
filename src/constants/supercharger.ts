@@ -272,6 +272,8 @@ const SUPERCHARGER_PAST_RAW_DATA = [
 	{ date: '09/05/2023', totalAccountValue: 1524911.25 },
 	{ date: '09/06/2023', totalAccountValue: 1524911.25 },
 	{ date: '09/07/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/08/2023', totalAccountValue: 1524911.25 },
+	{ date: '09/09/2023', totalAccountValue: 1524911.25 },
 ];
 
 export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
@@ -294,4 +296,4 @@ export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
 });
 
 export const SUPERCHARGER_VAULT_PUBKEY =
-	'CB4u8FfQEY6jjs8sMGkqLCYXtAFQvf1n81cRqxJJ9pL3';
+	'GXyE3Snk3pPYX4Nz9QRVBrnBfbJRTAQYxuy5DRdnebAn';

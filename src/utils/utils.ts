@@ -2,19 +2,22 @@ import { HistoryResolution } from '@drift/common';
 import dayjs from 'dayjs';
 
 export const redeemPeriodToString = (seconds = 0) => {
-	const hours = Math.floor(seconds / 60 / 60);
+	const totalHours = Math.floor(seconds / 60 / 60);
+	const days = Math.floor(totalHours / 24);
+	const hours = totalHours % 24;
+
 	let mins = 0;
 
 	if (seconds % (60 * 60) !== 0) {
 		mins = Math.floor((seconds % (60 * 60)) / 60);
 	}
 
-	if (hours < 1) {
+	if (totalHours < 1) {
 		return `${mins} mins`;
-	} else if (hours < 24) {
-		return `${hours} hours${mins > 0 ? ` ${mins} mins` : ''}`;
+	} else if (totalHours < 24) {
+		return `${totalHours} hours${mins > 0 ? ` ${mins} mins` : ''}`;
 	} else {
-		return `${hours / 24} days ${hours % 24} hours${
+		return `${days} days${hours > 0 ? ` ${hours} hours` : ''}${
 			mins > 0 ? ` ${mins} mins` : ''
 		}`;
 	}

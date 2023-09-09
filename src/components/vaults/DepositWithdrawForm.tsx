@@ -50,14 +50,17 @@ enum WithdrawalState {
 const WITHDRAW_FLUCTUATION_DOC =
 	'https://docs.circuit.trade/product-guides/deposit-and-withdraw-into-circuit-vaults';
 
-const getWithdrawalDetails = (state: WithdrawalState) => {
+const getWithdrawalDetails = (
+	state: WithdrawalState,
+	withdrawalWaitingPeriod: string
+) => {
 	switch (state) {
 		case WithdrawalState.UnRequested:
 		case WithdrawalState.AvailableForWithdrawal:
 			return (
 				<span>
-					Withdrawals can be requested at any time and will be available at the
-					end of each quarter.
+					Withdrawals can be requested at any time and will be available after{' '}
+					{withdrawalWaitingPeriod}.
 					<br />
 					<br />
 					The final amount received may differ from the amount requested.{' '}
@@ -260,6 +263,7 @@ const DepositForm = () => {
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultStats = useCurrentVaultStats();
+	const vault = useCurrentVault();
 
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -268,10 +272,12 @@ const DepositForm = () => {
 		!!vaultAccountData?.permissioned && !vaultDepositorAccountData;
 	const isWithdrawalInProcess =
 		vaultDepositorAccountData?.lastWithdrawRequest.shares.gt(ZERO);
+	const isFirstTimeDeposit = !vault?.eventRecords?.records.length;
 	const isBelowMinDepositAmount =
 		+amount > 0 &&
 		+amount * QUOTE_PRECISION.toNumber() <
-			vaultAccountData?.minDepositAmount.toNumber();
+			vaultAccountData?.minDepositAmount.toNumber() &&
+		isFirstTimeDeposit;
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
@@ -530,7 +536,7 @@ const WithdrawForm = () => {
 			className={'flex flex-col justify-between h-full gap-9 min-h-[400px]'}
 		>
 			<span className="text-text-emphasis">
-				{getWithdrawalDetails(withdrawalState)}
+				{getWithdrawalDetails(withdrawalState, withdrawalWaitingPeriod)}
 			</span>
 
 			{withdrawalState === WithdrawalState.UnRequested && (

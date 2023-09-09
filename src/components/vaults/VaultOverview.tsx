@@ -67,12 +67,13 @@ export default function VaultOverview() {
 
 	const profitShareFee =
 		(vaultAccountData?.profitShare ?? 0) / PERCENTAGE_PRECISION.toNumber();
+	const profitShareFeePct = profitShareFee * 100;
 	const withdrawalWaitingPeriod = redeemPeriodToString(
 		vaultAccountData?.redeemPeriod.toNumber()
 	);
 
 	const placeholdersReplacements: PlaceholdersReplacements = {
-		[FEES_PLACEHOLDER]: profitShareFee.toString(),
+		[FEES_PLACEHOLDER]: profitShareFeePct.toString(),
 		[PERIOD_PLACEHOLDER]: withdrawalWaitingPeriod,
 	};
 
