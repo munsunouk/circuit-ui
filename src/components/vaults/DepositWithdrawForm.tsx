@@ -30,7 +30,6 @@ import { USDC_MARKET } from '@/constants/environment';
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
-import GradientBorderBox from '../elements/GradientBorderBox';
 import Input from '../elements/Input';
 import { ExternalLink } from '../icons';
 import { VaultTab } from './VaultTabs';
@@ -134,9 +133,8 @@ const FormTab = ({
 	return (
 		<span
 			className={twMerge(
-				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-main-blue hover:text-black transition',
-				selected &&
-					'bg-container-bg-selected text-text-selected border-container-border-selected'
+				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-container-bg-selected hover:text-text-selected transition hover:border-container-border-selected',
+				selected && 'border-container-border-selected bg-main-blue text-black'
 			)}
 			onClick={onSelect}
 		>
@@ -704,7 +702,7 @@ const DepositWithdrawForm = ({
 	}, [isWithdrawalInProcess]);
 
 	return (
-		<GradientBorderBox className="w-full bg-black">
+		<div className="w-full bg-black border-main-blue border">
 			<div className="flex">
 				<FormTab
 					selected={selectedTab === Tab.Deposit}
@@ -728,7 +726,7 @@ const DepositWithdrawForm = ({
 					/>
 				)}
 			</div>
-		</GradientBorderBox>
+		</div>
 	);
 };
 
