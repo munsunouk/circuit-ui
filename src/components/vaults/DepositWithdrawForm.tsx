@@ -33,6 +33,7 @@ import FadeInDiv from '../elements/FadeInDiv';
 import GradientBorderBox from '../elements/GradientBorderBox';
 import Input from '../elements/Input';
 import { ExternalLink } from '../icons';
+import { VaultTab } from './VaultTabs';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
 	{ label: '25%', value: 0.25 },
@@ -255,7 +256,11 @@ const handleOnValueChangeCurried =
 		setAmount(formattedAmount.toString());
 	};
 
-const DepositForm = () => {
+const DepositForm = ({
+	setUserPerformanceTab,
+}: {
+	setUserPerformanceTab: () => void;
+}) => {
 	const { connected } = useWallet();
 	const usdcBalance = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
@@ -312,6 +317,7 @@ const DepositForm = () => {
 		setLoading(true);
 		try {
 			await appActions.depositVault(vaultPubkey, baseAmount);
+			setUserPerformanceTab();
 		} catch (err) {
 			console.error(err);
 		} finally {
@@ -391,7 +397,11 @@ const DepositForm = () => {
  * un-updated even if the max amount of shares after profit share fee changes due to
  * account data subscription.
  */
-const WithdrawForm = () => {
+const WithdrawForm = ({
+	setUserPerformanceTab,
+}: {
+	setUserPerformanceTab: () => void;
+}) => {
 	const { connected } = useWallet();
 	const vaultPubkey = usePathToVaultPubKey();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
@@ -512,6 +522,7 @@ const WithdrawForm = () => {
 			} else {
 				await appActions.executeVaultWithdrawal(vaultPubkey);
 				hasCalcMaxSharesOnce.current = false;
+				setUserPerformanceTab();
 			}
 		} catch (err) {
 			console.error(err);
@@ -674,7 +685,11 @@ const WithdrawForm = () => {
 	);
 };
 
-const DepositWithdrawForm = () => {
+const DepositWithdrawForm = ({
+	setVaultTab,
+}: {
+	setVaultTab: (tab: VaultTab) => void;
+}) => {
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 
@@ -703,7 +718,15 @@ const DepositWithdrawForm = () => {
 				/>
 			</div>
 			<div className={twMerge('pt-9 pb-7 px-7 min-h-[400px]')}>
-				{selectedTab === Tab.Deposit ? <DepositForm /> : <WithdrawForm />}
+				{selectedTab === Tab.Deposit ? (
+					<DepositForm
+						setUserPerformanceTab={() => setVaultTab(VaultTab.UserPerformance)}
+					/>
+				) : (
+					<WithdrawForm
+						setUserPerformanceTab={() => setVaultTab(VaultTab.UserPerformance)}
+					/>
+				)}
 			</div>
 		</GradientBorderBox>
 	);
