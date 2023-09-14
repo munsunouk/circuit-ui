@@ -78,7 +78,7 @@ export default function VaultPage() {
 						{renderLeftPanel()}
 					</div>
 					<div className="flex flex-col gap-7 max-w-[456px] min-w-[340px]">
-						<DepositWithdrawForm />
+						<DepositWithdrawForm setVaultTab={setSelectedTab} />
 						<WhiteGloveDetails />
 						{devSwitchIsOn && <DevFunctions />}
 					</div>

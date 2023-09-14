@@ -30,9 +30,9 @@ import { USDC_MARKET } from '@/constants/environment';
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
-import GradientBorderBox from '../elements/GradientBorderBox';
 import Input from '../elements/Input';
 import { ExternalLink } from '../icons';
+import { VaultTab } from './VaultTabs';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
 	{ label: '25%', value: 0.25 },
@@ -133,9 +133,8 @@ const FormTab = ({
 	return (
 		<span
 			className={twMerge(
-				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-main-blue hover:text-black transition',
-				selected &&
-					'bg-container-bg-selected text-text-selected border-container-border-selected'
+				'flex items-center justify-center flex-1 px-5 py-3 leading-relaxed cursor-pointer border-b border-container-border hover:bg-container-bg-selected hover:text-text-selected transition hover:border-container-border-selected',
+				selected && 'border-container-border-selected bg-main-blue text-black'
 			)}
 			onClick={onSelect}
 		>
@@ -255,7 +254,11 @@ const handleOnValueChangeCurried =
 		setAmount(formattedAmount.toString());
 	};
 
-const DepositForm = () => {
+const DepositForm = ({
+	setUserPerformanceTab,
+}: {
+	setUserPerformanceTab: () => void;
+}) => {
 	const { connected } = useWallet();
 	const usdcBalance = useAppStore((s) => s.balances.usdc);
 	const appActions = useAppActions();
@@ -312,6 +315,7 @@ const DepositForm = () => {
 		setLoading(true);
 		try {
 			await appActions.depositVault(vaultPubkey, baseAmount);
+			setUserPerformanceTab();
 		} catch (err) {
 			console.error(err);
 		} finally {
@@ -391,7 +395,11 @@ const DepositForm = () => {
  * un-updated even if the max amount of shares after profit share fee changes due to
  * account data subscription.
  */
-const WithdrawForm = () => {
+const WithdrawForm = ({
+	setUserPerformanceTab,
+}: {
+	setUserPerformanceTab: () => void;
+}) => {
 	const { connected } = useWallet();
 	const vaultPubkey = usePathToVaultPubKey();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
@@ -512,6 +520,7 @@ const WithdrawForm = () => {
 			} else {
 				await appActions.executeVaultWithdrawal(vaultPubkey);
 				hasCalcMaxSharesOnce.current = false;
+				setUserPerformanceTab();
 			}
 		} catch (err) {
 			console.error(err);
@@ -674,7 +683,11 @@ const WithdrawForm = () => {
 	);
 };
 
-const DepositWithdrawForm = () => {
+const DepositWithdrawForm = ({
+	setVaultTab,
+}: {
+	setVaultTab: (tab: VaultTab) => void;
+}) => {
 	const [selectedTab, setSelectedTab] = useState<Tab>(Tab.Deposit);
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 
@@ -689,7 +702,7 @@ const DepositWithdrawForm = () => {
 	}, [isWithdrawalInProcess]);
 
 	return (
-		<GradientBorderBox className="w-full bg-black">
+		<div className="w-full bg-black border-main-blue border">
 			<div className="flex">
 				<FormTab
 					selected={selectedTab === Tab.Deposit}
@@ -703,9 +716,17 @@ const DepositWithdrawForm = () => {
 				/>
 			</div>
 			<div className={twMerge('pt-9 pb-7 px-7 min-h-[400px]')}>
-				{selectedTab === Tab.Deposit ? <DepositForm /> : <WithdrawForm />}
+				{selectedTab === Tab.Deposit ? (
+					<DepositForm
+						setUserPerformanceTab={() => setVaultTab(VaultTab.UserPerformance)}
+					/>
+				) : (
+					<WithdrawForm
+						setUserPerformanceTab={() => setVaultTab(VaultTab.UserPerformance)}
+					/>
+				)}
 			</div>
-		</GradientBorderBox>
+		</div>
 	);
 };
 
