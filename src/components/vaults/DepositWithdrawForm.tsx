@@ -275,12 +275,10 @@ const DepositForm = ({
 		!!vaultAccountData?.permissioned && !vaultDepositorAccountData;
 	const isWithdrawalInProcess =
 		vaultDepositorAccountData?.lastWithdrawRequest.shares.gt(ZERO);
-	const isFirstTimeDeposit = !vault?.eventRecords?.records.length;
 	const isBelowMinDepositAmount =
 		+amount > 0 &&
 		+amount * QUOTE_PRECISION.toNumber() <
-			vaultAccountData?.minDepositAmount.toNumber() &&
-		isFirstTimeDeposit;
+			vaultAccountData?.minDepositAmount.toNumber();
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
