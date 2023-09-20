@@ -16,7 +16,7 @@ import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
 import { encodeVaultName } from '@/utils/utils';
-import { getHistoricalApy } from '@/utils/vaults';
+import { getSimpleHistoricalApy } from '@/utils/vaults';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { UiVaultConfig } from '@/constants/vaults';
@@ -163,7 +163,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
 		100
 	);
-	const historicalApy = getHistoricalApy(
+	const historicalApy = getSimpleHistoricalApy(
 		vaultStats.netDepositsWithHistory.toNumber(),
 		vaultStats.totalAccountValueWithHistory.toNumber(),
 		firstPnl?.epochTs ?? dayjs().subtract(1, 'year').unix()

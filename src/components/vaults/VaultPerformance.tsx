@@ -14,7 +14,7 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
-import { getHistoricalApy, getMaxDailyDrawdown } from '@/utils/vaults';
+import { getMaxDailyDrawdown, getModifiedDietzApy } from '@/utils/vaults';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
@@ -119,10 +119,9 @@ export default function VaultPerformance() {
 		.div(BN.max(netDepositsBigNum.val, ONE))
 		.toNum();
 
-	const historicalApy = getHistoricalApy(
-		vaultStats.netDepositsWithHistory.toNumber(),
-		vaultStats.totalAccountValueWithHistory.toNumber(),
-		formattedPnlHistory[0]?.x ?? dayjs().subtract(1, 'year').unix()
+	const historicalApy = getModifiedDietzApy(
+		BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
+		vault?.vaultDeposits ?? []
 	);
 	const maxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
 
