@@ -1,5 +1,8 @@
-import { SerializedPerformanceHistory } from '@/types';
-import { ZERO } from '@drift-labs/sdk';
+import {
+	SerializedDepositHistory,
+	SerializedPerformanceHistory,
+} from '@/types';
+import { BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 import { VaultDepositorAction, WrappedEvents } from '@drift-labs/vaults-sdk';
 import { matchEnum } from '@drift/common';
 import { PublicKey } from '@solana/web3.js';
@@ -96,7 +99,7 @@ export const getUserMaxDailyDrawdown = (
 	return maxDrawdown;
 };
 
-export const getHistoricalApy = (
+export const getSimpleHistoricalApy = (
 	netDeposits: number,
 	totalAccountValue: number,
 	startTs: number
@@ -104,4 +107,62 @@ export const getHistoricalApy = (
 	const days = (dayjs().unix() - startTs) / 60 / 60 / 24;
 	const apy = ((totalAccountValue - netDeposits) / netDeposits) * (365 / days);
 	return Math.max(apy, -1);
+};
+
+/**
+ * https://en.wikipedia.org/wiki/Modified_Dietz_method
+ * @param currentVaultEquity
+ * @param vaultDeposits
+ * @returns weighted APY calc using the Modified Dietz method
+ */
+export const getModifiedDietzApy = (
+	currentVaultEquity: number,
+	vaultDeposits: SerializedDepositHistory[]
+): number => {
+	if (vaultDeposits.length === 0) {
+		return -1;
+	}
+
+	const startingMarketValue = 0;
+	const endingMarkeValue = currentVaultEquity;
+	const firstDepositTs = parseInt(vaultDeposits[vaultDeposits.length - 1].ts);
+	const lastDepositTs = parseInt(vaultDeposits[0].ts);
+	const nowTs = Date.now() / 1000;
+	if (nowTs < firstDepositTs) {
+		console.error('nowTs < firstDepositTs');
+		return -1;
+	}
+	if (lastDepositTs < firstDepositTs) {
+		console.error('lastDepositTs < firstDepositTs');
+		return -1;
+	}
+	const totalDuration = nowTs - firstDepositTs;
+
+	let totalNetFlow = 0;
+	let weightedNetFlow = 0;
+	vaultDeposits.forEach((deposit) => {
+		let depositAmount = BigNum.from(
+			deposit.amount,
+			QUOTE_PRECISION_EXP
+		).toNum();
+		if (deposit.direction === 'withdraw') {
+			depositAmount *= -1;
+		}
+		totalNetFlow += depositAmount;
+		const depositAge = parseInt(deposit.ts) - firstDepositTs;
+		const depositWeight = (totalDuration - depositAge) / totalDuration;
+		if (depositWeight < 0) {
+			console.error('depositWeight < 0');
+			return -1;
+		}
+		weightedNetFlow += depositWeight * depositAmount;
+	}, 0);
+
+	const modifiedDietzReturns =
+		(endingMarkeValue - startingMarketValue - totalNetFlow) /
+		(startingMarketValue + weightedNetFlow);
+	const annualized =
+		Math.pow(1 + modifiedDietzReturns, (86400 * 365) / totalDuration) - 1;
+
+	return annualized;
 };

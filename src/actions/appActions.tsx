@@ -1,4 +1,7 @@
-import { SerializedPerformanceHistory } from '@/types';
+import {
+	SerializedDepositHistory,
+	SerializedPerformanceHistory,
+} from '@/types';
 import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,
@@ -94,6 +97,7 @@ const createAppActions = (
 			vaultAddress.toString(),
 			vaultSnapshots
 		);
+		const vaultDeposits = await fetchAllDeposits(vaultAccount.user);
 		const currentVaultState = get().vaults[vaultAddress.toString()];
 		const updatedVaultState = {
 			vaultDriftClient,
@@ -106,6 +110,7 @@ const createAppActions = (
 				records: [],
 				isLoaded: false,
 			},
+			vaultDeposits,
 		};
 
 		set((s) => {
@@ -141,6 +146,31 @@ const createAppActions = (
 			return {
 				dailyAllTimePnls: [],
 			};
+		}
+	};
+
+	const fetchAllDeposits = async (userAccount: PublicKey) => {
+		try {
+			const depositsRes = await axios.get<{
+				data: {
+					records: SerializedDepositHistory[][];
+					totalCounts: number[];
+					maxRecordLimit: number;
+				};
+			}>(
+				`${
+					Env.historyServerUrl
+				}/deposits/userAccounts/?userPublicKeys=${userAccount.toString()}&pageIndex=0&pageSize=1000`
+			);
+
+			// TODO: paginate and get all deposits, will need all deposits to calculate proper APY
+			// shouldn't get 1000 deposits any time soon though, given the deposit minimums.
+
+			return depositsRes.data.data.records[0];
+		} catch (err) {
+			console.error(err);
+
+			return [];
 		}
 	};
 

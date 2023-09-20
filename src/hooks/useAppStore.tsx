@@ -1,4 +1,7 @@
-import { SerializedPerformanceHistory } from '@/types';
+import {
+	SerializedDepositHistory,
+	SerializedPerformanceHistory,
+} from '@/types';
 import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
 	EventType,
@@ -41,6 +44,7 @@ export interface AppStoreState {
 					pnlHistory: {
 						dailyAllTimePnls: SerializedPerformanceHistory[];
 					};
+					vaultDeposits: SerializedDepositHistory[];
 			  }
 			| undefined;
 	};
