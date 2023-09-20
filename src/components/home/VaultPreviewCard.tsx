@@ -3,7 +3,6 @@
 import { useCommonDriftStore } from '@drift-labs/react';
 import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
-import dayjs from 'dayjs';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
@@ -16,7 +15,7 @@ import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
 import { encodeVaultName } from '@/utils/utils';
-import { getSimpleHistoricalApy } from '@/utils/vaults';
+import { getModifiedDietzApy } from '@/utils/vaults';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { UiVaultConfig } from '@/constants/vaults';
@@ -163,10 +162,9 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
 		100
 	);
-	const historicalApy = getSimpleHistoricalApy(
-		vaultStats.netDepositsWithHistory.toNumber(),
-		vaultStats.totalAccountValueWithHistory.toNumber(),
-		firstPnl?.epochTs ?? dayjs().subtract(1, 'year').unix()
+	const historicalApy = getModifiedDietzApy(
+		BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
+		vaultStore?.vaultDeposits ?? []
 	);
 
 	useEffect(() => {

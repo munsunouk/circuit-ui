@@ -153,7 +153,7 @@ const createAppActions = (
 		try {
 			const depositsRes = await axios.get<{
 				data: {
-					records: SerializedDepositHistory[];
+					records: SerializedDepositHistory[][];
 					totalCounts: number[];
 					maxRecordLimit: number;
 				};
@@ -206,8 +206,9 @@ const createAppActions = (
 		};
 
 		const vaultDriftClient = new DriftClient(vaultDriftClientConfig);
-		const userAccounts =
-			await vaultDriftClient.getUserAccountsForAuthority(vaultPubKey);
+		const userAccounts = await vaultDriftClient.getUserAccountsForAuthority(
+			vaultPubKey
+		);
 
 		if (!userAccounts || userAccounts.length === 0) {
 			throw new Error(
