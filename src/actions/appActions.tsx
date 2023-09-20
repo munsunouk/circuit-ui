@@ -110,7 +110,7 @@ const createAppActions = (
 				records: [],
 				isLoaded: false,
 			},
-			vaultDeposits: vaultDeposits[0],
+			vaultDeposits,
 		};
 
 		set((s) => {
@@ -166,7 +166,7 @@ const createAppActions = (
 			// TODO: paginate and get all deposits, will need all deposits to calculate proper APY
 			// shouldn't get 1000 deposits any time soon though, given the deposit minimums.
 
-			return depositsRes.data.data.records;
+			return depositsRes.data.data.records[0];
 		} catch (err) {
 			console.error(err);
 
