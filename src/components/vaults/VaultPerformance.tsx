@@ -60,14 +60,14 @@ const GRAPH_VIEW_OPTIONS: {
 	snapshotAttribute: SnapshotKey;
 }[] = [
 	{
-		label: 'Vault Balance',
-		value: GraphView.VaultBalance,
-		snapshotAttribute: 'totalAccountValue',
-	},
-	{
 		label: 'P&L',
 		value: GraphView.PnL,
 		snapshotAttribute: 'allTimeTotalPnl',
+	},
+	{
+		label: 'Vault Balance',
+		value: GraphView.VaultBalance,
+		snapshotAttribute: 'totalAccountValue',
 	},
 ];
 
@@ -90,7 +90,9 @@ export default function VaultPerformance() {
 				epochTs: pnl.epochTs,
 			}))
 			.concat({
-				totalAccountValue: vaultStats.totalAccountValueWithHistory.toNumber(),
+				totalAccountValue:
+					vaultStats.totalAccountValueWithHistory.toNumber() +
+					vaultStats.totalAccountValue.toNumber(),
 				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
 				epochTs: dayjs().unix(),
 			}) ?? [];
@@ -140,7 +142,9 @@ export default function VaultPerformance() {
 					/>
 					<BreakdownRow
 						label="APY"
-						value={`${(historicalApy * 100).toFixed(2)}%`}
+						value={`${(
+							(isNaN(historicalApy) ? 0 : historicalApy) * 100
+						).toFixed(2)}%`}
 					/>
 					<BreakdownRow
 						label="Max Daily Drawdown"
