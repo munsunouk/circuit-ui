@@ -142,7 +142,9 @@ export default function VaultPerformance() {
 					/>
 					<BreakdownRow
 						label="APY"
-						value={`${(historicalApy * 100).toFixed(2)}%`}
+						value={`${(
+							(isNaN(historicalApy) ? 0 : historicalApy) * 100
+						).toFixed(2)}%`}
 					/>
 					<BreakdownRow
 						label="Max Daily Drawdown"
