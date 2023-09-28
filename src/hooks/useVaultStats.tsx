@@ -68,26 +68,26 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		let allTimeTotalPnlWithHistory = allTimeTotalPnl;
 		let netDepositsWithHistory = vaultAccountData?.netDeposits || ZERO;
 
-		if (uiVaultConfig?.pastPerformanceHistory) {
-			const lastPastHistoryPoint =
-				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
+		// if (uiVaultConfig?.pastPerformanceHistory) {
+		// 	const lastPastHistoryPoint =
+		// 		uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
 
-			// totalAccountValueWithHistory = totalAccountValueWithHistory.add(
-			// 	new BN(lastPastHistoryPoint.totalAccountValue.toNum())
-			// );
-			totalAccountValueWithHistory = // hardcode tvl until all funds have moved over
-				new BN(
-					uiVaultConfig?.pastPerformanceHistory
-						?.slice(-1)[0]
-						?.totalAccountValue.toNum()
-				) ?? ZERO;
-			allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
-				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
-			);
-			netDepositsWithHistory = netDepositsWithHistory.add(
-				new BN(lastPastHistoryPoint.netDeposits.toString())
-			);
-		}
+		// totalAccountValueWithHistory = totalAccountValueWithHistory.add(
+		// 	new BN(lastPastHistoryPoint.totalAccountValue.toNum())
+		// );
+		// 	totalAccountValueWithHistory = // hardcode tvl until all funds have moved over
+		// 		new BN(
+		// 			uiVaultConfig?.pastPerformanceHistory
+		// 				?.slice(-1)[0]
+		// 				?.totalAccountValue.toNum()
+		// 		) ?? ZERO;
+		// 	allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
+		// 		new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
+		// 	);
+		// 	netDepositsWithHistory = netDepositsWithHistory.add(
+		// 		new BN(lastPastHistoryPoint.netDeposits.toString())
+		// 	);
+		// }
 
 		return {
 			totalAccountValue,

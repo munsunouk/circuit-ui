@@ -33,7 +33,7 @@ set -e
 # echo "no_prefix = $no_prefix"
 # COMMIT=${no_prefix} # get rid of the suffix
 
-COMMIT='5de58b6d3dfc2c82b47028f858c2eb083dab372b'
+COMMIT='773c726620a564b242e4d9511d8ae1bae174349e'
 
 echo "TRYING TO USE SUBMODULE COMMIT: $COMMIT"
 

@@ -1,6 +1,10 @@
 'use client';
 
-import { BN, BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
+import {
+	BN,
+	BigNum,
+	QUOTE_PRECISION_EXP, // ZERO
+} from '@drift-labs/sdk';
 import Skeleton from 'react-loading-skeleton';
 import { twMerge } from 'tailwind-merge';
 
@@ -19,28 +23,28 @@ export default function VaultTvl() {
 	const isLoading = numOfUiVaults !== Object.keys(allVaults).length;
 
 	const combinedTvl = Object.values(allVaults).reduce((sum, vault) => {
-		const uiVaultConfig = VAULTS.find(
-			(v) => v.pubkeyString === vault?.vaultAccountData?.pubkey.toString()
-		);
+		// const uiVaultConfig = VAULTS.find(
+		// 	(v) => v.pubkeyString === vault?.vaultAccountData?.pubkey.toString()
+		// );
 
 		const collateral = vault?.vaultDriftUser.getNetSpotMarketValue();
 		const unrealizedPNL = vault?.vaultDriftUser.getUnrealizedPNL();
 		let netUsdValue = collateral.add(unrealizedPNL);
 
-		if (uiVaultConfig?.pastPerformanceHistory) {
-			const lastPastHistoryPoint =
-				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
+		// if (uiVaultConfig?.pastPerformanceHistory) {
+		// 	const lastPastHistoryPoint =
+		// 		uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
 
-			// netUsdValue = netUsdValue.add(
-			// 	new BN(lastPastHistoryPoint.totalAccountValue.toNum())
-			// );
-			netUsdValue = // hardcode tvl until all funds have moved over
-				new BN(
-					uiVaultConfig?.pastPerformanceHistory
-						?.slice(-1)[0]
-						?.totalAccountValue.toNum()
-				) ?? ZERO;
-		}
+		// 	// netUsdValue = netUsdValue.add(
+		// 	// 	new BN(lastPastHistoryPoint.totalAccountValue.toNum())
+		// 	// );
+		// 	netUsdValue = // hardcode tvl until all funds have moved over
+		// 		new BN(
+		// 			uiVaultConfig?.pastPerformanceHistory
+		// 				?.slice(-1)[0]
+		// 				?.totalAccountValue.toNum()
+		// 		) ?? ZERO;
+		// }
 
 		return sum.add(netUsdValue);
 	}, new BN(0));

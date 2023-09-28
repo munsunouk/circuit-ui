@@ -93,10 +93,10 @@ const createAppActions = (
 		]);
 
 		const vaultSnapshots = await fetchVaultSnapshots(vaultAccount.user);
-		const combinedSnapshotsHistories = combineVaultHistories(
-			vaultAddress.toString(),
-			vaultSnapshots
-		);
+		// const combinedSnapshotsHistories = combineVaultHistories(
+		// 	vaultAddress.toString(),
+		// 	vaultSnapshots
+		// );
 		const vaultDeposits = await fetchAllDeposits(vaultAccount.user);
 		const currentVaultState = get().vaults[vaultAddress.toString()];
 		const updatedVaultState = {
@@ -105,7 +105,7 @@ const createAppActions = (
 			vaultDriftUserAccount,
 			vaultAccount: vaultSubscriber,
 			vaultAccountData: vaultAccount,
-			pnlHistory: combinedSnapshotsHistories,
+			pnlHistory: vaultSnapshots,
 			eventRecords: {
 				records: [],
 				isLoaded: false,
@@ -206,9 +206,8 @@ const createAppActions = (
 		};
 
 		const vaultDriftClient = new DriftClient(vaultDriftClientConfig);
-		const userAccounts = await vaultDriftClient.getUserAccountsForAuthority(
-			vaultPubKey
-		);
+		const userAccounts =
+			await vaultDriftClient.getUserAccountsForAuthority(vaultPubKey);
 
 		if (!userAccounts || userAccounts.length === 0) {
 			throw new Error(

@@ -81,7 +81,7 @@ export default function VaultPerformance() {
 	);
 	const [graphView, setGraphView] = useState(GRAPH_VIEW_OPTIONS[0]);
 
-	const totalEarnings = vaultStats.allTimeTotalPnlWithHistory;
+	const totalEarnings = vaultStats.allTimeTotalPnl;
 	const allTimePnlHistory =
 		vault?.pnlHistory.dailyAllTimePnls
 			.map((pnl) => ({
@@ -90,10 +90,8 @@ export default function VaultPerformance() {
 				epochTs: pnl.epochTs,
 			}))
 			.concat({
-				totalAccountValue:
-					vaultStats.totalAccountValueWithHistory.toNumber() +
-					vaultStats.totalAccountValue.toNumber(),
-				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
+				totalAccountValue: vaultStats.totalAccountValue.toNumber(),
+				allTimeTotalPnl: vaultStats.allTimeTotalPnl.toNumber(),
 				epochTs: dayjs().unix(),
 			}) ?? [];
 
