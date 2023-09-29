@@ -2,7 +2,12 @@ import {
 	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
 } from '@/types';
-import { BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
+import {
+	BigNum,
+	PERCENTAGE_PRECISION,
+	QUOTE_PRECISION_EXP,
+	ZERO,
+} from '@drift-labs/sdk';
 import { VaultDepositorAction, WrappedEvents } from '@drift-labs/vaults-sdk';
 import { matchEnum } from '@drift/common';
 import { PublicKey } from '@solana/web3.js';
@@ -108,9 +113,10 @@ export const getUserMaxDailyDrawdown = (
 export const getSimpleHistoricalApy = (
 	netDeposits: number,
 	totalAccountValue: number,
-	startTs: number
+	startTs: number,
+	endTs?: number
 ) => {
-	const days = (dayjs().unix() - startTs) / 60 / 60 / 24;
+	const days = ((endTs ?? dayjs().unix()) - startTs) / 60 / 60 / 24;
 	const apy = ((totalAccountValue - netDeposits) / netDeposits) * (365 / days);
 	return Math.max(apy, -1);
 };
@@ -171,4 +177,34 @@ export const getModifiedDietzApy = (
 		Math.pow(1 + modifiedDietzReturns, (86400 * 365) / totalDuration) - 1;
 
 	return annualized;
+};
+
+// Calculation explanation: https://chat.openai.com/share/f6a3c630-f37b-428d-aaa2-dfeeca290da0
+export const combineHistoricalApy = (
+	historicalFundValues: {
+		initial: BigNum;
+		final: BigNum;
+		numOfDays: number;
+	},
+	currentApy: {
+		apy: number;
+		numOfDays: number;
+	}
+) => {
+	const historicalGrowthFactor =
+		historicalFundValues.final
+			.mul(PERCENTAGE_PRECISION)
+			.div(historicalFundValues.initial)
+			.toNum() / PERCENTAGE_PRECISION.toNumber();
+	const currentGrowthFactor = Math.pow(
+		1 + currentApy.apy,
+		currentApy.numOfDays / 365
+	);
+	const combinedGrowthFactor = historicalGrowthFactor * currentGrowthFactor;
+	const totalNumOfDays = historicalFundValues.numOfDays + currentApy.numOfDays;
+	const totalNumOfYears = totalNumOfDays / 365;
+
+	const combinedApy = Math.pow(combinedGrowthFactor, 1 / totalNumOfYears) - 1;
+
+	return combinedApy;
 };
