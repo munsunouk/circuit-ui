@@ -1,4 +1,5 @@
 import {
+	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
 	SerializedPerformanceHistory,
 } from '@/types';
@@ -25,7 +26,7 @@ export const getUiVaultConfig = (
 };
 
 export const getMaxDailyDrawdown = (
-	history: Pick<SerializedPerformanceHistory, 'totalAccountValue'>[]
+	history: Pick<OptionalSerializedPerformanceHistory, 'totalAccountValue'>[]
 ) => {
 	let maxDrawdown = 0;
 
@@ -33,7 +34,12 @@ export const getMaxDailyDrawdown = (
 		const currentDayValue = history[i].totalAccountValue;
 		const nextDayValue = history[i + 1].totalAccountValue;
 
-		if (nextDayValue > currentDayValue) continue;
+		if (
+			nextDayValue === undefined ||
+			currentDayValue === undefined ||
+			nextDayValue > currentDayValue
+		)
+			continue;
 
 		const drawdown = (nextDayValue - currentDayValue) / (currentDayValue || 1);
 

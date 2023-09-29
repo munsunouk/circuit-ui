@@ -1,6 +1,6 @@
 import {
+	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
-	SerializedPerformanceHistory,
 } from '@/types';
 import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
@@ -42,7 +42,7 @@ export interface AppStoreState {
 					vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
 					eventRecords: { records: WrappedEvents; isLoaded: boolean };
 					pnlHistory: {
-						dailyAllTimePnls: SerializedPerformanceHistory[];
+						dailyAllTimePnls: OptionalSerializedPerformanceHistory[];
 					};
 					vaultDeposits: SerializedDepositHistory[];
 			  }

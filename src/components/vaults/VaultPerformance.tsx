@@ -4,6 +4,7 @@ import {
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
+	PERCENTAGE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 } from '@drift-labs/sdk';
 import { HistoryResolution } from '@drift/common';
@@ -90,36 +91,49 @@ export default function VaultPerformance() {
 				epochTs: pnl.epochTs,
 			}))
 			.concat({
-				totalAccountValue:
-					vaultStats.totalAccountValueWithHistory.toNumber() +
-					vaultStats.totalAccountValue.toNumber(),
+				totalAccountValue: vaultStats.totalAccountValue.toNumber(),
 				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
 				epochTs: dayjs().unix(),
 			}) ?? [];
 
-	const formattedPnlHistory = allTimePnlHistory.map((snapshot) => ({
-		x: snapshot.epochTs,
-		y: snapshot[graphView.snapshotAttribute],
-	}));
+	const formattedPnlHistory = allTimePnlHistory
+		.map((snapshot) => ({
+			x: snapshot.epochTs,
+			y: snapshot[graphView.snapshotAttribute],
+		}))
+		.filter((snapshot) => snapshot.y !== undefined) as {
+		x: number;
+		y: number;
+	}[];
 
 	const displayedPnlHistory = formattedPnlHistory.slice(
 		-1 * selectedGraphOption.days
 	);
 
 	const totalAccountValueBigNum = BigNum.from(
-		vaultStats.totalAccountValueWithHistory,
+		vaultStats.totalAccountValue,
 		QUOTE_PRECISION_EXP
 	);
 	const netDepositsBigNum = BigNum.from(
-		vaultStats.netDepositsWithHistory,
+		vaultAccountData?.netDeposits,
 		QUOTE_PRECISION_EXP
 	);
 
 	const cumulativeReturnsPct = totalAccountValueBigNum
 		.sub(netDepositsBigNum)
 		.mul(PERCENTAGE_PRECISION)
-		.div(BN.max(netDepositsBigNum.val, ONE))
-		.toNum();
+		.div(BN.max(netDepositsBigNum.val, ONE));
+
+	// to get combined cumulative returns pct, current cumulative returns pct * historical cumulative returns pct
+	// needs to be e.g. 1.08 * 1.45 instead of 0.08 * 0.45, and then subtract 1 at the end
+	const cumulativeReturnsPctWithHistory = BigNum.from(
+		cumulativeReturnsPct.val
+			.add(PERCENTAGE_PRECISION)
+			.mul(vaultStats.historicalCumulativeReturnsPct.add(PERCENTAGE_PRECISION))
+			.div(PERCENTAGE_PRECISION)
+			.sub(PERCENTAGE_PRECISION),
+		PERCENTAGE_PRECISION_EXP
+	);
 
 	const historicalApy = getModifiedDietzApy(
 		BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
@@ -138,7 +152,9 @@ export default function VaultPerformance() {
 					/>
 					<BreakdownRow
 						label="Cumulative Return"
-						value={`${(cumulativeReturnsPct * 100).toFixed(2)}%`}
+						value={`${(cumulativeReturnsPctWithHistory.toNum() * 100).toFixed(
+							2
+						)}%`}
 					/>
 					<BreakdownRow
 						label="APY"
