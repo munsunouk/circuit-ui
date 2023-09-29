@@ -1,3 +1,5 @@
+'use client';
+
 import { twMerge } from 'tailwind-merge';
 
 import VaultPreviewCard from '@/components/home/VaultPreviewCard';

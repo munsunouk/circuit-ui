@@ -15,7 +15,11 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
-import { getMaxDailyDrawdown, getModifiedDietzApy } from '@/utils/vaults';
+import {
+	combineHistoricalApy,
+	getMaxDailyDrawdown,
+	getModifiedDietzApy,
+} from '@/utils/vaults';
 
 import { VAULTS } from '@/constants/vaults';
 
@@ -48,7 +52,12 @@ const PERFORMANCE_GRAPH_OPTIONS: PerformanceGraphOption[] = [
 	{
 		label: 'All',
 		value: HistoryResolution.ALL,
-		days: 0,
+		days: 0, // all
+	},
+	{
+		label: 'Historical',
+		value: HistoryResolution.ALL,
+		days: 0, // all
 	},
 ];
 
@@ -102,15 +111,21 @@ export default function VaultPerformance() {
 				epochTs: dayjs().unix(),
 			}) ?? [];
 
-	const formattedPnlHistory = allTimePnlHistory
-		.map((snapshot) => ({
-			x: snapshot.epochTs,
-			y: snapshot[graphView.snapshotAttribute],
-		}))
-		.filter((snapshot) => snapshot.y !== undefined) as {
-		x: number;
-		y: number;
-	}[];
+	const formattedPnlHistory =
+		selectedGraphOption.label === 'Historical'
+			? uiVaultConfig?.pastPerformanceHistory?.map((history) => ({
+					x: history.epochTs,
+					y: history.totalAccountValue.toNum(),
+			  })) ?? []
+			: (allTimePnlHistory
+					.map((snapshot) => ({
+						x: snapshot.epochTs,
+						y: snapshot[graphView.snapshotAttribute],
+					}))
+					.filter((snapshot) => snapshot.y !== undefined) as {
+					x: number;
+					y: number;
+			  }[]);
 
 	const displayedPnlHistory = formattedPnlHistory.slice(
 		-1 * selectedGraphOption.days
@@ -141,10 +156,35 @@ export default function VaultPerformance() {
 		PERCENTAGE_PRECISION_EXP
 	);
 
-	const historicalApy = getModifiedDietzApy(
+	const currentApy = getModifiedDietzApy(
 		BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
 		vault?.vaultDeposits ?? []
 	);
+	const combinedHistoricalApy = uiVaultConfig?.pastPerformanceHistory
+		? combineHistoricalApy(
+				{
+					initial: uiVaultConfig.pastPerformanceHistory[0].totalAccountValue,
+					final:
+						uiVaultConfig.pastPerformanceHistory.slice(-1)[0].totalAccountValue,
+					numOfDays: dayjs
+						.unix(uiVaultConfig?.pastPerformanceHistory.slice(-1)[0].epochTs)
+						.diff(
+							dayjs.unix(uiVaultConfig?.pastPerformanceHistory[0].epochTs),
+							'days'
+						),
+				},
+				{
+					apy: currentApy,
+					numOfDays: dayjs().diff(
+						dayjs.unix(
+							uiVaultConfig?.pastPerformanceHistory.slice(-1)[0].epochTs
+						),
+						'days'
+					),
+				}
+		  )
+		: currentApy;
+
 	const vaultMaxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
 	const historicalMaxDailyDrawdown = getMaxDailyDrawdown(
 		uiVaultConfig?.pastPerformanceHistory?.map((history) => ({
@@ -176,7 +216,7 @@ export default function VaultPerformance() {
 					<BreakdownRow
 						label="APY"
 						value={`${(
-							(isNaN(historicalApy) ? 0 : historicalApy) * 100
+							(isNaN(combinedHistoricalApy) ? 0 : combinedHistoricalApy) * 100
 						).toFixed(2)}%`}
 					/>
 					<BreakdownRow
@@ -198,7 +238,12 @@ export default function VaultPerformance() {
 						tabClassName="whitespace-nowrap px-4 py-2"
 					/>
 					<Dropdown
-						options={PERFORMANCE_GRAPH_OPTIONS}
+						options={
+							graphView.value === GraphView.VaultBalance &&
+							uiVaultConfig?.pastPerformanceHistory
+								? PERFORMANCE_GRAPH_OPTIONS
+								: PERFORMANCE_GRAPH_OPTIONS.slice(0, 3)
+						}
 						selectedOption={selectedGraphOption}
 						setSelectedOption={
 							setSelectedGraphOption as (option: {

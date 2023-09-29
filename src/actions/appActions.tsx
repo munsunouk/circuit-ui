@@ -97,7 +97,7 @@ const createAppActions = (
 		const combinedSnapshotsHistories = combineVaultHistories(
 			vaultAddress.toString(),
 			vaultSnapshots,
-			false
+			false // we only combine historical P&L data since its easier to combine because we can assume there were no concurrent deposits/withdrawals in the previous strategy
 		);
 		const vaultDeposits = await fetchAllDeposits(vaultAccount.user);
 		const currentVaultState = get().vaults[vaultAddress.toString()];

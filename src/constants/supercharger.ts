@@ -275,11 +275,6 @@ const SUPERCHARGER_PAST_RAW_DATA = [
 	{ date: '09/08/2023', totalAccountValue: 1524911.25 },
 	{ date: '09/09/2023', totalAccountValue: 1524911.25 },
 	{ date: '09/10/2023', totalAccountValue: 1524911.25 },
-	{ date: '09/11/2023', totalAccountValue: 1524911.25 },
-	{ date: '09/12/2023', totalAccountValue: 1524911.25 },
-	{ date: '09/13/2023', totalAccountValue: 1524911.25 },
-	{ date: '09/14/2023', totalAccountValue: 1524911.25 },
-	{ date: '09/15/2023', totalAccountValue: 1524911.25 },
 ];
 
 export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
