@@ -1,4 +1,5 @@
 import {
+	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
 	SerializedPerformanceHistory,
 } from '@/types';
@@ -95,7 +96,8 @@ const createAppActions = (
 		const vaultSnapshots = await fetchVaultSnapshots(vaultAccount.user);
 		const combinedSnapshotsHistories = combineVaultHistories(
 			vaultAddress.toString(),
-			vaultSnapshots
+			vaultSnapshots,
+			false
 		);
 		const vaultDeposits = await fetchAllDeposits(vaultAccount.user);
 		const currentVaultState = get().vaults[vaultAddress.toString()];
@@ -206,9 +208,8 @@ const createAppActions = (
 		};
 
 		const vaultDriftClient = new DriftClient(vaultDriftClientConfig);
-		const userAccounts = await vaultDriftClient.getUserAccountsForAuthority(
-			vaultPubKey
-		);
+		const userAccounts =
+			await vaultDriftClient.getUserAccountsForAuthority(vaultPubKey);
 
 		if (!userAccounts || userAccounts.length === 0) {
 			throw new Error(
@@ -564,7 +565,9 @@ const createAppActions = (
 		vaultAddress: string,
 		snapshot: {
 			dailyAllTimePnls: SerializedPerformanceHistory[];
-		}
+		},
+		combineTotalAccountValue = true,
+		combineAllTimeTotalPnl = true
 	) => {
 		const uiVaultConfig = VAULTS.find(
 			(vault) => vault.pubkeyString === vaultAddress
@@ -582,7 +585,9 @@ const createAppActions = (
 				formattedPastHistory,
 				snapshot.dailyAllTimePnls,
 				HistoryResolution.ALL,
-				dayjs.unix(0)
+				dayjs.unix(0),
+				combineTotalAccountValue,
+				combineAllTimeTotalPnl
 			),
 		};
 
@@ -597,8 +602,10 @@ const createAppActions = (
 		pastHistory: SerializedPerformanceHistory[],
 		snapshotHistory: SerializedPerformanceHistory[],
 		resolution: HistoryResolution,
-		firstDate: dayjs.Dayjs
-	) => {
+		firstDate: dayjs.Dayjs,
+		combineTotalAccountValue: boolean,
+		combineAllTimeTotalPnl: boolean
+	): OptionalSerializedPerformanceHistory[] => {
 		const lastPointInPastHistory = pastHistory[pastHistory.length - 1] ?? {
 			totalAccountValue: 0,
 			allTimeTotalPnl: 0,
@@ -626,10 +633,12 @@ const createAppActions = (
 						epochTs: normalizeDate(snapshot.epochTs, resolution),
 						totalAccountValue:
 							snapshot.totalAccountValue +
-							overlappingPastHistoryDataPoint.totalAccountValue,
+							(combineTotalAccountValue
+								? overlappingPastHistoryDataPoint.totalAccountValue
+								: 0),
 						allTimeTotalPnl:
 							overlappingPastHistoryDataPoint.allTimeTotalPnl +
-							snapshot.allTimeTotalPnl,
+							(combineAllTimeTotalPnl ? snapshot.allTimeTotalPnl : 0),
 						allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
 					};
 				} else {
@@ -638,9 +647,14 @@ const createAppActions = (
 						// allow for data continuation from past history
 						totalAccountValue:
 							snapshot.totalAccountValue +
-							lastPointInPastHistory.totalAccountValue,
+							(combineTotalAccountValue
+								? lastPointInPastHistory.totalAccountValue
+								: 0),
 						allTimeTotalPnl:
-							snapshot.allTimeTotalPnl + lastPointInPastHistory.allTimeTotalPnl,
+							snapshot.allTimeTotalPnl +
+							(combineAllTimeTotalPnl
+								? lastPointInPastHistory.allTimeTotalPnl
+								: 0),
 						allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
 					};
 				}
@@ -648,6 +662,15 @@ const createAppActions = (
 
 		const combinedHistory = pastHistory
 			.slice(0, firstOverlappingPointIndex)
+			.map((pastHistoryData) => ({
+				...pastHistoryData,
+				totalAccountValue: combineTotalAccountValue
+					? pastHistoryData.totalAccountValue
+					: undefined,
+				allTimeTotalPnl: combineAllTimeTotalPnl
+					? pastHistoryData.allTimeTotalPnl
+					: undefined,
+			}))
 			.concat(formattedSnapshotHistory);
 		const withinResolutionHistory = combinedHistory.filter((point) =>
 			dayjs.unix(point.epochTs).isSameOrAfter(firstDate)

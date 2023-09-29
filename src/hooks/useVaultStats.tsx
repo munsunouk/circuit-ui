@@ -1,4 +1,4 @@
-import { BN, PublicKey, ZERO } from '@drift-labs/sdk';
+import { BN, PERCENTAGE_PRECISION, PublicKey, ZERO } from '@drift-labs/sdk';
 import { useEffect, useState } from 'react';
 
 import { VAULTS } from '@/constants/vaults';
@@ -12,18 +12,16 @@ const UPDATE_FREQUENCY_MS = 10_000;
 interface VaultStats {
 	totalAccountValue: BN;
 	allTimeTotalPnl: BN;
-	totalAccountValueWithHistory: BN;
 	allTimeTotalPnlWithHistory: BN;
-	netDepositsWithHistory: BN;
+	historicalCumulativeReturnsPct: BN;
 	isLoaded: boolean;
 }
 
 const DEFAULT_VAULT_STATS: VaultStats = {
 	totalAccountValue: new BN(0),
 	allTimeTotalPnl: new BN(0),
-	totalAccountValueWithHistory: new BN(0),
 	allTimeTotalPnlWithHistory: new BN(0),
-	netDepositsWithHistory: new BN(0),
+	historicalCumulativeReturnsPct: new BN(0),
 	isLoaded: false,
 };
 
@@ -64,37 +62,28 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		});
 		const allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
 
-		let totalAccountValueWithHistory = totalAccountValue;
 		let allTimeTotalPnlWithHistory = allTimeTotalPnl;
-		let netDepositsWithHistory = vaultAccountData?.netDeposits || ZERO;
+		let historicalCumulativeReturnsPct = ZERO;
 
 		if (uiVaultConfig?.pastPerformanceHistory) {
 			const lastPastHistoryPoint =
 				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
-
-			// totalAccountValueWithHistory = totalAccountValueWithHistory.add(
-			// 	new BN(lastPastHistoryPoint.totalAccountValue.toNum())
-			// );
-			totalAccountValueWithHistory = // hardcode tvl until all funds have moved over
-				new BN(
-					uiVaultConfig?.pastPerformanceHistory
-						?.slice(-1)[0]
-						?.totalAccountValue.toNum()
-				) ?? ZERO;
 			allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
 				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
 			);
-			netDepositsWithHistory = netDepositsWithHistory.add(
-				new BN(lastPastHistoryPoint.netDeposits.toString())
-			);
+			const historicalInitialDeposit =
+				uiVaultConfig.pastPerformanceHistory[0].totalAccountValue;
+			historicalCumulativeReturnsPct = lastPastHistoryPoint.totalAccountValue
+				.sub(historicalInitialDeposit)
+				.mul(PERCENTAGE_PRECISION)
+				.div(historicalInitialDeposit).val;
 		}
 
 		return {
 			totalAccountValue,
 			allTimeTotalPnl,
-			totalAccountValueWithHistory,
 			allTimeTotalPnlWithHistory,
-			netDepositsWithHistory,
+			historicalCumulativeReturnsPct,
 			isLoaded: true,
 		};
 	}

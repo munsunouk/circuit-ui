@@ -1,6 +1,6 @@
 import {
+	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
-	SerializedPerformanceHistory,
 } from '@/types';
 import { BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 import { VaultDepositorAction, WrappedEvents } from '@drift-labs/vaults-sdk';
@@ -25,7 +25,7 @@ export const getUiVaultConfig = (
 };
 
 export const getMaxDailyDrawdown = (
-	history: Pick<SerializedPerformanceHistory, 'totalAccountValue'>[]
+	history: Pick<OptionalSerializedPerformanceHistory, 'totalAccountValue'>[]
 ) => {
 	let maxDrawdown = 0;
 
@@ -33,7 +33,12 @@ export const getMaxDailyDrawdown = (
 		const currentDayValue = history[i].totalAccountValue;
 		const nextDayValue = history[i + 1].totalAccountValue;
 
-		if (nextDayValue > currentDayValue) continue;
+		if (
+			nextDayValue === undefined ||
+			currentDayValue === undefined ||
+			nextDayValue > currentDayValue
+		)
+			continue;
 
 		const drawdown = (nextDayValue - currentDayValue) / (currentDayValue || 1);
 
@@ -47,7 +52,7 @@ export const getMaxDailyDrawdown = (
  * Find max daily drawdown in periods where the user has an active deposits.
  */
 export const getUserMaxDailyDrawdown = (
-	history: SerializedPerformanceHistory[],
+	history: OptionalSerializedPerformanceHistory[],
 	eventRecords: WrappedEvents
 ) => {
 	if (eventRecords.length === 0) return 0;
@@ -88,7 +93,8 @@ export const getUserMaxDailyDrawdown = (
 		const periodHistory = history.filter(
 			(historyItem) =>
 				historyItem.epochTs >= normalizeDate(period.startTs) &&
-				historyItem.epochTs <= period.endTs
+				historyItem.epochTs <= period.endTs &&
+				historyItem.totalAccountValue !== undefined
 		);
 
 		const periodMaxDrawdown = getMaxDailyDrawdown(periodHistory);
