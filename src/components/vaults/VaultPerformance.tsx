@@ -17,6 +17,8 @@ import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { getMaxDailyDrawdown, getModifiedDietzApy } from '@/utils/vaults';
 
+import { VAULTS } from '@/constants/vaults';
+
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
@@ -82,6 +84,10 @@ export default function VaultPerformance() {
 	);
 	const [graphView, setGraphView] = useState(GRAPH_VIEW_OPTIONS[0]);
 
+	const uiVaultConfig = VAULTS.find(
+		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
+	);
+
 	const totalEarnings = vaultStats.allTimeTotalPnlWithHistory;
 	const allTimePnlHistory =
 		vault?.pnlHistory.dailyAllTimePnls
@@ -139,7 +145,18 @@ export default function VaultPerformance() {
 		BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
 		vault?.vaultDeposits ?? []
 	);
-	const maxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
+	const vaultMaxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
+	const historicalMaxDailyDrawdown = getMaxDailyDrawdown(
+		uiVaultConfig?.pastPerformanceHistory?.map((history) => ({
+			...history,
+			totalAccountValue: history.totalAccountValue.toNum(),
+		})) ?? []
+	);
+	const maxDailyDrawdown = Math.min(
+		vaultMaxDailyDrawdown,
+		historicalMaxDailyDrawdown,
+		0
+	);
 
 	return (
 		<div className="flex flex-col w-full gap-8">
