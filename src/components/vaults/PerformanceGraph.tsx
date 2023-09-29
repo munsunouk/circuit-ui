@@ -49,32 +49,37 @@ const CustomTooltip = ({
 const getDateTicks = (
 	firstDateTs: number,
 	interval: number,
-	unit: dayjs.ManipulateType
+	unit: dayjs.ManipulateType,
+	lastDateTs: number
 ) => {
-	let currentDate = dayjs.unix(normalizeDate(dayjs().unix()));
+	let lastDate = dayjs.unix(normalizeDate(lastDateTs));
 	const firstDate = dayjs.unix(firstDateTs);
 	const ticks = [];
 
-	while (currentDate.isSameOrAfter(firstDate)) {
-		ticks.push(currentDate.unix());
-		currentDate = currentDate.subtract(interval, unit);
+	while (lastDate.isSameOrAfter(firstDate)) {
+		ticks.push(lastDate.unix());
+		lastDate = lastDate.subtract(interval, unit);
 	}
 
 	return ticks.reverse();
 };
 
-const getCustomXAxisTicks = (dataLength: number, firstDateTs: number) => {
+const getCustomXAxisTicks = (
+	dataLength: number,
+	firstDateTs: number,
+	lastDateTs: number
+) => {
 	// if data is in days
 	if (dataLength <= 21) {
-		return getDateTicks(firstDateTs, 2, 'day');
+		return getDateTicks(firstDateTs, 2, 'day', lastDateTs);
 	} else if (dataLength <= 60) {
-		return getDateTicks(firstDateTs, 1, 'week');
+		return getDateTicks(firstDateTs, 1, 'week', lastDateTs);
 	} else if (dataLength <= 180) {
-		return getDateTicks(firstDateTs, 1, 'month');
+		return getDateTicks(firstDateTs, 1, 'month', lastDateTs);
 	} else if (dataLength <= 360) {
-		return getDateTicks(firstDateTs, 2, 'month');
+		return getDateTicks(firstDateTs, 2, 'month', lastDateTs);
 	} else {
-		return getDateTicks(firstDateTs, 3, 'month');
+		return getDateTicks(firstDateTs, 3, 'month', lastDateTs);
 	}
 };
 
@@ -231,7 +236,11 @@ export default function PerformanceGraph({
 					dataKey={'x'}
 					domain={xDomain}
 					tickFormatter={(tick) => dayjs.unix(tick).format('DD/MM')}
-					ticks={getCustomXAxisTicks(data.length, data[0].x)}
+					ticks={getCustomXAxisTicks(
+						data.length,
+						data[0].x,
+						data.slice(-1)[0].x
+					)}
 					tickMargin={8}
 				/>
 				<YAxis

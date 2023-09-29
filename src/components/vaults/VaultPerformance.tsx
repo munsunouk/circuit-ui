@@ -52,7 +52,12 @@ const PERFORMANCE_GRAPH_OPTIONS: PerformanceGraphOption[] = [
 	{
 		label: 'All',
 		value: HistoryResolution.ALL,
-		days: 0,
+		days: 0, // all
+	},
+	{
+		label: 'Historical',
+		value: HistoryResolution.ALL,
+		days: 0, // all
 	},
 ];
 
@@ -106,15 +111,21 @@ export default function VaultPerformance() {
 				epochTs: dayjs().unix(),
 			}) ?? [];
 
-	const formattedPnlHistory = allTimePnlHistory
-		.map((snapshot) => ({
-			x: snapshot.epochTs,
-			y: snapshot[graphView.snapshotAttribute],
-		}))
-		.filter((snapshot) => snapshot.y !== undefined) as {
-		x: number;
-		y: number;
-	}[];
+	const formattedPnlHistory =
+		selectedGraphOption.label === 'Historical'
+			? uiVaultConfig?.pastPerformanceHistory?.map((history) => ({
+					x: history.epochTs,
+					y: history.totalAccountValue.toNum(),
+			  })) ?? []
+			: (allTimePnlHistory
+					.map((snapshot) => ({
+						x: snapshot.epochTs,
+						y: snapshot[graphView.snapshotAttribute],
+					}))
+					.filter((snapshot) => snapshot.y !== undefined) as {
+					x: number;
+					y: number;
+			  }[]);
 
 	const displayedPnlHistory = formattedPnlHistory.slice(
 		-1 * selectedGraphOption.days
@@ -227,7 +238,12 @@ export default function VaultPerformance() {
 						tabClassName="whitespace-nowrap px-4 py-2"
 					/>
 					<Dropdown
-						options={PERFORMANCE_GRAPH_OPTIONS}
+						options={
+							graphView.value === GraphView.VaultBalance &&
+							uiVaultConfig?.pastPerformanceHistory
+								? PERFORMANCE_GRAPH_OPTIONS
+								: PERFORMANCE_GRAPH_OPTIONS.slice(0, 3)
+						}
 						selectedOption={selectedGraphOption}
 						setSelectedOption={
 							setSelectedGraphOption as (option: {
