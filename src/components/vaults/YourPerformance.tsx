@@ -1,5 +1,10 @@
 import { useCommonDriftStore } from '@drift-labs/react';
-import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import {
+	BigNum,
+	ONE,
+	PERCENTAGE_PRECISION,
+	QUOTE_PRECISION_EXP,
+} from '@drift-labs/sdk';
 import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
@@ -56,24 +61,44 @@ export default function YourPerformance() {
 	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
-	const userAccountValueString = BigNum.from(
+	const userAccountBalanceProportionBigNum = BigNum.from(
 		userAccountBalanceProportion,
 		QUOTE_PRECISION_EXP
-	).toNotional();
+	);
+	const userAccountValueString =
+		userAccountBalanceProportionBigNum.toNotional();
 
 	// User's total earnings
-	const userTotalDeposits = vaultDepositorAccData?.totalDeposits.toNumber();
-	const userTotalWithdraws = vaultDepositorAccData?.totalWithdraws.toNumber();
-	let totalEarnings =
-		userTotalWithdraws - userTotalDeposits + userAccountBalanceProportion;
-	// prevent $-0.00
-	if (totalEarnings < 0 && totalEarnings > -BUFFER) {
-		totalEarnings = 0;
-	}
-	const totalEarningsString = BigNum.from(
-		totalEarnings,
+	const userTotalDepositsBigNum = BigNum.from(
+		vaultDepositorAccData?.totalDeposits,
 		QUOTE_PRECISION_EXP
-	).toNotional();
+	);
+	const userTotalWithdrawsBigNum = BigNum.from(
+		vaultDepositorAccData?.totalWithdraws,
+		QUOTE_PRECISION_EXP
+	);
+	let totalEarnings = userTotalWithdrawsBigNum
+		.sub(userTotalDepositsBigNum)
+		.add(userAccountBalanceProportionBigNum);
+	// prevent $-0.00
+	if (
+		totalEarnings.ltZero() &&
+		totalEarnings.gt(BigNum.from(-BUFFER, QUOTE_PRECISION_EXP))
+	) {
+		totalEarnings = BigNum.zero(QUOTE_PRECISION_EXP);
+	}
+	const totalEarningsString = totalEarnings.toNotional();
+
+	const roi =
+		totalEarnings
+			.mul(PERCENTAGE_PRECISION)
+			.div(
+				BigNum.max(
+					userTotalDepositsBigNum,
+					BigNum.from(ONE, QUOTE_PRECISION_EXP)
+				)
+			)
+			.toNum() / PERCENTAGE_PRECISION.toNumber();
 
 	// Max daily drawdown
 	const maxDailyDrawdown = getUserMaxDailyDrawdown(
@@ -90,6 +115,9 @@ export default function YourPerformance() {
 		vaultDepositorAccData?.cumulativeProfitShareAmount,
 		QUOTE_PRECISION_EXP
 	);
+	const highWaterMarkWithCurrentDeposit = highWaterMark
+		.add(userTotalDepositsBigNum)
+		.sub(userTotalWithdrawsBigNum);
 
 	return (
 		<div className={'relative flex flex-col gap-8'}>
@@ -115,6 +143,7 @@ export default function YourPerformance() {
 						value={totalEarningsString}
 					/>
 					<BreakdownRow label="Your Deposits" value={userAccountValueString} />
+					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
 						label="Vault Share"
 						value={`${Number(
@@ -138,7 +167,7 @@ export default function YourPerformance() {
 					/>
 					<BreakdownRow
 						label="High-Water Mark"
-						value={highWaterMark.toNotional()}
+						value={highWaterMarkWithCurrentDeposit.toNotional()}
 					/>
 				</div>
 			</FadeInDiv>
