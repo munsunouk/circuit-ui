@@ -247,7 +247,9 @@ const createAppActions = (
 
 		vaultDriftUser.eventEmitter.on('userAccountUpdate', (userAccount) => {
 			set((s) => {
-				s.vaults[vaultPubKey.toString()]!.vaultDriftUserAccount = userAccount;
+				if (s.vaults[vaultPubKey.toString()]) {
+					s.vaults[vaultPubKey.toString()]!.vaultDriftUserAccount = userAccount;
+				}
 			});
 		});
 

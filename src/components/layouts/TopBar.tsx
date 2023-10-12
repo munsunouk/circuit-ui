@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import useAppStore from '@/hooks/useAppStore';
 import useOpenConnectWalletModal from '@/hooks/useOpenConnectWalletModal';
 
 import { syne } from '@/constants/fonts';
@@ -46,6 +47,7 @@ const TopBar = () => {
 	const authority = useCommonDriftStore((s) => s.authority);
 	const pathname = usePathname();
 	const { connected, disconnect, connecting, disconnecting } = useWallet();
+	const setAppStore = useAppStore((s) => s.set);
 
 	const [isManageWalletsOpen, setIsManageWalletsOpen] = useState(false);
 
@@ -81,6 +83,21 @@ const TopBar = () => {
 		connected
 			? setIsManageWalletsOpen(!isManageWalletsOpen)
 			: openConnectWalletModal();
+	};
+
+	const handleDisconnect = () => {
+		disconnect();
+
+		setAppStore((s) => {
+			Object.keys(s.vaults).forEach((vaultAddress) => {
+				s.vaults[vaultAddress]!.vaultDepositorAccount = undefined;
+				s.vaults[vaultAddress]!.vaultDepositorAccountData = undefined;
+			});
+
+			s.balances = {
+				usdc: 0,
+			};
+		});
 	};
 
 	return (
@@ -167,7 +184,7 @@ const TopBar = () => {
 								className={
 									'py-4 px-8 group/item hover:bg-container-bg-hover transition-all '
 								}
-								onClick={disconnect}
+								onClick={handleDisconnect}
 							>
 								<span className="transition-all group-hover/item:text-black text-text-emphasis">
 									Disconnect
