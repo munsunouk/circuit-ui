@@ -90,7 +90,7 @@ export default function YourPerformance() {
 	const totalEarningsString = totalEarnings.toNotional();
 
 	const roi =
-		totalEarnings
+		(totalEarnings
 			.mul(PERCENTAGE_PRECISION)
 			.div(
 				BigNum.max(
@@ -98,7 +98,9 @@ export default function YourPerformance() {
 					BigNum.from(ONE, QUOTE_PRECISION_EXP)
 				)
 			)
-			.toNum() / PERCENTAGE_PRECISION.toNumber();
+			.toNum() /
+			PERCENTAGE_PRECISION.toNumber()) *
+		100;
 
 	// Max daily drawdown
 	const maxDailyDrawdown = getUserMaxDailyDrawdown(
