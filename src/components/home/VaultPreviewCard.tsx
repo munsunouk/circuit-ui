@@ -1,10 +1,10 @@
 'use client';
 
 import { useCommonDriftStore } from '@drift-labs/react';
-import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BN, BigNum, ONE, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
@@ -43,7 +43,7 @@ function VaultStat({
 				<span
 					className={twMerge(
 						sourceCodePro.className,
-						'transition-all md:text-3xl group-hover:md:text-2xl text-xl group-hover:text-lg'
+						'transition-all  md:text-2xl group-hover:md:text-2xl text-xl group-hover:text-lg'
 					)}
 				>
 					{value}
@@ -56,11 +56,18 @@ function VaultStat({
 interface VaultStatsProps {
 	apy: string;
 	tvl: string;
+	userDeposits?: string;
 	capacity: number;
 	loading: boolean;
 }
 
-function VaultStats({ apy, tvl, capacity, loading }: VaultStatsProps) {
+function VaultStats({
+	apy,
+	tvl,
+	capacity,
+	loading,
+	userDeposits,
+}: VaultStatsProps) {
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
@@ -71,7 +78,11 @@ function VaultStats({ apy, tvl, capacity, loading }: VaultStatsProps) {
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
 				<VaultStat label={'APY'} value={apy} loading={loading} />
-				<VaultStat label={'TVL'} value={`$${tvl}`} loading={loading} />
+				<VaultStat
+					label={userDeposits ? 'Your Deposits / TVL' : 'TVL'}
+					value={userDeposits ? `$${userDeposits} / $${tvl}` : `$${tvl}`}
+					loading={loading}
+				/>
 				<VaultStat
 					label={'Capacity'}
 					value={`${capacity.toFixed(2)}%`}
@@ -140,16 +151,22 @@ interface VaultPreviewCardProps {
 
 export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	const { width } = useWindowSize();
-	const connection = useCommonDriftStore((s) => s.connection);
+	const [connection, authority] = useCommonDriftStore((s) => [
+		s.connection,
+		s.authority,
+	]);
 	const appActions = useAppActions();
 
-	const vaultPubkey = vault.pubkeyString
-		? new PublicKey(vault.pubkeyString)
-		: undefined;
-	const vaultStore = useVault(vaultPubkey);
-	const vaultAccountData = useAppStore((s) =>
-		s.getVaultAccountData(vaultPubkey)
+	const vaultPubkey = useMemo(
+		() => (vault.pubkeyString ? new PublicKey(vault.pubkeyString) : undefined),
+		[vault.pubkeyString]
 	);
+	const vaultStore = useVault(vaultPubkey);
+	const [vaultAccountData, vaultDepositorAccountData] = useAppStore((s) => [
+		s.getVaultAccountData(vaultPubkey),
+		s.getVaultDepositorAccountData(vaultPubkey),
+	]);
+
 	const vaultStats = useVaultStats(vaultPubkey);
 	const pnlHistory = vaultStore?.pnlHistory.dailyAllTimePnls ?? [];
 	const firstPnl = pnlHistory[0];
@@ -167,11 +184,36 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		vaultStore?.vaultDeposits ?? []
 	);
 
+	// TODO: abstract this logic
+	// User's vault share proportion
+	const totalVaultShares = vaultAccountData?.totalShares.toNumber();
+	const userVaultShares = vaultDepositorAccountData?.vaultShares.toNumber();
+	const userSharesProportion = userVaultShares / (totalVaultShares ?? ONE) || 0;
+
+	// User's net deposits
+	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
+	const userAccountBalanceProportion =
+		vaultAccountBalance * userSharesProportion;
+	const userAccountBalanceProportionBigNum = BigNum.from(
+		userAccountBalanceProportion,
+		QUOTE_PRECISION_EXP
+	);
+	const userAccountValueString =
+		userAccountBalanceProportionBigNum.toMillified();
+
+	// fetch vault account data
 	useEffect(() => {
 		if (vaultPubkey && connection) {
 			appActions.fetchVault(vaultPubkey);
 		}
 	}, [vault.pubkeyString, connection]);
+
+	// fetch vault depositor account data
+	useEffect(() => {
+		if (vaultPubkey && authority && vaultAccountData) {
+			appActions.initVaultDepositorSubscriber(vaultPubkey, authority);
+		}
+	}, [vaultPubkey, authority, !!vaultAccountData]);
 
 	const topSectionHeight = calculateTopSectionHeight();
 
@@ -211,7 +253,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 					backgroundSize: 'cover',
 				}}
 			/>
-
 			{/** Particles on hover */}
 			<div className="absolute z-50 flex justify-center w-full">
 				<div
@@ -223,10 +264,10 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 					{isHover && <Particles color={vault.backdropParticlesColor} />}
 				</div>
 			</div>
-
 			{/** Radial background on hover */}
 			<div className="absolute inset-x-0 top-0 transition-all bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0" />
 
+			{/** Main Content */}
 			<div
 				className="relative z-20 flex flex-col isolate grow"
 				style={{ marginTop: `${topSectionHeight}px` }}
@@ -268,6 +309,11 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toMillified()}
 									capacity={capacityPct}
 									loading={!vaultStats.isLoaded}
+									userDeposits={
+										userAccountBalanceProportionBigNum.eqZero()
+											? undefined
+											: userAccountValueString
+									}
 								/>
 								<div className="overflow-hidden transition-all group-hover:mt-5 w-full group-hover:h-[32px] h-0">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>
