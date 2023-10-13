@@ -78,11 +78,14 @@ function VaultStats({
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
 				<VaultStat label={'APY'} value={apy} loading={loading} />
-				<VaultStat
-					label={userDeposits ? 'Your Deposits / TVL' : 'TVL'}
-					value={userDeposits ? `$${userDeposits} / $${tvl}` : `$${tvl}`}
-					loading={loading}
-				/>
+				{!!userDeposits && (
+					<VaultStat
+						label={'Your Deposits'}
+						value={`$${userDeposits}`}
+						loading={loading}
+					/>
+				)}
+				<VaultStat label={'TVL'} value={`$${tvl}`} loading={loading} />
 				<VaultStat
 					label={'Capacity'}
 					value={`${capacity.toFixed(2)}%`}

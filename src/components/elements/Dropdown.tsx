@@ -5,7 +5,7 @@ import Button from './Button';
 import Chevron from './Chevron';
 import FadeInDiv from './FadeInDiv';
 
-interface Option {
+export interface Option {
 	label: string;
 	value: any;
 }
