@@ -56,7 +56,7 @@ function VaultStat({
 interface VaultStatsProps {
 	apy: string;
 	tvl: string;
-	userDeposits?: string;
+	userBalance?: string;
 	capacity: number;
 	loading: boolean;
 }
@@ -66,7 +66,7 @@ function VaultStats({
 	tvl,
 	capacity,
 	loading,
-	userDeposits,
+	userBalance,
 }: VaultStatsProps) {
 	const [isMounted, setIsMounted] = useState(false);
 
@@ -78,10 +78,10 @@ function VaultStats({
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
 				<VaultStat label={'APY'} value={apy} loading={loading} />
-				{!!userDeposits && (
+				{!!userBalance && (
 					<VaultStat
-						label={'Your Deposits'}
-						value={`$${userDeposits}`}
+						label={'Your Balance'}
+						value={`$${userBalance}`}
 						loading={loading}
 					/>
 				)}
@@ -312,7 +312,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toMillified()}
 									capacity={capacityPct}
 									loading={!vaultStats.isLoaded}
-									userDeposits={
+									userBalance={
 										userAccountBalanceProportionBigNum.eqZero()
 											? undefined
 											: userAccountValueString

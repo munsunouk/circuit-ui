@@ -127,7 +127,7 @@ export default function YourPerformance() {
 				<SectionHeader className="mb-9">Summary</SectionHeader>
 				<div className="flex items-center justify-center w-full gap-4">
 					<StatsBox
-						label="Your Deposit"
+						label="Your Balance"
 						value={showUserInfo ? userAccountValueString : '--'}
 					/>
 					<div className="h-12 border-r border-container-border" />
@@ -144,7 +144,7 @@ export default function YourPerformance() {
 						label="Total Earnings (All Time)"
 						value={totalEarningsString}
 					/>
-					<BreakdownRow label="Your Deposits" value={userAccountValueString} />
+					<BreakdownRow label="Your Balance" value={userAccountValueString} />
 					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
 						label="Vault Share"
