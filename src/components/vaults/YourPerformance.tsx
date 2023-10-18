@@ -58,6 +58,9 @@ export default function YourPerformance() {
 	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
 	// User's net deposits
+	const netDeposits = vaultDepositorAccData?.netDeposits;
+	const netDepositsBigNum = BigNum.from(netDeposits, QUOTE_PRECISION_EXP);
+	const netDepositsString = netDepositsBigNum.toNotional();
 	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
 	const userAccountBalanceProportion =
 		vaultAccountBalance * userSharesProportion;
@@ -144,7 +147,8 @@ export default function YourPerformance() {
 						label="Total Earnings (All Time)"
 						value={totalEarningsString}
 					/>
-					<BreakdownRow label="Your Balance" value={userAccountValueString} />
+					<BreakdownRow label="Your Cumulative Net Deposits" value={netDepositsString} />
+					<BreakdownRow label="Your Balance" value={showUserInfo ? userAccountValueString : '--'}/>
 					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
 						label="Vault Share"
