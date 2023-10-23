@@ -147,6 +147,8 @@ export default function VaultPerformance() {
 			}) ?? [];
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
 	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
+	const takerVol30Day = vaultUserStats?.takerVolume30D ?? ZERO;
+	const totalVol30Day = makerVol30Day.add(takerVol30Day);
 
 	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
@@ -294,9 +296,9 @@ export default function VaultPerformance() {
 					/>
 					{selectedTimelineOption.value === OverallTimeline.Current && (
 						<BreakdownRow
-							label="Maker Volume (30 Days)"
+							label="30D Volume"
 							value={`${BigNum.from(
-								makerVol30Day,
+								totalVol30Day,
 								QUOTE_PRECISION_EXP
 							).toNotional()}`}
 						/>
