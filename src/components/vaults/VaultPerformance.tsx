@@ -6,6 +6,7 @@ import {
 	PERCENTAGE_PRECISION,
 	QUOTE_PRECISION,
 	QUOTE_PRECISION_EXP,
+	ZERO,
 } from '@drift-labs/sdk';
 import { HistoryResolution } from '@drift/common';
 import dayjs from 'dayjs';
@@ -144,6 +145,8 @@ export default function VaultPerformance() {
 				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
 				epochTs: dayjs().unix(),
 			}) ?? [];
+	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
+	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
 
 	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
@@ -289,6 +292,15 @@ export default function VaultPerformance() {
 						label="Max Daily Drawdown"
 						value={`${(displayedData.maxDailyDrawdown * 100).toFixed(2)}%`}
 					/>
+					{selectedTimelineOption.value === OverallTimeline.Current && (
+						<BreakdownRow
+							label="Maker Volume (30 Days)"
+							value={`${BigNum.from(
+								makerVol30Day,
+								QUOTE_PRECISION_EXP
+							).toNotional()}`}
+						/>
+					)}
 				</div>
 			</FadeInDiv>
 
