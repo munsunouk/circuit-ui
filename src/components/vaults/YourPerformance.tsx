@@ -147,8 +147,14 @@ export default function YourPerformance() {
 						label="Total Earnings (All Time)"
 						value={totalEarningsString}
 					/>
-					<BreakdownRow label="Your Cumulative Net Deposits" value={netDepositsString} />
-					<BreakdownRow label="Your Balance" value={showUserInfo ? userAccountValueString : '--'}/>
+					<BreakdownRow
+						label="Your Cumulative Net Deposits"
+						value={netDepositsString}
+					/>
+					<BreakdownRow
+						label="Your Balance"
+						value={showUserInfo ? userAccountValueString : '--'}
+					/>
 					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
 						label="Vault Share"

@@ -55,11 +55,6 @@ const PERFORMANCE_GRAPH_OPTIONS: PerformanceGraphOption[] = [
 		value: HistoryResolution.ALL,
 		days: 0, // all
 	},
-	{
-		label: 'Historical',
-		value: HistoryResolution.ALL,
-		days: 0, // all
-	},
 ];
 
 enum OverallTimeline {
@@ -162,11 +157,12 @@ export default function VaultPerformance() {
 		}
 	}, [
 		vault,
+		vault?.pnlHistory,
 		vaultAccountData,
 		vaultStats,
 		selectedTimelineOption,
-		allTimePnlHistory,
 		selectedGraphOption,
+		graphView,
 	]);
 
 	const getDisplayedDataForHistorical = (): DisplayedData => {
@@ -323,7 +319,7 @@ export default function VaultPerformance() {
 								graphView.value === GraphView.VaultBalance &&
 								uiVaultConfig?.pastPerformanceHistory
 									? PERFORMANCE_GRAPH_OPTIONS
-									: PERFORMANCE_GRAPH_OPTIONS.slice(0, 3)
+									: PERFORMANCE_GRAPH_OPTIONS
 							}
 							selectedOption={selectedGraphOption}
 							setSelectedOption={
