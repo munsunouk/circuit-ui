@@ -6,40 +6,54 @@ start_time=$(date +%s)
 # Source the utils script
 source ./scripts/utils.sh
 
-# Function to run a submodule workaround
-run_submodule_workaround() {
-    local script_name=$1
-    print_message "install-vercel.sh" "Starting to run ${script_name}${NC}"
-    sh ./${script_name}
+function print() {
+  local message=$1
+
+  print_message "install-vercel.sh" "${message}"
+}
+
+# Function to pull public submodule
+function handle_public_submodule() {
+    local parent_path=$1
+    local submodule_name=$2
+
+    print "pulling submodule ${submodule_name}"
+
+    cd ${parent_path}
+    rm -rf ${submodule_name}
+    git submodule update --init ${submodule_name}
+
+    cd -
 }
 
 # Function to perform bun install and link
-bun_install_and_link() {
+function bun_install_and_link() {
     local folder=$1
     local links=$2
     local should_run_bun_link=$3
 
     cd ${folder}
-    print_message "install-vercel.sh" "bun install for ${folder}"
+    print "bun install for ${folder}"
     bun install
 
     if [ "${should_run_bun_link}" = "true" ]; then
-        print_message "install-vercel.sh" "Running bun link for ${folder}"
+        print "Running bun link for ${folder}"
         bun link
     fi
 
     for link in ${links[@]}
     do
-        print_message "install-vercel.sh" "bun link for ${folder} -> ${link}"
+        print "bun link for ${folder} -> ${link}"
         bun link ${link}
     done
 
     cd - &> /dev/null
 }
 
-# Install vercel workarounds
-run_submodule_workaround "common-submodule-workaround.sh"
-run_submodule_workaround "vaults-submodule-workaround.sh"
+# Install submodules
+handle_public_submodule "." "drift-common"
+handle_public_submodule "./drift-common" "protocol"
+handle_public_submodule "." "drift-vaults"
 
 # Install Drift SDK
 bun_install_and_link "drift-common/protocol" "" ""
@@ -61,4 +75,4 @@ end_time=$(date +%s)
 
 # Calculate and print the execution time
 execution_time=$(expr $end_time - $start_time)
-print_message "install-vercel.sh" "Execution time: ${execution_time} seconds"
+print "Execution time: ${execution_time} seconds"
