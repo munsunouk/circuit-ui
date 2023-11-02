@@ -499,7 +499,7 @@ const createAppActions = (
 				<ToastWithMessage
 					title="Withdrawal Requested"
 					message={`You may make your withdrawal in ${redeemPeriodToString(
-						vaultAccountData?.redeemPeriod
+						vaultAccountData?.redeemPeriod.toNumber()
 					)}`}
 				/>
 			);

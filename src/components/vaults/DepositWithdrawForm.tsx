@@ -211,9 +211,10 @@ const Form = ({
 					label: option.label,
 					onSelect: () => setAmount((maxAmount * option.value).toString()),
 					selected:
-						Number(amount).toFixed(USDC_MARKET.precisionExp) ===
-							(maxAmount * option.value).toFixed(USDC_MARKET.precisionExp) &&
-						Number(amount) !== 0,
+						Number(amount).toFixed(USDC_MARKET.precisionExp.toNumber()) ===
+							(maxAmount * option.value).toFixed(
+								USDC_MARKET.precisionExp.toNumber()
+							) && Number(amount) !== 0,
 				}))}
 			/>
 		</div>
@@ -278,7 +279,7 @@ const DepositForm = ({
 	const isBelowMinDepositAmount =
 		+amount > 0 &&
 		+amount * QUOTE_PRECISION.toNumber() <
-			vaultAccountData?.minDepositAmount.toNumber();
+			(vaultAccountData?.minDepositAmount.toNumber() ?? 0);
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
@@ -426,8 +427,8 @@ const WithdrawForm = ({
 		vaultAccountData?.redeemPeriod.toNumber()
 	);
 	const withdrawalAvailableTs =
-		vaultDepositorAccountData?.lastWithdrawRequest.ts.toNumber() +
-		vaultAccountData?.redeemPeriod.toNumber();
+		(vaultDepositorAccountData?.lastWithdrawRequest.ts.toNumber() ?? 0) +
+		(vaultAccountData?.redeemPeriod.toNumber() ?? 0);
 	const lastRequestedShares =
 		vaultDepositorAccountData?.lastWithdrawRequest.shares ?? new BN(0);
 	const lastRequestedUsdcValue = calcLastRequestedUsdcValue();
@@ -508,7 +509,9 @@ const WithdrawForm = ({
 		try {
 			setLoading(true);
 			if (withdrawalState === WithdrawalState.UnRequested) {
-				const pctToWithdraw = new BN(+amount * 10 ** QUOTE_PRECISION_EXP)
+				const pctToWithdraw = new BN(
+					+amount * 10 ** QUOTE_PRECISION_EXP.toNumber()
+				)
 					.mul(PERCENTAGE_PRECISION)
 					.div(maxSharesUsdcValue);
 
@@ -646,7 +649,7 @@ const WithdrawForm = ({
 									{BigNum.from(
 										lastRequestedUsdcValue,
 										QUOTE_PRECISION_EXP
-									).toPrecision(QUOTE_PRECISION_EXP)}{' '}
+									).toPrecision(QUOTE_PRECISION_EXP.toNumber())}{' '}
 									{withdrawalState === WithdrawalState.Requested
 										? 'USDC withdrawal requested'
 										: 'USDC available for withdrawal'}
@@ -700,7 +703,7 @@ const DepositWithdrawForm = ({
 	}, [isWithdrawalInProcess]);
 
 	return (
-		<div className="w-full bg-black border-main-blue border">
+		<div className="w-full bg-black border border-main-blue">
 			<div className="flex">
 				<FormTab
 					selected={selectedTab === Tab.Deposit}

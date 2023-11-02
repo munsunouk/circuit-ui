@@ -290,7 +290,8 @@ export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
 			data.totalAccountValue.toString(),
 			QUOTE_PRECISION_EXP
 		),
-		netDeposits: BigNum.from(994_533, QUOTE_PRECISION_EXP).mul(QUOTE_PRECISION),
+		netDeposits: BigNum.from(994_533, QUOTE_PRECISION_EXP).mul(QUOTE_PRECISION)
+			.val,
 	};
 });
 

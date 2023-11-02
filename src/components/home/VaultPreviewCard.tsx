@@ -1,7 +1,7 @@
 'use client';
 
 import { useCommonDriftStore } from '@drift-labs/react';
-import { BN, BigNum, ONE, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -189,9 +189,10 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 
 	// TODO: abstract this logic
 	// User's vault share proportion
-	const totalVaultShares = vaultAccountData?.totalShares.toNumber();
-	const userVaultShares = vaultDepositorAccountData?.vaultShares.toNumber();
-	const userSharesProportion = userVaultShares / (totalVaultShares ?? ONE) || 0;
+	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
+	const userVaultShares =
+		vaultDepositorAccountData?.vaultShares.toNumber() ?? 0;
+	const userSharesProportion = userVaultShares / (totalVaultShares ?? 1) || 0;
 
 	// User's net deposits
 	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();

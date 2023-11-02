@@ -23,8 +23,11 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@drift-labs/sdk": ["./drift-common/protocol/sdk/lib"],
+			"@drift/common": ["./drift-common/common-ts/lib"],
 			"@drift-labs/react": ["./drift-common/react/lib"],
-			"@drift-labs/icons": ["./drift-common/icons/lib"]
+			"@drift-labs/icons": ["./drift-common/icons/lib"],
+			"react": ["./node_modules/@types/react"],
+			"BN": ["./drift-common/protocol/sdk/node_modules/@types/bn.js"]
 		}
 	},
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

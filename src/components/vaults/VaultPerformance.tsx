@@ -180,7 +180,7 @@ export default function VaultPerformance() {
 				.toNum() / PERCENTAGE_PRECISION.toNumber();
 
 		const apy = getSimpleHistoricalApy(
-			lastHistoryData.netDeposits.toNum(),
+			lastHistoryData.netDeposits.toNumber(),
 			lastHistoryData.totalAccountValue.toNum(),
 			firstHistoryData.epochTs,
 			lastHistoryData.epochTs

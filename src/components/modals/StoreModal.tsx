@@ -64,21 +64,21 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vaultDepositor?.netDeposits,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Total Deposits"
 								value={BigNum.from(
 									vaultDepositor?.totalDeposits,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Total Withdraws"
 								value={BigNum.from(
 									vaultDepositor?.totalWithdraws,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 
 							<Row
@@ -86,7 +86,7 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vaultDepositor?.cumulativeProfitShareAmount,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Vault Shares"
@@ -99,12 +99,12 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vaultDepositor?.profitShareFeePaid,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Last Withdraw Request Timestamp"
 								value={dayjs
-									.unix(vaultDepositor?.lastWithdrawRequest.ts.toNumber())
+									.unix(vaultDepositor?.lastWithdrawRequest.ts.toNumber() ?? 0)
 									.format('DD MMM YYYY HH:mm:ss')}
 							/>
 							<Row
@@ -112,14 +112,14 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vaultDepositor?.lastWithdrawRequest.shares,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Last Withdraw Request Value"
 								value={BigNum.from(
 									vaultDepositor?.lastWithdrawRequest.value,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 						</>
 					)}
@@ -168,7 +168,7 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vault?.netDeposits,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 
 							<Row
@@ -176,54 +176,54 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vault?.totalDeposits,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Total Withdrawals"
 								value={BigNum.from(
 									vault?.totalWithdraws,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Manager Net Deposits"
 								value={BigNum.from(
 									vault?.managerNetDeposits,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Manager Total Deposits"
 								value={BigNum.from(
 									vault?.managerTotalDeposits,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Manager Total Withdraws"
 								value={BigNum.from(
 									vault?.managerTotalWithdraws,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Manager Total Profit Share"
 								value={BigNum.from(
 									vault?.managerTotalProfitShare,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Manager Total Fee"
 								value={BigNum.from(
 									vault?.managerTotalFee,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Last Fee Update Timestamp"
 								value={dayjs
-									.unix(vault?.lastFeeUpdateTs.toNumber())
+									.unix(vault?.lastFeeUpdateTs.toNumber() ?? 0)
 									.format('DD MMM YYYY HH:mm:ss')}
 							/>
 							<Row
@@ -231,7 +231,7 @@ export default function StoreModal() {
 								value={BigNum.from(
 									vault?.totalWithdrawRequested,
 									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP)}
+								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 							/>
 							<Row
 								label="Redemption Period"
@@ -246,7 +246,8 @@ export default function StoreModal() {
 							<Row
 								label="Management Fee"
 								value={`${
-									(vault?.managementFee ?? 0) / PERCENTAGE_PRECISION.toNumber()
+									(vault?.managementFee.toNumber() ?? 0) /
+									PERCENTAGE_PRECISION.toNumber()
 								}%`}
 							/>
 							<Row

@@ -48,7 +48,7 @@ export default function ActionRecordModal({
 					value={BigNum.from(
 						actionRecord?.amount,
 						QUOTE_PRECISION_EXP
-					).toPrecision(QUOTE_PRECISION_EXP)}
+					).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 				/>
 				<Row
 					label="Spot Market Index"
@@ -98,14 +98,14 @@ export default function ActionRecordModal({
 					value={BigNum.from(
 						actionRecord?.profitShare,
 						QUOTE_PRECISION_EXP
-					).toPrecision(QUOTE_PRECISION_EXP)}
+					).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 				/>
 				<Row
 					label="Management Fee"
 					value={BigNum.from(
 						actionRecord?.managementFee,
 						QUOTE_PRECISION_EXP
-					).toPrecision(QUOTE_PRECISION_EXP)}
+					).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 				/>
 				<Row
 					label="Management Fee Shares"

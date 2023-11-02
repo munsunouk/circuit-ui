@@ -1,6 +1,6 @@
 'use client';
 
-import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BN, BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 import Skeleton from 'react-loading-skeleton';
 import { twMerge } from 'tailwind-merge';
 
@@ -19,8 +19,8 @@ export default function VaultTvl() {
 	const isLoading = numOfUiVaults !== Object.keys(allVaults).length;
 
 	const combinedTvl = Object.values(allVaults).reduce((sum, vault) => {
-		const collateral = vault?.vaultDriftUser.getNetSpotMarketValue();
-		const unrealizedPNL = vault?.vaultDriftUser.getUnrealizedPNL();
+		const collateral = vault?.vaultDriftUser.getNetSpotMarketValue() ?? ZERO;
+		const unrealizedPNL = vault?.vaultDriftUser.getUnrealizedPNL() ?? ZERO;
 		let netUsdValue = collateral.add(unrealizedPNL);
 
 		return sum.add(netUsdValue);
