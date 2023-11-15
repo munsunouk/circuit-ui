@@ -1,5 +1,12 @@
-import { HistoryResolution } from '@drift/common';
+import { MarketType, isVariant } from '@drift-labs/sdk';
+import { HistoryResolution, UIMarket } from '@drift/common';
 import dayjs from 'dayjs';
+import invariant from 'tiny-invariant';
+
+import {
+	CURRENT_PERP_MARKETS,
+	CURRENT_SPOT_MARKETS,
+} from '@/constants/environment';
 
 export const redeemPeriodToString = (seconds = 0) => {
 	const totalHours = Math.floor(seconds / 60 / 60);
@@ -67,3 +74,22 @@ export function shortenPubkey(pubkey: string | undefined, length = 4) {
 	if (!pubkey) return '';
 	return `${pubkey.slice(0, length)}...${pubkey.slice(44 - length, 44)}`;
 }
+
+export const getMarket = (
+	marketIndex: number,
+	marketType: MarketType
+): UIMarket => {
+	const markets = isVariant(marketType, 'perp')
+		? CURRENT_PERP_MARKETS
+		: CURRENT_SPOT_MARKETS;
+	const market = (markets as any[]).find(
+		(market) => market.marketIndex === marketIndex
+	);
+
+	invariant(
+		market,
+		`Market not found for marketIndex ${marketIndex} of market type: ${marketType}}`
+	);
+
+	return { marketType, market };
+};

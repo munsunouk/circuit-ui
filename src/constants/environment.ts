@@ -1,4 +1,10 @@
-import { DriftEnv, MainnetSpotMarkets, Wallet } from '@drift-labs/sdk';
+import {
+	DriftEnv,
+	MainnetSpotMarkets,
+	PerpMarketConfig,
+	Wallet,
+	initialize,
+} from '@drift-labs/sdk';
 import {
 	EnvironmentConstants,
 	Initialize as InitializeCommon,
@@ -13,6 +19,7 @@ const driftEnv =
 		? 'mainnet-beta'
 		: ('devnet' as DriftEnv);
 
+const SDKConfig = initialize({ env: driftEnv });
 InitializeCommon(driftEnv);
 
 type EnvironmentVariables = {
@@ -41,8 +48,19 @@ const Env: EnvironmentVariables = {
 		: EnvironmentConstants.historyServerUrl.dev,
 };
 
+// Spot markets
+export const CURRENT_SPOT_MARKETS = SDKConfig.SPOT_MARKETS;
 export const OrderedSpotMarkets = [...MainnetSpotMarkets].sort(
 	(a, b) => a.marketIndex - b.marketIndex
 );
+
+// Perp markets
+export const CURRENT_PERP_MARKETS = SDKConfig.PERP_MARKETS;
+export const PERP_MARKETS_LOOKUP: Array<PerpMarketConfig> = new Array(
+	CURRENT_PERP_MARKETS.length
+);
+CURRENT_PERP_MARKETS.forEach((market) => {
+	PERP_MARKETS_LOOKUP[market.marketIndex] = market;
+});
 
 export default Env;

@@ -15,8 +15,7 @@
 		"build-vaults": "cd drift-vaults/ts/sdk && yarn build",
 		"convert-icons": "npx @svgr/cli --typescript --no-prettier --icon --out-dir ./src/components/icons ./public/icons && prettier --write './src/components/icons/*.{ts,tsx}'",
 		"install-vercel": "sh ./scripts/install-vercel.sh",
-		"build-vercel": "sh ./scripts/build-vercel.sh",
-		"update-vaults-workaround-commit": "sh ./update-vault-submodule-commit-hook.sh"
+		"build-vercel": "sh ./scripts/build-vercel.sh"
 	},
 	"browser": {
 		"fs": false,
@@ -34,6 +33,7 @@
 		"@drift/common": "file:./drift-common/common-ts",
 		"@solana/wallet-adapter-react": "^0.15.32",
 		"@solana/web3.js": "^1.78.0",
+		"@tanstack/react-table": "^8.10.7",
 		"@types/node": "20.4.2",
 		"@types/react": "18.2.14",
 		"@types/react-dom": "18.2.7",

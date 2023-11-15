@@ -16,6 +16,21 @@ import {
 import { produce } from 'immer';
 import { create } from 'zustand';
 
+type UIVault = {
+	vaultDriftClient: DriftClient;
+	vaultDriftUser: User; // used to get vault's drift account data (e.g. vault balance)
+	vaultDriftUserAccount: UserAccount | undefined; // we store the actual account data so we know when it updates -> object reference will update when account data updates
+	vaultAccount: VaultAccount;
+	vaultAccountData: Vault; // we store the actual account data so we know when it updates
+	vaultDepositorAccount?: VaultDepositorAccount;
+	vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
+	eventRecords: { records: WrappedEvents; isLoaded: boolean };
+	pnlHistory: {
+		dailyAllTimePnls: OptionalSerializedPerformanceHistory[];
+	};
+	vaultDeposits: SerializedDepositHistory[];
+};
+
 export interface AppStoreState {
 	modals: {
 		showConnectWalletModal: boolean;
@@ -31,28 +46,16 @@ export interface AppStoreState {
 	};
 	vaultClient: VaultClient | undefined;
 	vaults: {
-		[vaultPubKey: string]:
-			| {
-					vaultDriftClient: DriftClient;
-					vaultDriftUser: User; // used to get vault's drift account data (e.g. vault balance)
-					vaultDriftUserAccount: UserAccount | undefined; // we store the actual account data so we know when it updates -> object reference will update when account data updates
-					vaultAccount: VaultAccount;
-					vaultAccountData: Vault; // we store the actual account data so we know when it updates
-					vaultDepositorAccount?: VaultDepositorAccount;
-					vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
-					eventRecords: { records: WrappedEvents; isLoaded: boolean };
-					pnlHistory: {
-						dailyAllTimePnls: OptionalSerializedPerformanceHistory[];
-					};
-					vaultDeposits: SerializedDepositHistory[];
-			  }
-			| undefined;
+		[vaultPubKey: string]: UIVault | undefined;
 	};
 	balances: {
 		usdc: number;
 	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
+	getVaultDriftClient: (
+		vaultAddress: PublicKey | undefined
+	) => DriftClient | undefined;
 	getVaultAccountData: (
 		vaultAddress: PublicKey | undefined
 	) => Vault | undefined;
@@ -62,6 +65,7 @@ export interface AppStoreState {
 	getVaultDriftUserAccount: (
 		vaultAddress: PublicKey | undefined
 	) => UserAccount | undefined;
+	getVaultDriftUser: (vaultAddress: PublicKey | undefined) => User | undefined;
 }
 
 const DEFAULT_APP_STORE_STATE = {
@@ -81,29 +85,49 @@ const DEFAULT_APP_STORE_STATE = {
 	},
 };
 
+const vaultPropGetter = (
+	get: () => AppStoreState,
+	vaultAddress: PublicKey | undefined,
+	key: keyof UIVault
+) => {
+	if (!vaultAddress) return undefined;
+
+	const vault = get().vaults[vaultAddress.toString()];
+	return vault?.[key];
+};
+
 const useAppStore = create<AppStoreState>((set, get) => {
 	const setProducerFn = (fn: (s: AppStoreState) => void) => set(produce(fn));
 	return {
 		...DEFAULT_APP_STORE_STATE,
 		set: setProducerFn,
 		get: () => get(),
+		getVaultDriftClient: (vaultAddress: PublicKey | undefined) => {
+			return vaultPropGetter(
+				get,
+				vaultAddress,
+				'vaultDriftClient'
+			) as DriftClient;
+		},
 		getVaultAccountData: (vaultAddress: PublicKey | undefined) => {
-			if (!vaultAddress) return undefined;
-
-			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultAccountData;
+			return vaultPropGetter(get, vaultAddress, 'vaultAccountData') as Vault;
 		},
 		getVaultDepositorAccountData: (vaultAddress: PublicKey | undefined) => {
-			if (!vaultAddress) return undefined;
-
-			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultDepositorAccountData;
+			return vaultPropGetter(
+				get,
+				vaultAddress,
+				'vaultDepositorAccountData'
+			) as VaultDepositor;
 		},
 		getVaultDriftUserAccount: (vaultAddress: PublicKey | undefined) => {
-			if (!vaultAddress) return undefined;
-
-			const vault = get().vaults[vaultAddress.toString()];
-			return vault?.vaultDriftUserAccount;
+			return vaultPropGetter(
+				get,
+				vaultAddress,
+				'vaultDriftUserAccount'
+			) as UserAccount;
+		},
+		getVaultDriftUser: (vaultAddress: PublicKey | undefined) => {
+			return vaultPropGetter(get, vaultAddress, 'vaultDriftUser') as User;
 		},
 	};
 });

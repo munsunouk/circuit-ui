@@ -32,6 +32,7 @@ import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
+import { VaultTable } from './VaultTable/VaultTable';
 
 interface PerformanceGraphOption {
 	label: string;
@@ -337,6 +338,11 @@ export default function VaultPerformance() {
 						<PerformanceGraph data={displayedGraph} />
 					)}
 				</div>
+			</FadeInDiv>
+
+			<FadeInDiv delay={200}>
+				<SectionHeader className="mb-4">Vault Details</SectionHeader>
+				<VaultTable />
 			</FadeInDiv>
 
 			<FadeInDiv delay={200}>

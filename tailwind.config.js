@@ -4,6 +4,8 @@ const SEMANTIC_CLASSES = {
 	// Main Colors
 	'main-blue': 'var(--main-blue)',
 	'secondary-blue': 'var(--secondary-blue)',
+	'success-green': 'var(--success-green)',
+	'negative-red': 'var(--negative-red)',
 
 	// Font Colors
 	'text-default': 'var(--text-default)',
@@ -13,6 +15,8 @@ const SEMANTIC_CLASSES = {
 	'text-selected': 'var(--text-selected)',
 	'text-button-link-hover': 'var(--text-button-link-hover)',
 	'text-button-link-active': 'var(--text-button-link-active)',
+	'text-success-green': 'var(--text-success-green)',
+	'text-negative-red': 'var(--text-negative-red)',
 
 	// Background/Border Colors
 	'container-bg': 'var(--container-bg)',

@@ -1,4 +1,4 @@
-import { BN } from '@drift-labs/sdk';
+import { BN, BigNum } from '@drift-labs/sdk';
 import { UISerializableAccountSnapshot } from '@drift/common';
 
 export type SnapshotKey = keyof Pick<
@@ -46,4 +46,12 @@ export type SerializedDepositHistory = {
 	totalDepositsAfter: string;
 	totalWithdrawsAfter: string;
 	explanation: string;
+};
+
+export type UserBalance = {
+	baseBalance: BigNum;
+	oraclePrice: BigNum;
+	quoteValue: BigNum;
+	marketIndex: number;
+	liquidationPrice: BigNum;
 };
