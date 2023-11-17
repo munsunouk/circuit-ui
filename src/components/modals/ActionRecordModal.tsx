@@ -1,9 +1,8 @@
+import useAppStore from '@/stores/app/useAppStore';
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { EventType, WrappedEvent } from '@drift-labs/vaults-sdk';
 import { ENUM_UTILS } from '@drift/common';
 import dayjs from 'dayjs';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import { shortenPubkey } from '@/utils/utils';
 

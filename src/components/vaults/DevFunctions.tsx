@@ -1,7 +1,7 @@
+import useAppStore from '@/stores/app/useAppStore';
 import invariant from 'tiny-invariant';
 
 import { useAppActions } from '@/hooks/useAppActions';
-import useAppStore from '@/hooks/useAppStore';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import Button from '../elements/Button';

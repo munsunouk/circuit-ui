@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { PERP_MARKETS_LOOKUP } from '@/constants/environment';
 
-import useAppStore from '../useAppStore';
+import useAppStore from '../../stores/app/useAppStore';
 
 export const useVaultOpenPerpPositions = (
 	vaultAddress: PublicKey | undefined

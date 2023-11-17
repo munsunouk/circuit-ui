@@ -1,3 +1,4 @@
+import useAppStore from '@/stores/app/useAppStore';
 import { useCommonDriftStore, useDevSwitchIsOn } from '@drift-labs/react';
 import { BigNum, ZERO } from '@drift-labs/sdk';
 import {
@@ -11,7 +12,6 @@ import { useState } from 'react';
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import useAppStore from '@/hooks/useAppStore';
 import { useCurrentVault } from '@/hooks/useVault';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';

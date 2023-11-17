@@ -1,3 +1,4 @@
+import { AppStoreState } from '@/stores/app/useAppStore';
 import {
 	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
@@ -37,8 +38,6 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { ToastContent } from 'react-toastify';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
-
-import { AppStoreState } from '@/hooks/useAppStore';
 
 import { TransactionErrorHandler } from '@/utils/TransactionErrorHandler';
 import NOTIFICATION_UTILS, { ToastWithMessage } from '@/utils/notifications';

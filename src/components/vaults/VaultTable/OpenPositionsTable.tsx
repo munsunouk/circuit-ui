@@ -62,7 +62,7 @@ const columns = [
 			</div>
 		),
 		{
-			header: 'Entry',
+			header: 'Entry/Index',
 			cell: (info) => (
 				<Table.NumericValue className="w-[120px]">
 					{info.getValue()}

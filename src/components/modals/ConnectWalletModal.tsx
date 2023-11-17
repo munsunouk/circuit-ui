@@ -1,8 +1,7 @@
+import useAppStore from '@/stores/app/useAppStore';
 import { Wallet, useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 import { twMerge } from 'tailwind-merge';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import FadeInDiv from '../elements/FadeInDiv';
 import { Modal } from './Modal';

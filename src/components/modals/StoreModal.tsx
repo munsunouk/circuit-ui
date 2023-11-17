@@ -1,3 +1,4 @@
+import useAppStore from '@/stores/app/useAppStore';
 import {
 	BigNum,
 	PERCENTAGE_PRECISION,
@@ -6,7 +7,6 @@ import {
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
-import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 

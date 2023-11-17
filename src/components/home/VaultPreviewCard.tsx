@@ -1,5 +1,6 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
 import { useCommonDriftStore } from '@drift-labs/react';
 import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
@@ -10,7 +11,6 @@ import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
 import { useAppActions } from '@/hooks/useAppActions';
-import useAppStore from '@/hooks/useAppStore';
 import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 

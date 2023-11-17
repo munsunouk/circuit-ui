@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { VAULTS } from '@/constants/vaults';
 
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 import { useVault } from './useVault';
 

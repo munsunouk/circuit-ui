@@ -1,3 +1,4 @@
+import useAppStore from '@/stores/app/useAppStore';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import {
 	BN,
@@ -16,7 +17,6 @@ import { twMerge } from 'tailwind-merge';
 import ConnectButton from '@/components/ConnectButton';
 
 import { useAppActions } from '@/hooks/useAppActions';
-import useAppStore from '@/hooks/useAppStore';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';

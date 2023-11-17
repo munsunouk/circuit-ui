@@ -1,10 +1,9 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
 import { BN, BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 import Skeleton from 'react-loading-skeleton';
 import { twMerge } from 'tailwind-merge';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import { sourceCodePro } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';

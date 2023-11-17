@@ -1,5 +1,7 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
+import useFetchVault from '@/stores/app/useFetchVault';
 import {
 	DriftProvider,
 	MarketAndAccount,
@@ -15,8 +17,6 @@ import { useEffect } from 'react';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-import useAppStore from '@/hooks/useAppStore';
-import useFetchVault from '@/hooks/useFetchVault';
 import useShowAcknowledgeModal from '@/hooks/useShowAcknowledgeModal';
 import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
 import useUsdcBalance from '@/hooks/useUsdcBalance';

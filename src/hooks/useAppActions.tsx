@@ -2,7 +2,7 @@ import { useCommonDriftStore } from '@drift-labs/react';
 import { useCallback, useEffect, useState } from 'react';
 
 import createAppActions from '../actions/appActions';
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 
 /**
  * Returns the common Drift actions object.

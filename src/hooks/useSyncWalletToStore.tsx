@@ -3,7 +3,7 @@ import { BASE_PRECISION_EXP, BigNum } from '@drift-labs/sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 
 /**
  * Keeps the authority and connected state of `WalletContext` from `@solana/wallet-adapter-react` updated in the app store when the wallet connects, disconnects, or changes.

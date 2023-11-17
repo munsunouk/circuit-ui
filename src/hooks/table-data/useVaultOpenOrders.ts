@@ -3,7 +3,7 @@ import { BN, PublicKey, isVariant } from '@drift-labs/sdk';
 import { Serializer, UISerializableOrder } from '@drift/common';
 import { useEffect, useState } from 'react';
 
-import useAppStore from '../useAppStore';
+import useAppStore from '../../stores/app/useAppStore';
 
 export type UISerializableOrderWithOraclePrice = UISerializableOrder & {
 	oraclePrice: BN;

@@ -1,10 +1,9 @@
+import useAppStore from '@/stores/app/useAppStore';
 import {
 	useCommonDriftActions,
 	useLastAcknowledgedTerms,
 } from '@drift-labs/react';
 import { useWallet } from '@solana/wallet-adapter-react';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import { CIRCUIT_TERMS_AND_CONDITIONS_URL } from '@/constants/misc';
 

@@ -1,3 +1,4 @@
+import useAppStore from '@/stores/app/useAppStore';
 import {
 	DEVNET_RPCS,
 	MAINNET_RPCS,
@@ -8,8 +9,6 @@ import {
 import { getResponseTime } from '@drift/common';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import NOTIFICATION_UTILS from '@/utils/notifications';
 import { getRpcLatencyColor } from '@/utils/utils';
