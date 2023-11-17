@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from 'react';
 import invariant from 'tiny-invariant';
 
-import { OrderedSpotMarkets } from '@/constants/environment';
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 
 export const useVaultBalances = (
 	vaultDriftUserAccount: UserAccount | undefined,
@@ -45,7 +45,7 @@ export const useVaultBalances = (
 				);
 
 				const assetPrecision =
-					OrderedSpotMarkets[spotPosition.marketIndex].precisionExp;
+					SPOT_MARKETS_LOOKUP[spotPosition.marketIndex].precisionExp;
 				const baseBalance = BigNum.from(
 					getTokenAmount(
 						spotPosition.scaledBalance,

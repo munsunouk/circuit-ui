@@ -4,7 +4,7 @@ import {
 	PRICE_PRECISION_EXP,
 	PositionDirection,
 } from '@drift-labs/sdk';
-import { COMMON_UI_UTILS, matchEnum } from '@drift/common';
+import { COMMON_UI_UTILS, UIMarket, matchEnum } from '@drift/common';
 import { createColumnHelper } from '@tanstack/react-table';
 import React from 'react';
 
@@ -16,8 +16,6 @@ import {
 } from '@/hooks/table-data/useVaultOpenOrders';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
-import { getMarket } from '@/utils/utils';
-
 import { VaultDataTableBase } from './VaultDataTableBase';
 
 const columnHelper = createColumnHelper<UISerializableOrderWithOraclePrice>();
@@ -25,16 +23,15 @@ const columnHelper = createColumnHelper<UISerializableOrderWithOraclePrice>();
 const columns = [
 	columnHelper.accessor(
 		(order) => {
-			const fullMarketName = COMMON_UI_UTILS.getFullMarketName(
-				getMarket(order.marketIndex, order.marketType)
-			);
+			const fullMarketName = new UIMarket(order.marketIndex, order.marketType)
+				.marketName;
 			const direction = matchEnum(order.marketType, MarketType.PERP)
 				? matchEnum(order.direction, PositionDirection.LONG)
 					? 'long'
 					: 'short'
 				: matchEnum(order.direction, PositionDirection.LONG)
-				? 'buy'
-				: 'sell';
+				  ? 'buy'
+				  : 'sell';
 
 			return (
 				<Table.MarketCell
@@ -68,7 +65,7 @@ const columns = [
 		{
 			header: 'Filled / Size',
 			cell: (info) => (
-				<Table.NumericValue className="w-[15 0px]">
+				<Table.NumericValue className="w-[150px]">
 					{info.getValue()}
 				</Table.NumericValue>
 			),
@@ -105,7 +102,13 @@ const OpenOrdersTableUnMemo = () => {
 	const vaultPubKey = usePathToVaultPubKey();
 	const vaultOpenOrders = useVaultOpenOrders(vaultPubKey);
 
-	return <VaultDataTableBase data={vaultOpenOrders} columns={columns} />;
+	return (
+		<VaultDataTableBase
+			data={vaultOpenOrders}
+			columns={columns}
+			stickyFirstColumn
+		/>
+	);
 };
 
 export const OpenOrdersTable = React.memo(OpenOrdersTableUnMemo);

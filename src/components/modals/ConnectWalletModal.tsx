@@ -39,8 +39,8 @@ const WalletOption = ({
 				{wallet.adapter.connected
 					? 'Connected'
 					: wallet.adapter.readyState === 'Installed'
-					? 'Detected'
-					: ''}
+					  ? 'Detected'
+					  : ''}
 			</div>
 		</FadeInDiv>
 	);

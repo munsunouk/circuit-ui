@@ -14,7 +14,7 @@ import { twMerge } from 'tailwind-merge';
 import useAppStore from '@/hooks/useAppStore';
 import { useCurrentVault } from '@/hooks/useVault';
 
-import { OrderedSpotMarkets } from '@/constants/environment';
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { SOLANA_TXN_EXPLORER_URL } from '@/constants/misc';
 
 import SectionHeader from '../SectionHeader';
@@ -30,7 +30,7 @@ function enumToStr(enumStr: Record<string, any>) {
 }
 
 const getLabel = (record: WrappedEvent<EventType>) => {
-	const spotMarket = OrderedSpotMarkets[record.spotMarketIndex];
+	const spotMarket = SPOT_MARKETS_LOOKUP[record.spotMarketIndex];
 
 	switch (enumToStr(record.action)) {
 		case enumToStr(VaultDepositorAction.DEPOSIT):

@@ -1,6 +1,5 @@
 import { UserBalance } from '@/types';
-import { MarketType } from '@drift-labs/sdk';
-import { COMMON_UI_UTILS } from '@drift/common';
+import { UIMarket } from '@drift/common';
 import { createColumnHelper } from '@tanstack/react-table';
 
 import Table from '@/components/elements/Table';
@@ -8,9 +7,7 @@ import Table from '@/components/elements/Table';
 import { useVaultBalances } from '@/hooks/table-data/useVaultBalances';
 import { useCurrentVault } from '@/hooks/useVault';
 
-import { getMarket } from '@/utils/utils';
-
-import { OrderedSpotMarkets } from '@/constants/environment';
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 
 import { VaultDataTableBase } from './VaultDataTableBase';
 
@@ -19,10 +16,9 @@ const columnHelper = createColumnHelper<UserBalance>();
 const columns = [
 	columnHelper.accessor(
 		(balance) => {
-			const fullMarketName = COMMON_UI_UTILS.getFullMarketName(
-				getMarket(balance.marketIndex, MarketType.SPOT)
-			);
-
+			const fullMarketName = UIMarket.createSpotMarket(
+				balance.marketIndex
+			).marketName;
 			return (
 				<Table.AssetCell marketName={fullMarketName} className="w-[100px]" />
 			);
@@ -35,7 +31,7 @@ const columns = [
 	columnHelper.accessor(
 		(row) =>
 			`${row.baseBalance.prettyPrint()} ${
-				OrderedSpotMarkets[row.marketIndex].symbol
+				SPOT_MARKETS_LOOKUP[row.marketIndex].symbol
 			}`,
 		{
 			id: 'baseBalance',
@@ -71,5 +67,11 @@ export const BalancesTable = () => {
 	const vaultDriftUser = vault?.vaultDriftUser;
 	const vaultBalances = useVaultBalances(vaultDriftUserAccount, vaultDriftUser);
 
-	return <VaultDataTableBase data={vaultBalances} columns={columns} />;
+	return (
+		<VaultDataTableBase
+			data={vaultBalances}
+			columns={columns}
+			stickyFirstColumn
+		/>
+	);
 };

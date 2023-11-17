@@ -1,11 +1,13 @@
+import { useOraclePriceStore } from '@drift-labs/react';
 import {
 	BASE_PRECISION_EXP,
 	BigNum,
 	PRICE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
-import { COMMON_UI_UTILS, OpenPosition } from '@drift/common';
+import { COMMON_UI_UTILS, MarketId, OpenPosition } from '@drift/common';
 import { createColumnHelper } from '@tanstack/react-table';
+import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import Table from '@/components/elements/Table';
@@ -15,7 +17,9 @@ import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import { VaultDataTableBase } from './VaultDataTableBase';
 
-const columnHelper = createColumnHelper<OpenPosition>();
+const columnHelper = createColumnHelper<
+	OpenPosition & { indexPrice: number }
+>();
 
 const columns = [
 	columnHelper.accessor(
@@ -24,7 +28,7 @@ const columns = [
 				<Table.MarketCell
 					marketName={position.marketSymbol}
 					direction={position.direction}
-					className="w-[100px]"
+					className="w-[120px]"
 				/>
 			);
 		},
@@ -52,9 +56,9 @@ const columns = [
 		(row) => (
 			<div className="flex flex-col">
 				<span>${BigNum.from(row.entryPrice, PRICE_PRECISION_EXP).toNum()}</span>
-				{/* <span className="text-[13px] text-text-secondary"> // TODO: implement dlobStore and priceStore
-					${BigNum.from(row.entryPrice, PRICE_PRECISION_EXP).toNum()}
-				</span> */}
+				<span className="text-[13px] text-text-secondary">
+					${row.indexPrice}
+				</span>
 			</div>
 		),
 		{
@@ -72,7 +76,7 @@ const columns = [
 				className={twMerge(
 					row.pnl.lt(ZERO)
 						? 'text-text-negative-red'
-						: 'text-text-positive-green'
+						: 'text-text-success-green'
 				)}
 			>
 				{row.pnl.lt(ZERO) ? '-' : ''}$
@@ -113,5 +117,31 @@ export const OpenPositionsTable = () => {
 	const vaultPubKey = usePathToVaultPubKey();
 	const openPositions = useVaultOpenPerpPositions(vaultPubKey);
 
-	return <VaultDataTableBase data={openPositions} columns={columns} />;
+	const { getMarketPriceData } = useOraclePriceStore();
+
+	const [openPositionsWithIndexPrice, setOpenPositionsWithIndexPrice] =
+		useState<(OpenPosition & { indexPrice: number })[]>([]);
+
+	useEffect(() => {
+		mapAndSetPositionSWithIndexPrice();
+	}, [openPositions]);
+
+	const mapAndSetPositionSWithIndexPrice = () => {
+		const newPositionsWithIndexPrice = openPositions.map((position) => ({
+			...position,
+			indexPrice: getMarketPriceData(
+				MarketId.createPerpMarket(position.marketIndex)
+			).priceData.price,
+		}));
+
+		setOpenPositionsWithIndexPrice(newPositionsWithIndexPrice);
+	};
+
+	return (
+		<VaultDataTableBase
+			data={openPositionsWithIndexPrice}
+			columns={columns}
+			stickyFirstColumn
+		/>
+	);
 };

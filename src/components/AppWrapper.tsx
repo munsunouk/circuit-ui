@@ -2,11 +2,14 @@
 
 import {
 	DriftProvider,
+	MarketAndAccount,
 	initializeDriftStore,
 	useAllRpcLatencies,
 	useCommonDriftStore,
 	useEmulation,
+	useSyncOraclePriceStore,
 } from '@drift-labs/react';
+import { UIMarket } from '@drift/common';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 import { SkeletonTheme } from 'react-loading-skeleton';
@@ -18,9 +21,26 @@ import useShowAcknowledgeModal from '@/hooks/useShowAcknowledgeModal';
 import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
 import useUsdcBalance from '@/hooks/useUsdcBalance';
 
-import Env from '@/constants/environment';
+import Env, {
+	PERP_MARKETS_LOOKUP,
+	SPOT_MARKETS_LOOKUP,
+} from '@/constants/environment';
 
 initializeDriftStore(Env);
+
+const marketsAndAccounts: MarketAndAccount[] = [];
+PERP_MARKETS_LOOKUP.forEach((market) => {
+	marketsAndAccounts.push({
+		market: UIMarket.createPerpMarket(market.marketIndex),
+		accountToUse: market.oracle,
+	});
+});
+SPOT_MARKETS_LOOKUP.forEach((market) => {
+	marketsAndAccounts.push({
+		market: UIMarket.createSpotMarket(market.marketIndex),
+		accountToUse: market.oracle,
+	});
+});
 
 const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useSyncWalletToStore();
@@ -29,6 +49,7 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useAllRpcLatencies();
 	useEmulation();
 	useShowAcknowledgeModal();
+	useSyncOraclePriceStore(marketsAndAccounts);
 
 	return <>{children}</>;
 };
