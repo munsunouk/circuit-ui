@@ -112,6 +112,11 @@ const createAppActions = (
 				isLoaded: false,
 			},
 			vaultDeposits,
+			accountSummary: {
+				openPositions: [],
+				balances: [],
+				openOrders: [],
+			},
 		};
 
 		set((s) => {

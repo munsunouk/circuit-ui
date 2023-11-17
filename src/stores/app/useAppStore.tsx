@@ -1,6 +1,7 @@
 import {
 	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
+	UserBalance,
 } from '@/types';
 import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
@@ -13,10 +14,13 @@ import {
 	WrappedEvent,
 	WrappedEvents,
 } from '@drift-labs/vaults-sdk';
+import { OpenPosition } from '@drift/common';
 import { produce } from 'immer';
 import { create } from 'zustand';
 
-type UIVault = {
+import { UISerializableOrderWithOraclePrice } from '@/hooks/table-data/useVaultOpenOrders';
+
+export type UIVault = {
 	vaultDriftClient: DriftClient;
 	vaultDriftUser: User; // used to get vault's drift account data (e.g. vault balance)
 	vaultDriftUserAccount: UserAccount | undefined; // we store the actual account data so we know when it updates -> object reference will update when account data updates
@@ -29,6 +33,11 @@ type UIVault = {
 		dailyAllTimePnls: OptionalSerializedPerformanceHistory[];
 	};
 	vaultDeposits: SerializedDepositHistory[];
+	accountSummary: {
+		openPositions: (OpenPosition & { indexPrice: number })[];
+		balances: UserBalance[];
+		openOrders: UISerializableOrderWithOraclePrice[];
+	};
 };
 
 export interface AppStoreState {

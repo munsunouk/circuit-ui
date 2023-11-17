@@ -1,19 +1,16 @@
-import { useOraclePriceStore } from '@drift-labs/react';
 import {
 	BASE_PRECISION_EXP,
 	BigNum,
 	PRICE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
-import { COMMON_UI_UTILS, MarketId, OpenPosition } from '@drift/common';
+import { COMMON_UI_UTILS, OpenPosition } from '@drift/common';
 import { createColumnHelper } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import Table from '@/components/elements/Table';
 
-import { useVaultOpenPerpPositions } from '@/hooks/table-data/useVaultOpenPerpPositions';
-import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+import { useCurrentVault } from '@/hooks/useVault';
 
 import { VaultDataTableBase } from './VaultDataTableBase';
 
@@ -114,28 +111,8 @@ const columns = [
 ];
 
 export const OpenPositionsTable = () => {
-	const vaultPubKey = usePathToVaultPubKey();
-	const openPositions = useVaultOpenPerpPositions(vaultPubKey);
-
-	const { getMarketPriceData } = useOraclePriceStore();
-
-	const [openPositionsWithIndexPrice, setOpenPositionsWithIndexPrice] =
-		useState<(OpenPosition & { indexPrice: number })[]>([]);
-
-	useEffect(() => {
-		mapAndSetPositionSWithIndexPrice();
-	}, [openPositions]);
-
-	const mapAndSetPositionSWithIndexPrice = () => {
-		const newPositionsWithIndexPrice = openPositions.map((position) => ({
-			...position,
-			indexPrice: getMarketPriceData(
-				MarketId.createPerpMarket(position.marketIndex)
-			).priceData.price,
-		}));
-
-		setOpenPositionsWithIndexPrice(newPositionsWithIndexPrice);
-	};
+	const openPositionsWithIndexPrice =
+		useCurrentVault()?.accountSummary.openPositions ?? [];
 
 	return (
 		<VaultDataTableBase

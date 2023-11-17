@@ -308,6 +308,7 @@ export default function VaultPerformance() {
 				<div className="flex justify-between w-full">
 					<ButtonTabs
 						tabs={GRAPH_VIEW_OPTIONS.map((option) => ({
+							key: option.label,
 							label: option.label,
 							selected: graphView.value === option.value,
 							onSelect: () => setGraphView(option),

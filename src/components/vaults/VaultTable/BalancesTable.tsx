@@ -4,7 +4,6 @@ import { createColumnHelper } from '@tanstack/react-table';
 
 import Table from '@/components/elements/Table';
 
-import { useVaultBalances } from '@/hooks/table-data/useVaultBalances';
 import { useCurrentVault } from '@/hooks/useVault';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
@@ -62,10 +61,7 @@ const columns = [
 ];
 
 export const BalancesTable = () => {
-	const vault = useCurrentVault();
-	const vaultDriftUserAccount = vault?.vaultDriftUserAccount;
-	const vaultDriftUser = vault?.vaultDriftUser;
-	const vaultBalances = useVaultBalances(vaultDriftUserAccount, vaultDriftUser);
+	const vaultBalances = useCurrentVault()?.accountSummary.balances ?? [];
 
 	return (
 		<VaultDataTableBase

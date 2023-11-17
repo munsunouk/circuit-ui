@@ -1,8 +1,9 @@
+import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import Table, { TableProps } from '@/components/elements/Table';
 
-export function VaultDataTableBase<T>({ className, ...rest }: TableProps<T>) {
+function VaultDataTableBaseUnMemoed<T>({ className, ...rest }: TableProps<T>) {
 	return (
 		<Table
 			{...rest}
@@ -10,3 +11,7 @@ export function VaultDataTableBase<T>({ className, ...rest }: TableProps<T>) {
 		/>
 	);
 }
+
+export const VaultDataTableBase = React.memo<TableProps<any>>(
+	VaultDataTableBaseUnMemoed
+);

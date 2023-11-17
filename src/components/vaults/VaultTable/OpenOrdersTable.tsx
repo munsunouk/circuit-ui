@@ -10,11 +10,8 @@ import React from 'react';
 
 import Table from '@/components/elements/Table';
 
-import {
-	UISerializableOrderWithOraclePrice,
-	useVaultOpenOrders,
-} from '@/hooks/table-data/useVaultOpenOrders';
-import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+import { UISerializableOrderWithOraclePrice } from '@/hooks/table-data/useVaultOpenOrders';
+import { useCurrentVault } from '@/hooks/useVault';
 
 import { VaultDataTableBase } from './VaultDataTableBase';
 
@@ -99,8 +96,7 @@ const columns = [
 ];
 
 const OpenOrdersTableUnMemo = () => {
-	const vaultPubKey = usePathToVaultPubKey();
-	const vaultOpenOrders = useVaultOpenOrders(vaultPubKey);
+	const vaultOpenOrders = useCurrentVault()?.accountSummary.openOrders ?? [];
 
 	return (
 		<VaultDataTableBase

@@ -27,13 +27,16 @@ const TableHeader = <T extends RowData>({
 	return (
 		<thead>
 			{headerGroups.map((headerGroup) => (
-				<tr key={headerGroup.id} className="border-b border-container-border">
+				<tr
+					key={headerGroup.id}
+					className="sticky top-0 border-b border-container-border"
+				>
 					{headerGroup.headers.map((header, index) => (
 						<th
 							key={header.id}
 							className={twMerge(
 								'px-2 py-1 text-left bg-gray-900',
-								stickyFirstColumn && 'left-0 first:sticky'
+								stickyFirstColumn && 'left-0 top-0 first:sticky'
 							)}
 						>
 							{/** Need to create custom border because setting border to the <th> element itself doesn't work on scroll */}
@@ -223,16 +226,18 @@ function Table<T extends RowData>({
 			)}
 		>
 			<table className="w-full">
-				<TableHeader<T>
-					headerGroups={table.getHeaderGroups()}
-					stickyFirstColumn={stickyFirstColumn}
-					hasScrolledHorizontally={hasScrolledHorizontally}
-				/>
 				<TableBody<T>
 					rowModel={table.getRowModel()}
 					stickyFirstColumn={stickyFirstColumn}
 					hasScrolledHorizontally={hasScrolledHorizontally}
 					hasScrolledVertically={hasScrolledVertically}
+				/>
+
+				{/** Header needs to be after the Body component for the header column to freeze */}
+				<TableHeader<T>
+					headerGroups={table.getHeaderGroups()}
+					stickyFirstColumn={stickyFirstColumn}
+					hasScrolledHorizontally={hasScrolledHorizontally}
 				/>
 			</table>
 		</div>

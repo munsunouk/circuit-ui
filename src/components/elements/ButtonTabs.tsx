@@ -2,7 +2,8 @@ import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type ButtonTabProps = {
-	label: string;
+	key: string;
+	label: React.ReactNode;
 	selected: boolean;
 	onSelect: () => void;
 };
@@ -41,7 +42,7 @@ function ButtonTabs({
 }) {
 	const renderTabs = () => {
 		return tabs.map((tab, index) => (
-			<React.Fragment key={tab.label}>
+			<React.Fragment key={tab.key}>
 				{/* pseudo divider used to simulate border colors on element states (e.g. hover, selected) */}
 				{index !== 0 && (
 					<div
@@ -52,7 +53,7 @@ function ButtonTabs({
 						)}
 					/>
 				)}
-				<ButtonTab key={tab.label} {...tab} className={tabClassName} />
+				<ButtonTab {...tab} className={tabClassName} />
 			</React.Fragment>
 		));
 	};

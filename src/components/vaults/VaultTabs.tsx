@@ -42,6 +42,7 @@ export default function VaultTabs({
 	return (
 		<ButtonTabs
 			tabs={filteredTabs.map((tab) => ({
+				key: tab.label,
 				label: tab.label,
 				selected: selectedTab === tab.tab,
 				onSelect: () => setSelectedTab(tab.tab),

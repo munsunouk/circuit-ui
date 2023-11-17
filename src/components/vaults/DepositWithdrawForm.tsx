@@ -208,6 +208,7 @@ const Form = ({
 
 			<ButtonTabs
 				tabs={PERCENTAGE_SELECTOR_OPTIONS.map((option) => ({
+					key: option.label,
 					label: option.label,
 					onSelect: () => setAmount((maxAmount * option.value).toString()),
 					selected:

@@ -40,11 +40,13 @@ export default function StoreModal() {
 				<ButtonTabs
 					tabs={[
 						{
+							key: 'vault',
 							label: 'Vault',
 							selected: tab === Tab.Vault,
 							onSelect: () => setTab(Tab.Vault),
 						},
 						{
+							key: 'vault-depositor',
 							label: 'Vault Depositor',
 							selected: tab === Tab.VaultDepositor,
 							onSelect: () => setTab(Tab.VaultDepositor),
