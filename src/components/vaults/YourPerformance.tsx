@@ -40,7 +40,7 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 	);
 };
 
-const BUFFER = 0.01 * 10 ** QUOTE_PRECISION_EXP;
+const BUFFER = 0.01 * 10 ** QUOTE_PRECISION_EXP.toNumber();
 
 export default function YourPerformance() {
 	const { connected } = useWallet();
@@ -53,8 +53,8 @@ export default function YourPerformance() {
 	const showUserInfo = connected || !!authority;
 
 	// User's vault share proportion
-	const totalVaultShares = vaultAccountData?.totalShares.toNumber();
-	const userVaultShares = vaultDepositorAccData?.vaultShares.toNumber();
+	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
+	const userVaultShares = vaultDepositorAccData?.vaultShares.toNumber() ?? 0;
 	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
 	// User's net deposits
@@ -147,8 +147,14 @@ export default function YourPerformance() {
 						label="Total Earnings (All Time)"
 						value={totalEarningsString}
 					/>
-					<BreakdownRow label="Your Cumulative Net Deposits" value={netDepositsString} />
-					<BreakdownRow label="Your Balance" value={showUserInfo ? userAccountValueString : '--'}/>
+					<BreakdownRow
+						label="Your Cumulative Net Deposits"
+						value={netDepositsString}
+					/>
+					<BreakdownRow
+						label="Your Balance"
+						value={showUserInfo ? userAccountValueString : '--'}
+					/>
 					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
 						label="Vault Share"

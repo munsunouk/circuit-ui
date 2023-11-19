@@ -1,7 +1,8 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
 import { useCommonDriftStore } from '@drift-labs/react';
-import { BN, BigNum, ONE, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -10,7 +11,6 @@ import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
 import { useAppActions } from '@/hooks/useAppActions';
-import useAppStore from '@/hooks/useAppStore';
 import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
@@ -171,8 +171,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	]);
 
 	const vaultStats = useVaultStats(vaultPubkey);
-	const pnlHistory = vaultStore?.pnlHistory.dailyAllTimePnls ?? [];
-	const firstPnl = pnlHistory[0];
 
 	const [isHover, setIsHover] = useState(false);
 
@@ -189,9 +187,10 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 
 	// TODO: abstract this logic
 	// User's vault share proportion
-	const totalVaultShares = vaultAccountData?.totalShares.toNumber();
-	const userVaultShares = vaultDepositorAccountData?.vaultShares.toNumber();
-	const userSharesProportion = userVaultShares / (totalVaultShares ?? ONE) || 0;
+	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
+	const userVaultShares =
+		vaultDepositorAccountData?.vaultShares.toNumber() ?? 0;
+	const userSharesProportion = userVaultShares / (totalVaultShares ?? 1) || 0;
 
 	// User's net deposits
 	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();

@@ -1,8 +1,7 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
 import React from 'react';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import AcknowledgeTermsModal from './AcknowledgeTermsModal';
 import ActionRecordModal from './ActionRecordModal';

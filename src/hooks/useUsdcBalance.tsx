@@ -3,7 +3,7 @@ import { singletonHook } from 'react-singleton-hook';
 
 import { USDC_MARKET } from '@/constants/environment';
 
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 import useSPLTokenBalance from './useSPLTokenBalance';
 
 function useUsdcBalance() {

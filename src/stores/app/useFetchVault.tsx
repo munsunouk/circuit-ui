@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 
 import NOTIFICATION_UTILS from '@/utils/notifications';
 
-import { useAppActions } from './useAppActions';
+import { useAppActions } from '../../hooks/useAppActions';
+import useCurrentVaultAccountData from '../../hooks/useCurrentVaultAccountData';
+import usePathToVaultPubKey from '../../hooks/usePathToVaultName';
 import useAppStore from './useAppStore';
-import useCurrentVaultAccountData from './useCurrentVaultAccountData';
-import usePathToVaultPubKey from './usePathToVaultName';
 
 /**
  * Fetches

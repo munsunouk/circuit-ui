@@ -187,8 +187,9 @@ export default function PerformanceGraph({
 		if (minY >= 0) {
 			const difference = maxY - minY;
 			const offset = difference * 2; // make the curve look less steep
+			const absoluteMinY = Math.max(minY - offset, 0); // shouldn't go below 0
 
-			return [minY - offset, 'auto'];
+			return [absoluteMinY, 'auto'];
 		}
 
 		return [minY, 'auto'];

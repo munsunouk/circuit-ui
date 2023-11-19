@@ -7,3 +7,5 @@ export const ACKNOWLEDGE_TERMS_VALIDITY_DURATION_MS = 1000 * 60 * 60 * 24 * 30; 
 
 export const CIRCUIT_TERMS_AND_CONDITIONS_URL =
 	'https://docs.circuit.trade/misc/terms-and-conditions';
+
+export const MARKET_ICON_PATH = '/icons/markets';

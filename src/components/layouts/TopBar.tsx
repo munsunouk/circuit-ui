@@ -1,5 +1,6 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
 import { useCommonDriftStore } from '@drift-labs/react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
@@ -8,7 +9,6 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import useAppStore from '@/hooks/useAppStore';
 import useOpenConnectWalletModal from '@/hooks/useOpenConnectWalletModal';
 
 import { syne } from '@/constants/fonts';

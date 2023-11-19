@@ -1,4 +1,4 @@
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 import useIsTermsAcknowledgementValid from './useIsTermsAcknowledgementValid';
 
 export default function useOpenConnectWalletModal() {

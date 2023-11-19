@@ -3,4 +3,3 @@
 
 yarn lint
 yarn prettify
-yarn update-vaults-workaround-commit

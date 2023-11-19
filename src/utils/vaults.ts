@@ -1,6 +1,6 @@
 import {
-	OptionalSerializedPerformanceHistory,
 	SerializedDepositHistory,
+	SerializedPerformanceHistory,
 } from '@/types';
 import {
 	BigNum,
@@ -29,8 +29,12 @@ export const getUiVaultConfig = (
 	return vaultConfig;
 };
 
-export const getMaxDailyDrawdown = (
-	history: Pick<OptionalSerializedPerformanceHistory, 'totalAccountValue'>[]
+/**
+ * Used for calculating max daily drawdown from data with no reliable withdrawal history.
+ * The calculation assumes that the user has not withdrawn any funds from the vault.
+ */
+export const getMaxDailyDrawdownFromAccValue = (
+	history: { totalAccountValue: number }[]
 ) => {
 	let maxDrawdown = 0;
 
@@ -53,11 +57,32 @@ export const getMaxDailyDrawdown = (
 	return maxDrawdown;
 };
 
+export const getMaxDailyDrawdown = (
+	history: { allTimeTotalPnl: number; totalAccountValue: number }[]
+) => {
+	let maxDrawdown = 0;
+
+	for (let i = 0; i < history.length - 1; i++) {
+		const currentDayAllTimeDayPnl = history[i].allTimeTotalPnl;
+		const previousDayAllTimeDayPnl = history[i - 1]?.allTimeTotalPnl ?? 0;
+
+		if (currentDayAllTimeDayPnl > previousDayAllTimeDayPnl) continue; // made profit for that day; no drawdown
+
+		const currentDayPnl = currentDayAllTimeDayPnl - previousDayAllTimeDayPnl;
+		const currentDayTotalAccValue = history[i].totalAccountValue;
+		const drawdown = currentDayPnl / (currentDayTotalAccValue || 1);
+
+		if (drawdown < maxDrawdown) maxDrawdown = drawdown;
+	}
+
+	return maxDrawdown;
+};
+
 /**
  * Find max daily drawdown in periods where the user has an active deposits.
  */
 export const getUserMaxDailyDrawdown = (
-	history: OptionalSerializedPerformanceHistory[],
+	history: SerializedPerformanceHistory[],
 	eventRecords: WrappedEvents
 ) => {
 	if (eventRecords.length === 0) return 0;

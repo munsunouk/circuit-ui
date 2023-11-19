@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js';
 import { useEffect } from 'react';
 
-import { useAppActions } from './useAppActions';
+import { useAppActions } from '../../hooks/useAppActions';
 import useAppStore from './useAppStore';
 
 export default function useFetchEventRecords(

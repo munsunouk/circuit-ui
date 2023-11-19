@@ -1,5 +1,7 @@
 'use client';
 
+import useFetchEventRecords from '@/stores/app/useFetchEventRecords';
+import { useSyncAccountSummary } from '@/stores/app/useSyncAccountSummary';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
@@ -13,7 +15,6 @@ import WhiteGloveDetails from '@/components/vaults/WhiteGloveDetails';
 import YourPerformance from '@/components/vaults/YourPerformance';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
-import useFetchEventRecords from '@/hooks/useFetchEventRecords';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
 import FadeInDiv from '../elements/FadeInDiv';
@@ -29,6 +30,7 @@ export default function VaultPage() {
 	const { devSwitchIsOn } = useDevSwitchIsOn();
 
 	useFetchEventRecords(currentVaultPubKey);
+	useSyncAccountSummary(currentVaultPubKey);
 
 	const isLoading = !vaultAccountData;
 

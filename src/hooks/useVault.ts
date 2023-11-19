@@ -1,6 +1,6 @@
 import { PublicKey } from '@drift-labs/sdk';
 
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 
 export function useVault(vaultPubKey: string | PublicKey | undefined) {

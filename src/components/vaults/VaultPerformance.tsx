@@ -18,6 +18,7 @@ import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import {
 	getMaxDailyDrawdown,
+	getMaxDailyDrawdownFromAccValue,
 	getModifiedDietzApy,
 	getSimpleHistoricalApy,
 } from '@/utils/vaults';
@@ -32,6 +33,7 @@ import FadeInDiv from '../elements/FadeInDiv';
 import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
+import { VaultTable } from './VaultTable/VaultTable';
 
 interface PerformanceGraphOption {
 	label: string;
@@ -52,11 +54,6 @@ const PERFORMANCE_GRAPH_OPTIONS: PerformanceGraphOption[] = [
 	},
 	{
 		label: 'All',
-		value: HistoryResolution.ALL,
-		days: 0, // all
-	},
-	{
-		label: 'Historical',
 		value: HistoryResolution.ALL,
 		days: 0, // all
 	},
@@ -162,11 +159,12 @@ export default function VaultPerformance() {
 		}
 	}, [
 		vault,
+		vault?.pnlHistory,
 		vaultAccountData,
 		vaultStats,
 		selectedTimelineOption,
-		allTimePnlHistory,
 		selectedGraphOption,
+		graphView,
 	]);
 
 	const getDisplayedDataForHistorical = (): DisplayedData => {
@@ -184,12 +182,12 @@ export default function VaultPerformance() {
 				.toNum() / PERCENTAGE_PRECISION.toNumber();
 
 		const apy = getSimpleHistoricalApy(
-			lastHistoryData.netDeposits.toNum(),
+			lastHistoryData.netDeposits.toNumber(),
 			lastHistoryData.totalAccountValue.toNum(),
 			firstHistoryData.epochTs,
 			lastHistoryData.epochTs
 		);
-		const maxDailyDrawdown = getMaxDailyDrawdown(
+		const maxDailyDrawdown = getMaxDailyDrawdownFromAccValue(
 			uiVaultConfig.pastPerformanceHistory.map((history) => ({
 				...history,
 				totalAccountValue: history.totalAccountValue.toNum(),
@@ -239,7 +237,9 @@ export default function VaultPerformance() {
 			vault?.vaultDeposits ?? []
 		);
 
-		const maxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
+		const maxDailyDrawdown = getMaxDailyDrawdown(
+			vault?.pnlHistory.dailyAllTimePnls ?? []
+		);
 
 		return {
 			totalEarnings,
@@ -311,6 +311,7 @@ export default function VaultPerformance() {
 				<div className="flex justify-between w-full">
 					<ButtonTabs
 						tabs={GRAPH_VIEW_OPTIONS.map((option) => ({
+							key: option.label,
 							label: option.label,
 							selected: graphView.value === option.value,
 							onSelect: () => setGraphView(option),
@@ -323,7 +324,7 @@ export default function VaultPerformance() {
 								graphView.value === GraphView.VaultBalance &&
 								uiVaultConfig?.pastPerformanceHistory
 									? PERFORMANCE_GRAPH_OPTIONS
-									: PERFORMANCE_GRAPH_OPTIONS.slice(0, 3)
+									: PERFORMANCE_GRAPH_OPTIONS
 							}
 							selectedOption={selectedGraphOption}
 							setSelectedOption={
@@ -341,6 +342,11 @@ export default function VaultPerformance() {
 						<PerformanceGraph data={displayedGraph} />
 					)}
 				</div>
+			</FadeInDiv>
+
+			<FadeInDiv delay={200}>
+				<SectionHeader className="mb-4">Vault Details</SectionHeader>
+				<VaultTable />
 			</FadeInDiv>
 
 			<FadeInDiv delay={200}>

@@ -1,9 +1,8 @@
 'use client';
 
+import useAppStore from '@/stores/app/useAppStore';
 import { useCurrentRpc, useCurrentRpcLatency } from '@drift-labs/react';
 import Link from 'next/link';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import { getRpcLatencyColor } from '@/utils/utils';
 

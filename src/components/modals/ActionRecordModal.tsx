@@ -1,9 +1,8 @@
+import useAppStore from '@/stores/app/useAppStore';
 import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { EventType, WrappedEvent } from '@drift-labs/vaults-sdk';
 import { ENUM_UTILS } from '@drift/common';
 import dayjs from 'dayjs';
-
-import useAppStore from '@/hooks/useAppStore';
 
 import { shortenPubkey } from '@/utils/utils';
 
@@ -48,7 +47,7 @@ export default function ActionRecordModal({
 					value={BigNum.from(
 						actionRecord?.amount,
 						QUOTE_PRECISION_EXP
-					).toPrecision(QUOTE_PRECISION_EXP)}
+					).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 				/>
 				<Row
 					label="Spot Market Index"
@@ -98,14 +97,14 @@ export default function ActionRecordModal({
 					value={BigNum.from(
 						actionRecord?.profitShare,
 						QUOTE_PRECISION_EXP
-					).toPrecision(QUOTE_PRECISION_EXP)}
+					).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 				/>
 				<Row
 					label="Management Fee"
 					value={BigNum.from(
 						actionRecord?.managementFee,
 						QUOTE_PRECISION_EXP
-					).toPrecision(QUOTE_PRECISION_EXP)}
+					).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
 				/>
 				<Row
 					label="Management Fee Shares"

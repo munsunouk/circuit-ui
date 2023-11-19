@@ -1,4 +1,4 @@
-import useAppStore from './useAppStore';
+import useAppStore from '../stores/app/useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
 
 export default function useCurrentVaultDepositorAccData() {
