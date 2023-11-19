@@ -18,15 +18,6 @@ export type SerializedPerformanceHistory = {
 	epochTs: number;
 };
 
-// to allow for undefined values in case we want to show the historical value of the other property
-export type OptionalSerializedPerformanceHistory = Omit<
-	SerializedPerformanceHistory,
-	'totalAccountValue' | 'allTimeTotalPnl'
-> & {
-	totalAccountValue: number | undefined;
-	allTimeTotalPnl: number | undefined;
-};
-
 export type SerializedDepositHistory = {
 	id: number;
 	txSig: string;

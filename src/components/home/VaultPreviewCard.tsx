@@ -171,8 +171,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	]);
 
 	const vaultStats = useVaultStats(vaultPubkey);
-	const pnlHistory = vaultStore?.pnlHistory.dailyAllTimePnls ?? [];
-	const firstPnl = pnlHistory[0];
 
 	const [isHover, setIsHover] = useState(false);
 

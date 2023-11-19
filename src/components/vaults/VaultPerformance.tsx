@@ -18,6 +18,7 @@ import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import {
 	getMaxDailyDrawdown,
+	getMaxDailyDrawdownFromAccValue,
 	getModifiedDietzApy,
 	getSimpleHistoricalApy,
 } from '@/utils/vaults';
@@ -186,7 +187,7 @@ export default function VaultPerformance() {
 			firstHistoryData.epochTs,
 			lastHistoryData.epochTs
 		);
-		const maxDailyDrawdown = getMaxDailyDrawdown(
+		const maxDailyDrawdown = getMaxDailyDrawdownFromAccValue(
 			uiVaultConfig.pastPerformanceHistory.map((history) => ({
 				...history,
 				totalAccountValue: history.totalAccountValue.toNum(),
@@ -236,7 +237,9 @@ export default function VaultPerformance() {
 			vault?.vaultDeposits ?? []
 		);
 
-		const maxDailyDrawdown = getMaxDailyDrawdown(allTimePnlHistory);
+		const maxDailyDrawdown = getMaxDailyDrawdown(
+			vault?.pnlHistory.dailyAllTimePnls ?? []
+		);
 
 		return {
 			totalEarnings,

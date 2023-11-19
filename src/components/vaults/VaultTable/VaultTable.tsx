@@ -17,8 +17,8 @@ export const VaultTable = () => {
 	const numOfBalances = accountSummary?.balances.length ?? 0;
 
 	const VAULT_TABLE_TABS = [
-		{ label: 'Positions', numOfData: numOfOpenPositions },
 		{ label: 'Balances', numOfData: numOfBalances },
+		{ label: 'Positions', numOfData: numOfOpenPositions },
 		{ label: 'Orders', numOfData: numOfOpenOrders },
 	];
 

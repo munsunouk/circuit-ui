@@ -1,6 +1,7 @@
 'use client';
 
 import useFetchEventRecords from '@/stores/app/useFetchEventRecords';
+import { useSyncAccountSummary } from '@/stores/app/useSyncAccountSummary';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
@@ -19,7 +20,6 @@ import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 import FadeInDiv from '../elements/FadeInDiv';
 import Loading from '../elements/Loading';
 import DevFunctions from './DevFunctions';
-import { useSyncAccountSummary } from '@/stores/app/useSyncAccountSummary';
 
 export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(
