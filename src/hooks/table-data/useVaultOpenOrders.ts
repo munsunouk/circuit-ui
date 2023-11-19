@@ -30,19 +30,23 @@ export const useVaultOpenOrders = (vaultAddress: PublicKey | undefined) => {
 		)
 			return;
 
-		const currentOrders = vaultDriftUserAccount?.orders
-			.filter((order) => !order.baseAssetAmount.isZero())
-			.map((order) => Serializer.Deserialize.UIOrder(order))
-			.map((order) => {
-				const oraclePriceData = isVariant(order.marketType, 'perp')
-					? driftClient.getOracleDataForPerpMarket(order.marketIndex)
-					: driftClient.getOracleDataForSpotMarket(order.marketIndex);
+		try {
+			const currentOrders = vaultDriftUserAccount?.orders
+				.filter((order) => !order.baseAssetAmount.isZero())
+				.map((order) => Serializer.Deserialize.UIOrder(order))
+				.map((order) => {
+					const oraclePriceData = isVariant(order.marketType, 'perp')
+						? driftClient.getOracleDataForPerpMarket(order.marketIndex)
+						: driftClient.getOracleDataForSpotMarket(order.marketIndex);
 
-				return { ...order, oraclePrice: oraclePriceData.price };
-			})
-			.sort((orderA, orderB) => orderB.userOrderId - orderA.userOrderId);
+					return { ...order, oraclePrice: oraclePriceData.price };
+				})
+				.sort((orderA, orderB) => orderB.userOrderId - orderA.userOrderId);
 
-		setOpenOrders(currentOrders);
+			setOpenOrders(currentOrders);
+		} catch (e) {
+			console.error(e);
+		}
 	}, [
 		vaultDriftUser,
 		vaultDriftUserAccount?.orders,
