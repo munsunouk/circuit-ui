@@ -31,59 +31,63 @@ export const useVaultBalances = (
 		)
 			return;
 
-		const spotPositions = vaultDriftUserAccount.spotPositions;
+		try {
+			const spotPositions = vaultDriftUserAccount.spotPositions;
 
-		const userBalances = spotPositions
-			.map((spotPosition) => {
-				const spotMarketAccount = driftClient.getSpotMarketAccount(
-					spotPosition.marketIndex
-				);
+			const userBalances = spotPositions
+				.map((spotPosition) => {
+					const spotMarketAccount = driftClient.getSpotMarketAccount(
+						spotPosition.marketIndex
+					);
 
-				invariant(
-					spotMarketAccount,
-					`Spot market account not found for market index ${spotPosition.marketIndex}`
-				);
-
-				const assetPrecision =
-					SPOT_MARKETS_LOOKUP[spotPosition.marketIndex].precisionExp;
-				const baseBalance = BigNum.from(
-					getTokenAmount(
-						spotPosition.scaledBalance,
+					invariant(
 						spotMarketAccount,
-						spotPosition.balanceType
-					),
-					assetPrecision
-				).shiftTo(assetPrecision);
+						`Spot market account not found for market index ${spotPosition.marketIndex}`
+					);
 
-				const oraclePrice = BigNum.from(
-					driftClient.getOracleDataForSpotMarket(spotPosition.marketIndex)
-						.price,
-					PRICE_PRECISION_EXP
-				);
-				const quoteValue = baseBalance
-					.shiftTo(PRICE_PRECISION_EXP)
-					.mul(oraclePrice)
-					.shiftTo(QUOTE_PRECISION_EXP);
+					const assetPrecision =
+						SPOT_MARKETS_LOOKUP[spotPosition.marketIndex].precisionExp;
+					const baseBalance = BigNum.from(
+						getTokenAmount(
+							spotPosition.scaledBalance,
+							spotMarketAccount,
+							spotPosition.balanceType
+						),
+						assetPrecision
+					).shiftTo(assetPrecision);
 
-				let liquidationPrice = BigNum.from(
-					vaultDriftUser.spotLiquidationPrice(spotPosition.marketIndex),
-					PRICE_PRECISION_EXP
-				);
-				liquidationPrice = liquidationPrice.ltZero()
-					? BigNum.from(ZERO)
-					: liquidationPrice;
+					const oraclePrice = BigNum.from(
+						driftClient.getOracleDataForSpotMarket(spotPosition.marketIndex)
+							.price,
+						PRICE_PRECISION_EXP
+					);
+					const quoteValue = baseBalance
+						.shiftTo(PRICE_PRECISION_EXP)
+						.mul(oraclePrice)
+						.shiftTo(QUOTE_PRECISION_EXP);
 
-				return {
-					baseBalance,
-					oraclePrice,
-					quoteValue,
-					marketIndex: spotPosition.marketIndex,
-					liquidationPrice,
-				};
-			})
-			.filter((userBalance) => userBalance.baseBalance.gt(ZERO));
+					let liquidationPrice = BigNum.from(
+						vaultDriftUser.spotLiquidationPrice(spotPosition.marketIndex),
+						PRICE_PRECISION_EXP
+					);
+					liquidationPrice = liquidationPrice.ltZero()
+						? BigNum.from(ZERO)
+						: liquidationPrice;
 
-		setUserBalances(userBalances);
+					return {
+						baseBalance,
+						oraclePrice,
+						quoteValue,
+						marketIndex: spotPosition.marketIndex,
+						liquidationPrice,
+					};
+				})
+				.filter((userBalance) => userBalance.baseBalance.gt(ZERO));
+
+			setUserBalances(userBalances);
+		} catch (e) {
+			console.error(e);
+		}
 	}, [driftClient, driftClientIsReady, vaultDriftUserAccount]);
 
 	return userBalances;
