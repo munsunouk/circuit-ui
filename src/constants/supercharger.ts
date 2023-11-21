@@ -1,4 +1,4 @@
-import { BigNum, QUOTE_PRECISION, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import dayjs from 'dayjs';
 
 import { normalizeDate } from '@/utils/utils';
@@ -290,8 +290,7 @@ export const SUPERCHARGER_PAST_DATA = SUPERCHARGER_PAST_RAW_DATA.map((data) => {
 			data.totalAccountValue.toString(),
 			QUOTE_PRECISION_EXP
 		),
-		netDeposits: BigNum.from(994_533, QUOTE_PRECISION_EXP).mul(QUOTE_PRECISION)
-			.val,
+		netDeposits: BigNum.fromPrint('994533', QUOTE_PRECISION_EXP).val,
 	};
 });
 

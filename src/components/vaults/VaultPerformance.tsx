@@ -174,19 +174,19 @@ export default function VaultPerformance() {
 		const firstHistoryData = uiVaultConfig.pastPerformanceHistory[0];
 
 		const totalEarnings = lastHistoryData.allTimeTotalPnl;
-		const cumulativeReturnsPct =
-			totalEarnings
-				.mul(PERCENTAGE_PRECISION)
-				.mul(new BN(100))
-				.div(lastHistoryData.netDeposits)
-				.toNum() / PERCENTAGE_PRECISION.toNumber();
+		const cumulativeReturnsPct = totalEarnings
+			.mul(PERCENTAGE_PRECISION)
+			.mul(new BN(100))
+			.div(lastHistoryData.netDeposits)
+			.toNum();
 
 		const apy = getSimpleHistoricalApy(
-			lastHistoryData.netDeposits.toNumber(),
+			lastHistoryData.netDeposits.toNumber() / QUOTE_PRECISION.toNumber(),
 			lastHistoryData.totalAccountValue.toNum(),
 			firstHistoryData.epochTs,
 			lastHistoryData.epochTs
 		);
+
 		const maxDailyDrawdown = getMaxDailyDrawdownFromAccValue(
 			uiVaultConfig.pastPerformanceHistory.map((history) => ({
 				...history,
