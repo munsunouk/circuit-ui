@@ -12,7 +12,6 @@ import {
 	DriftClient,
 	DriftClientConfig,
 	PublicKey,
-	QUOTE_PRECISION_EXP,
 	fetchLogs,
 	getMarketsAndOraclesForSubscription,
 } from '@drift-labs/sdk';
@@ -42,7 +41,10 @@ import { TransactionErrorHandler } from '@/utils/TransactionErrorHandler';
 import NOTIFICATION_UTILS, { ToastWithMessage } from '@/utils/notifications';
 import { redeemPeriodToString } from '@/utils/utils';
 
-import Env, { ARBITRARY_WALLET } from '@/constants/environment';
+import Env, {
+	ARBITRARY_WALLET,
+	SPOT_MARKETS_LOOKUP,
+} from '@/constants/environment';
 
 dayjs.extend(isSameOrAfter);
 
@@ -428,6 +430,9 @@ const createAppActions = (
 			const connection = getCommon().connection;
 
 			invariant(connection, 'No connection');
+			invariant(vaultInfo, 'No vault info in deposit');
+
+			const spotMarketConfig = SPOT_MARKETS_LOOKUP[vaultInfo?.spotMarketIndex];
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
 				NOTIFICATION_UTILS.toast.error(
@@ -468,8 +473,8 @@ const createAppActions = (
 				tx,
 				`You have successfully deposited ${BigNum.from(
 					amount,
-					QUOTE_PRECISION_EXP
-				).prettyPrint()} USDC`
+					spotMarketConfig.precision
+				).prettyPrint()} ${spotMarketConfig.symbol}`
 			);
 
 			return tx;

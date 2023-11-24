@@ -1,5 +1,8 @@
-import { HistoryResolution } from '@drift/common';
+import { BigNum } from '@drift-labs/sdk';
+import { HistoryResolution, USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import dayjs from 'dayjs';
+
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 
 export const redeemPeriodToString = (seconds = 0) => {
 	const totalHours = Math.floor(seconds / 60 / 60);
@@ -66,4 +69,18 @@ export const normalizeDate = (
 export function shortenPubkey(pubkey: string | undefined, length = 4) {
 	if (!pubkey) return '';
 	return `${pubkey.slice(0, length)}...${pubkey.slice(44 - length, 44)}`;
+}
+
+export function displayAssetValue(
+	value: BigNum,
+	marketIndex: number,
+	toTradePrecision = false
+) {
+	if (marketIndex === USDC_SPOT_MARKET_INDEX) {
+		return value.toNotional();
+	} else {
+		return `${toTradePrecision ? value.toTradePrecision() : value.toNum()} ${
+			SPOT_MARKETS_LOOKUP[marketIndex].symbol
+		}`;
+	}
 }

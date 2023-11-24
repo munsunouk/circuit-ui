@@ -4,7 +4,6 @@ import {
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
-	QUOTE_PRECISION,
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
@@ -16,6 +15,7 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
+import { displayAssetValue as displayAssetValueBase } from '@/utils/utils';
 import {
 	getMaxDailyDrawdown,
 	getMaxDailyDrawdownFromAccValue,
@@ -23,6 +23,7 @@ import {
 	getSimpleHistoricalApy,
 } from '@/utils/vaults';
 
+import { USDC_MARKET } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
 
 import SectionHeader from '../SectionHeader';
@@ -63,11 +64,6 @@ enum OverallTimeline {
 	Current,
 	Historical,
 }
-
-const OVERALL_TIMELINE_OPTIONS: Option[] = [
-	{ label: 'Current', value: OverallTimeline.Current },
-	{ label: 'Historical', value: OverallTimeline.Historical },
-];
 
 enum GraphView {
 	PnL,
@@ -113,9 +109,6 @@ export default function VaultPerformance() {
 		PERFORMANCE_GRAPH_OPTIONS[0]
 	);
 	const [graphView, setGraphView] = useState(GRAPH_VIEW_OPTIONS[0]);
-	const [selectedTimelineOption, setSelectedTimelineOption] = useState(
-		OVERALL_TIMELINE_OPTIONS[0]
-	);
 
 	const [displayedData, setDisplayedData] = useState<DisplayedData>(
 		DEFAULT_DISPLAYED_DATA
@@ -130,6 +123,22 @@ export default function VaultPerformance() {
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
+	const spotMarketConfig = uiVaultConfig?.depositAsset ?? USDC_MARKET;
+	const basePrecisionExp = spotMarketConfig.precisionExp;
+
+	const overallTimelineOptions: Option[] = [
+		{ label: 'Current', value: OverallTimeline.Current },
+	];
+	if (uiVaultConfig?.pastPerformanceHistory)
+		overallTimelineOptions.push({
+			label: 'Historical',
+			value: OverallTimeline.Historical,
+		});
+
+	const [selectedTimelineOption, setSelectedTimelineOption] = useState(
+		overallTimelineOptions[0]
+	);
+
 	const allTimePnlHistory =
 		vault?.pnlHistory.dailyAllTimePnls
 			.map((pnl) => ({
@@ -138,8 +147,8 @@ export default function VaultPerformance() {
 				epochTs: pnl.epochTs,
 			}))
 			.concat({
-				totalAccountValue: vaultStats.totalAccountValue.toNumber(),
-				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
+				totalAccountValue: vaultStats.totalAccountQuoteValue.toNumber(),
+				allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
 				epochTs: dayjs().unix(),
 			}) ?? [];
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
@@ -181,7 +190,8 @@ export default function VaultPerformance() {
 			.toNum();
 
 		const apy = getSimpleHistoricalApy(
-			lastHistoryData.netDeposits.toNumber() / QUOTE_PRECISION.toNumber(),
+			lastHistoryData.netDeposits.toNumber() /
+				spotMarketConfig.precision.toNumber(),
 			lastHistoryData.totalAccountValue.toNum(),
 			firstHistoryData.epochTs,
 			lastHistoryData.epochTs
@@ -207,23 +217,25 @@ export default function VaultPerformance() {
 
 		return uiVaultConfig.pastPerformanceHistory.map((history) => ({
 			x: history.epochTs,
-			y: history[graphView.snapshotAttribute].mul(QUOTE_PRECISION).toNum(),
+			y: history[graphView.snapshotAttribute]
+				.mul(spotMarketConfig.precision)
+				.toNum(),
 		}));
 	};
 
 	const getDisplayedDataForCurrent = (): DisplayedData => {
 		const totalEarnings = BigNum.from(
-			vaultStats.allTimeTotalPnl,
-			QUOTE_PRECISION_EXP
+			vaultStats.allTimeTotalPnlBaseValue,
+			basePrecisionExp
 		);
 
 		const totalAccountValueBigNum = BigNum.from(
-			vaultStats.totalAccountValue,
-			QUOTE_PRECISION_EXP
+			vaultStats.totalAccountBaseValue,
+			basePrecisionExp
 		);
 		const netDepositsBigNum = BigNum.from(
 			vaultAccountData?.netDeposits,
-			QUOTE_PRECISION_EXP
+			basePrecisionExp
 		);
 		const cumulativeReturnsPct =
 			totalAccountValueBigNum
@@ -233,7 +245,7 @@ export default function VaultPerformance() {
 				.toNum() * 100;
 
 		const apy = getModifiedDietzApy(
-			BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
+			BigNum.from(vaultStats.totalAccountBaseValue, basePrecisionExp).toNum(),
 			vault?.vaultDeposits ?? []
 		);
 
@@ -262,23 +274,28 @@ export default function VaultPerformance() {
 		}[];
 	};
 
+	const displayAssetValue = (value: BigNum) =>
+		displayAssetValueBase(value, spotMarketConfig.marketIndex ?? 0, true);
+
 	return (
 		<div className="flex flex-col w-full gap-8">
 			<FadeInDiv className="flex flex-col w-full gap-4">
 				<div className="flex items-center justify-between">
 					<SectionHeader>Performance Breakdown</SectionHeader>
-					<Dropdown
-						options={OVERALL_TIMELINE_OPTIONS}
-						selectedOption={selectedTimelineOption}
-						setSelectedOption={setSelectedTimelineOption}
-						width={120}
-					/>
+					{overallTimelineOptions.length > 1 && (
+						<Dropdown
+							options={overallTimelineOptions}
+							selectedOption={selectedTimelineOption}
+							setSelectedOption={setSelectedTimelineOption}
+							width={120}
+						/>
+					)}
 				</div>
 
 				<div className="flex flex-col w-full gap-1 md:gap-2">
 					<BreakdownRow
 						label="Total Earnings (All Time)"
-						value={displayedData.totalEarnings.toNotional()}
+						value={displayAssetValue(displayedData.totalEarnings)}
 					/>
 					<BreakdownRow
 						label="Cumulative Return"
@@ -318,7 +335,7 @@ export default function VaultPerformance() {
 						}))}
 						tabClassName="whitespace-nowrap px-4 py-2"
 					/>
-					{selectedTimelineOption === OVERALL_TIMELINE_OPTIONS[0] && (
+					{overallTimelineOptions.length > 1 && (
 						<Dropdown
 							options={
 								graphView.value === GraphView.VaultBalance &&

@@ -1,5 +1,7 @@
 import { PerformanceGraphData } from '@/types';
+import { SpotMarketConfig } from '@drift-labs/sdk';
 
+import { JITOSOL_MARKET, USDC_MARKET } from './environment';
 import {
 	SUPERCHARGER_PAST_DATA,
 	SUPERCHARGER_VAULT_PUBKEY,
@@ -16,6 +18,15 @@ export interface OverviewSection {
 export const FEES_PLACEHOLDER = '{fees_placeholder}';
 export const PERIOD_PLACEHOLDER = '{period_placeholder}';
 
+const USDC_DEPOSIT_ASSET = {
+	market: USDC_MARKET,
+	borderColor: 'var(--main-blue)',
+};
+const JITOSOL_DEPOSIT_ASSET = {
+	market: JITOSOL_MARKET,
+	borderColor: '#AFE9B8',
+};
+
 export interface UiVaultConfig {
 	name: string;
 	pubkeyString?: string;
@@ -26,6 +37,8 @@ export interface UiVaultConfig {
 	backdropParticlesColor: string;
 	pastPerformanceHistory?: PerformanceGraphData[];
 	vaultOverview?: OverviewSection[];
+	depositAsset: SpotMarketConfig;
+	assetColor: string;
 }
 
 export const SUPERCHARGER_VAULT: UiVaultConfig = {
@@ -34,6 +47,8 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	description:
 		'Multiply your yields with delta-neutral market making strategies',
 	permissioned: true,
+	depositAsset: USDC_DEPOSIT_ASSET.market,
+	assetColor: USDC_DEPOSIT_ASSET.borderColor,
 	previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
 	backdropParticlesColor: '#88c9ff',
 	pastPerformanceHistory: SUPERCHARGER_PAST_DATA,
@@ -97,19 +112,21 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 export const VAULTS: UiVaultConfig[] = [
 	SUPERCHARGER_VAULT,
 	{
-		name: 'Turbocharger',
-		// pubkey: new PublicKey('2bXtK9phuqUbqsmonWCNYcV87DkFmqyRiDqGen4daZwx'),
-		description: 'Delta-neutral market making strategy',
+		name: 'jitoSOL Basis Vault',
+		pubkeyString: 'ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4',
+		description: 'Basis trading strategy',
 		comingSoon: true,
 		previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
 		backdropParticlesColor: '#3DBC9D',
+		depositAsset: JITOSOL_DEPOSIT_ASSET.market,
+		assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
 	},
-	{
-		name: 'Delta Neutral DLP',
-		// pubkey: new PublicKey('B4LBd4DEKZZLvkn7eazUf7xU9RuTpvxH4th18VgVzMpB'),
-		description: 'Hedged Drift Liquidity Provider (DLP) strategy',
-		comingSoon: true,
-		previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
-		backdropParticlesColor: '#88c9ff',
-	},
+	// {
+	// 	name: 'Basis Trading Vault (wETH)',
+	// 	// pubkey: new PublicKey('B4LBd4DEKZZLvkn7eazUf7xU9RuTpvxH4th18VgVzMpB'),
+	// 	description: 'Hedged Drift Liquidity Provider (DLP) strategy',
+	// 	comingSoon: true,
+	// 	previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
+	// 	backdropParticlesColor: '#88c9ff',
+	// },
 ];

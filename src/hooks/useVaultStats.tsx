@@ -1,4 +1,6 @@
-import { BN, PERCENTAGE_PRECISION, PublicKey, ZERO } from '@drift-labs/sdk';
+import { useOraclePriceStore } from '@drift-labs/react';
+import { BN, BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { MarketId } from '@drift/common';
 import { useEffect, useState } from 'react';
 
 import { VAULTS } from '@/constants/vaults';
@@ -10,18 +12,18 @@ import { useVault } from './useVault';
 const UPDATE_FREQUENCY_MS = 10_000;
 
 interface VaultStats {
-	totalAccountValue: BN;
-	allTimeTotalPnl: BN;
-	allTimeTotalPnlWithHistory: BN;
-	historicalCumulativeReturnsPct: BN;
+	totalAccountQuoteValue: BN;
+	totalAccountBaseValue: BN;
+	allTimeTotalPnlQuoteValue: BN;
+	allTimeTotalPnlBaseValue: BN;
 	isLoaded: boolean;
 }
 
 const DEFAULT_VAULT_STATS: VaultStats = {
-	totalAccountValue: new BN(0),
-	allTimeTotalPnl: new BN(0),
-	allTimeTotalPnlWithHistory: new BN(0),
-	historicalCumulativeReturnsPct: new BN(0),
+	totalAccountQuoteValue: new BN(0),
+	totalAccountBaseValue: new BN(0),
+	allTimeTotalPnlQuoteValue: new BN(0),
+	allTimeTotalPnlBaseValue: new BN(0),
 	isLoaded: false,
 };
 
@@ -32,6 +34,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		s.getVaultAccountData(vaultPubKey)
 	);
 	const vaultClient = useAppStore((s) => s.vaultClient);
+	const { getMarketPriceData } = useOraclePriceStore();
 
 	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
 
@@ -54,36 +57,53 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	}, [vaultDriftUser, uiVaultConfig, vaultAccountData, vaultClient, vault]);
 
 	async function calcVaultStats() {
-		if (!vaultDriftUser || !vaultClient || !vault.vaultAccount)
+		if (
+			!vaultDriftUser ||
+			!vaultClient ||
+			!vault.vaultAccount ||
+			!uiVaultConfig
+		)
 			return DEFAULT_VAULT_STATS;
 
-		const totalAccountValue = await vaultClient.calculateVaultEquity({
+		const baseAssetQuotePrice = getMarketPriceData(
+			MarketId.createSpotMarket(uiVaultConfig.depositAsset.marketIndex)
+		).priceData.price;
+
+		// calculate total account value
+		const totalAccountQuoteValue = await vaultClient.calculateVaultEquity({
 			vault: vault.vaultAccountData,
 		});
-		const allTimeTotalPnl = vaultDriftUser.getTotalAllTimePnl();
+		const totalAccountBaseValueBN = totalAccountQuoteValue.div(
+			BigNum.from(baseAssetQuotePrice, QUOTE_PRECISION_EXP).val
+		);
+		const totalAccountBaseValueNum = BigNum.from(
+			totalAccountBaseValueBN,
+			QUOTE_PRECISION_EXP
+		).toNum();
+		const totalAccountBaseValue = BigNum.fromPrint(
+			`${totalAccountBaseValueNum}`,
+			uiVaultConfig.depositAsset.precisionExp
+		).val;
 
-		let allTimeTotalPnlWithHistory = allTimeTotalPnl;
-		let historicalCumulativeReturnsPct = ZERO;
-
-		if (uiVaultConfig?.pastPerformanceHistory) {
-			const lastPastHistoryPoint =
-				uiVaultConfig.pastPerformanceHistory.slice(-1)[0];
-			allTimeTotalPnlWithHistory = allTimeTotalPnlWithHistory.add(
-				new BN(lastPastHistoryPoint.allTimeTotalPnl.toNum())
-			);
-			const historicalInitialDeposit =
-				uiVaultConfig.pastPerformanceHistory[0].totalAccountValue;
-			historicalCumulativeReturnsPct = lastPastHistoryPoint.totalAccountValue
-				.sub(historicalInitialDeposit)
-				.mul(PERCENTAGE_PRECISION)
-				.div(historicalInitialDeposit).val;
-		}
+		// calculate all time total pnl
+		const allTimeTotalPnlQuoteValue = vaultDriftUser.getTotalAllTimePnl();
+		const allTimeTotalPnlBaseValueBN = allTimeTotalPnlQuoteValue.div(
+			BigNum.from(baseAssetQuotePrice, QUOTE_PRECISION_EXP).val
+		);
+		const allTimeTotalPnlBaseValueNum = BigNum.from(
+			allTimeTotalPnlBaseValueBN,
+			QUOTE_PRECISION_EXP
+		).toNum();
+		const allTimeTotalPnlBaseValue = BigNum.fromPrint(
+			`${allTimeTotalPnlBaseValueNum}`,
+			uiVaultConfig.depositAsset.precisionExp
+		).val;
 
 		return {
-			totalAccountValue,
-			allTimeTotalPnl,
-			allTimeTotalPnlWithHistory,
-			historicalCumulativeReturnsPct,
+			totalAccountQuoteValue,
+			totalAccountBaseValue,
+			allTimeTotalPnlQuoteValue,
+			allTimeTotalPnlBaseValue,
 			isLoaded: true,
 		};
 	}

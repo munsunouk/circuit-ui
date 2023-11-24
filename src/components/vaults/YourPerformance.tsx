@@ -14,8 +14,10 @@ import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAcc
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
-import { getUserMaxDailyDrawdown } from '@/utils/vaults';
+import { displayAssetValue as displayAssetValueBase } from '@/utils/utils';
+import { getUiVaultConfig, getUserMaxDailyDrawdown } from '@/utils/vaults';
 
+import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro } from '@/constants/fonts';
 
 import ConnectButton from '../ConnectButton';
@@ -49,6 +51,9 @@ export default function YourPerformance() {
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
 	const vault = useCurrentVault();
+	const uiVault = getUiVaultConfig(vault?.vaultAccountData.pubkey);
+	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
+	const basePrecisionExp = spotMarketConfig.precisionExp;
 
 	const showUserInfo = connected || !!authority;
 
@@ -58,37 +63,37 @@ export default function YourPerformance() {
 	const userSharesProportion = userVaultShares / totalVaultShares || 0;
 
 	// User's net deposits
-	const netDeposits = vaultDepositorAccData?.netDeposits;
-	const netDepositsBigNum = BigNum.from(netDeposits, QUOTE_PRECISION_EXP);
-	const netDepositsString = netDepositsBigNum.toNotional();
-	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
-	const userAccountBalanceProportion =
-		vaultAccountBalance * userSharesProportion;
-	const userAccountBalanceProportionBigNum = BigNum.from(
-		userAccountBalanceProportion,
-		QUOTE_PRECISION_EXP
+	const netBaseDeposits = vaultDepositorAccData?.netDeposits;
+	const netBaseDepositsBigNum = BigNum.from(netBaseDeposits, basePrecisionExp);
+	const vaultAccountBaseBalance = BigNum.from(
+		vaultStats.totalAccountBaseValue,
+		basePrecisionExp
 	);
-	const userAccountValueString =
-		userAccountBalanceProportionBigNum.toNotional();
+	const userAccountBaseBalanceProportion =
+		vaultAccountBaseBalance.toNum() * userSharesProportion;
+	const userAccountBaseBalanceProportionBigNum = BigNum.fromPrint(
+		`${userAccountBaseBalanceProportion}`,
+		basePrecisionExp
+	);
 
 	// User's total earnings
 	const userTotalDepositsBigNum = BigNum.from(
 		vaultDepositorAccData?.totalDeposits,
-		QUOTE_PRECISION_EXP
+		basePrecisionExp
 	);
 	const userTotalWithdrawsBigNum = BigNum.from(
 		vaultDepositorAccData?.totalWithdraws,
-		QUOTE_PRECISION_EXP
+		basePrecisionExp
 	);
 	let totalEarnings = userTotalWithdrawsBigNum
 		.sub(userTotalDepositsBigNum)
-		.add(userAccountBalanceProportionBigNum);
+		.add(userAccountBaseBalanceProportionBigNum);
 	// prevent $-0.00
 	if (
 		totalEarnings.ltZero() &&
-		totalEarnings.gt(BigNum.from(-BUFFER, QUOTE_PRECISION_EXP))
+		totalEarnings.gt(BigNum.from(-BUFFER, basePrecisionExp))
 	) {
-		totalEarnings = BigNum.zero(QUOTE_PRECISION_EXP);
+		totalEarnings = BigNum.zero(basePrecisionExp);
 	}
 	const totalEarningsString = totalEarnings.toNotional();
 
@@ -96,10 +101,7 @@ export default function YourPerformance() {
 		(totalEarnings
 			.mul(PERCENTAGE_PRECISION)
 			.div(
-				BigNum.max(
-					userTotalDepositsBigNum,
-					BigNum.from(ONE, QUOTE_PRECISION_EXP)
-				)
+				BigNum.max(userTotalDepositsBigNum, BigNum.from(ONE, basePrecisionExp))
 			)
 			.toNum() /
 			PERCENTAGE_PRECISION.toNumber()) *
@@ -114,15 +116,18 @@ export default function YourPerformance() {
 	// User fees
 	const profitShareFeePaid = BigNum.from(
 		vaultDepositorAccData?.profitShareFeePaid,
-		QUOTE_PRECISION_EXP
+		basePrecisionExp
 	);
 	const highWaterMark = BigNum.from(
 		vaultDepositorAccData?.cumulativeProfitShareAmount,
-		QUOTE_PRECISION_EXP
+		basePrecisionExp
 	);
 	const highWaterMarkWithCurrentDeposit = highWaterMark
 		.add(userTotalDepositsBigNum)
 		.sub(userTotalWithdrawsBigNum);
+
+	const displayAssetValue = (value: BigNum) =>
+		displayAssetValueBase(value, spotMarketConfig.marketIndex, true);
 
 	return (
 		<div className={'relative flex flex-col gap-8'}>
@@ -131,12 +136,16 @@ export default function YourPerformance() {
 				<div className="flex items-center justify-center w-full gap-4">
 					<StatsBox
 						label="Your Balance"
-						value={showUserInfo ? userAccountValueString : '--'}
+						value={
+							showUserInfo
+								? displayAssetValue(userAccountBaseBalanceProportionBigNum)
+								: '--'
+						}
 					/>
 					<div className="h-12 border-r border-container-border" />
 					<StatsBox
 						label="Total Earnings (All Time)"
-						value={showUserInfo ? totalEarningsString : '--'}
+						value={showUserInfo ? displayAssetValue(totalEarnings) : '--'}
 					/>
 				</div>
 			</FadeInDiv>
@@ -145,15 +154,19 @@ export default function YourPerformance() {
 				<div className="flex flex-col gap-2">
 					<BreakdownRow
 						label="Total Earnings (All Time)"
-						value={totalEarningsString}
+						value={displayAssetValue(totalEarnings)}
 					/>
 					<BreakdownRow
 						label="Your Cumulative Net Deposits"
-						value={netDepositsString}
+						value={displayAssetValue(netBaseDepositsBigNum)}
 					/>
 					<BreakdownRow
 						label="Your Balance"
-						value={showUserInfo ? userAccountValueString : '--'}
+						value={
+							showUserInfo
+								? displayAssetValue(userAccountBaseBalanceProportionBigNum)
+								: '--'
+						}
 					/>
 					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
@@ -175,11 +188,11 @@ export default function YourPerformance() {
 				<div className="flex flex-col gap-2">
 					<BreakdownRow
 						label="Profit Share Fees Paid"
-						value={profitShareFeePaid.toNotional()}
+						value={displayAssetValue(profitShareFeePaid)}
 					/>
 					<BreakdownRow
 						label="High-Water Mark"
-						value={highWaterMarkWithCurrentDeposit.toNotional()}
+						value={displayAssetValue(highWaterMarkWithCurrentDeposit)}
 					/>
 				</div>
 			</FadeInDiv>

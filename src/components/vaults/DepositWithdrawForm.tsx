@@ -1,14 +1,13 @@
 import useAppStore from '@/stores/app/useAppStore';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import {
+	BASE_PRECISION_EXP,
 	BN,
 	BigNum,
 	PERCENTAGE_PRECISION,
-	QUOTE_PRECISION,
-	QUOTE_PRECISION_EXP,
+	SpotMarketConfig,
 	ZERO,
 } from '@drift-labs/sdk';
-import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { useWallet } from '@solana/wallet-adapter-react';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
@@ -24,6 +23,7 @@ import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { redeemPeriodToString } from '@/utils/utils';
+import { getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
 
@@ -149,12 +149,14 @@ const Form = ({
 	maxAmount,
 	maxAmountString,
 	setAmount,
+	spotMarketConfig,
 }: {
 	tab: Tab;
 	amount: string;
 	maxAmount: number;
 	maxAmountString: string;
 	setAmount: (amount: string) => void;
+	spotMarketConfig: SpotMarketConfig;
 }) => {
 	const [isFocused, setIsFocused] = useState(false);
 
@@ -202,7 +204,7 @@ const Form = ({
 						isFocused && 'border-container-border-selected'
 					)}
 				>
-					USDC
+					{spotMarketConfig.symbol}
 				</div>
 			</div>
 
@@ -212,9 +214,9 @@ const Form = ({
 					label: option.label,
 					onSelect: () => setAmount((maxAmount * option.value).toString()),
 					selected:
-						Number(amount).toFixed(USDC_MARKET.precisionExp.toNumber()) ===
+						Number(amount).toFixed(spotMarketConfig.precisionExp.toNumber()) ===
 							(maxAmount * option.value).toFixed(
-								USDC_MARKET.precisionExp.toNumber()
+								spotMarketConfig.precisionExp.toNumber()
 							) && Number(amount) !== 0,
 				}))}
 			/>
@@ -223,7 +225,8 @@ const Form = ({
 };
 
 const handleOnValueChangeCurried =
-	(setAmount: (amount: string) => void) => (newAmount: string) => {
+	(setAmount: (amount: string) => void, spotMarketConfig: SpotMarketConfig) =>
+	(newAmount: string) => {
 		if (isNaN(+newAmount)) return;
 
 		if (newAmount === '') {
@@ -242,7 +245,7 @@ const handleOnValueChangeCurried =
 		if (lastChar === '0') {
 			// if last char of string is a zero in the decimal places, cut it off if it exceeds precision
 			const numOfDigitsAfterDecimal = newAmount.split('.')[1]?.length ?? 0;
-			if (numOfDigitsAfterDecimal > USDC_MARKET.precisionExp.toNumber()) {
+			if (numOfDigitsAfterDecimal > spotMarketConfig.precisionExp.toNumber()) {
 				setAmount(newAmount.slice(0, -1));
 			} else {
 				setAmount(newAmount);
@@ -251,7 +254,7 @@ const handleOnValueChangeCurried =
 		}
 
 		const formattedAmount = Number(
-			(+newAmount).toFixed(USDC_MARKET.precisionExp.toNumber())
+			(+newAmount).toFixed(spotMarketConfig.precisionExp.toNumber())
 		);
 		setAmount(formattedAmount.toString());
 	};
@@ -262,13 +265,17 @@ const DepositForm = ({
 	setUserPerformanceTab: () => void;
 }) => {
 	const { connected } = useWallet();
-	const usdcBalance = useAppStore((s) => s.balances.usdc);
+	const balances = useAppStore((s) => s.balances);
 	const appActions = useAppActions();
 	const vaultPubkey = usePathToVaultPubKey();
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultStats = useCurrentVaultStats();
-	const vault = useCurrentVault();
+	const uiVault = getUiVaultConfig(vaultPubkey);
+	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
+	const baseAssetSymbol = spotMarketConfig.symbol;
+
+	const depositAssetBalance = balances[spotMarketConfig?.symbol ?? ''];
 
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -279,22 +286,22 @@ const DepositForm = ({
 		vaultDepositorAccountData?.lastWithdrawRequest.shares.gt(ZERO);
 	const isBelowMinDepositAmount =
 		+amount > 0 &&
-		+amount * QUOTE_PRECISION.toNumber() <
+		+amount * spotMarketConfig.precision.toNumber() <
 			(vaultAccountData?.minDepositAmount.toNumber() ?? 0);
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
-	const tvlWithoutHistory = vaultStats.totalAccountValue;
+	const tvlWithoutHistory = vaultStats.totalAccountQuoteValue;
 	const maxAvailableCapacity = BigNum.from(
 		maxCapacity?.sub(tvlWithoutHistory),
-		USDC_MARKET.precisionExp
+		spotMarketConfig.precisionExp
 	);
-	const usdcBalanceBigNum = BigNum.fromPrint(
-		usdcBalance.toString(),
-		VAULT_SHARES_PRECISION_EXP
+	const depositBalanceBigNum = BigNum.fromPrint(
+		depositAssetBalance.toString(),
+		spotMarketConfig?.precisionExp ?? BASE_PRECISION_EXP
 	);
-	let maxDepositAmount = maxAvailableCapacity.gt(usdcBalanceBigNum)
-		? usdcBalanceBigNum.toNum()
+	let maxDepositAmount = maxAvailableCapacity.gt(depositBalanceBigNum)
+		? depositBalanceBigNum.toNum()
 		: maxAvailableCapacity.scale(99, 100).toNum();
 	maxDepositAmount = Math.max(0, maxDepositAmount);
 
@@ -305,12 +312,15 @@ const DepositForm = ({
 		+amount > maxDepositAmount ||
 		isBelowMinDepositAmount;
 
-	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
+	const handleOnValueChange = handleOnValueChangeCurried(
+		setAmount,
+		spotMarketConfig
+	);
 
 	const handleDeposit = async () => {
 		if (!vaultPubkey) return;
 
-		const baseAmount = new BN(+amount * USDC_MARKET.precision.toNumber());
+		const baseAmount = new BN(+amount * spotMarketConfig.precision.toNumber());
 
 		setLoading(true);
 		try {
@@ -339,8 +349,8 @@ const DepositForm = ({
 		} else if (isBelowMinDepositAmount) {
 			text = `The minimum deposit amount is ${BigNum.from(
 				vaultAccountData?.minDepositAmount,
-				USDC_MARKET.precisionExp
-			).toNum()} USDC.`;
+				spotMarketConfig.precisionExp
+			).toNum()} ${baseAssetSymbol}.`;
 		}
 
 		if (!text) return null;
@@ -361,9 +371,10 @@ const DepositForm = ({
 			<Form
 				tab={Tab.Deposit}
 				maxAmount={maxDepositAmount}
-				maxAmountString={`${maxDepositAmount.toFixed(2)} USDC`}
+				maxAmountString={`${maxDepositAmount.toFixed(2)} ${baseAssetSymbol}`}
 				setAmount={handleOnValueChange}
 				amount={amount}
+				spotMarketConfig={spotMarketConfig}
 			/>
 
 			{connected ? (
@@ -386,12 +397,12 @@ const DepositForm = ({
 };
 
 /**
- * The withdraw form's UI is designed to display the estimated USDC to withdraw.
+ * The withdraw form's UI is designed to display the estimated base asset to withdraw.
  * It will calculate the max amount of shares (after profit share fee if in profit)
- * that the user can withdraw, and convert that amount to USDC. However, the max amount
+ * that the user can withdraw, and convert that amount to base asset. However, the max amount
  * of shares is always updating since the amount of profit is always changing.
- * Hence, we designed it so that we assign the max USDC value only once, on the first
- * calculation, so that both the max USDC value and percentage to withdraw remain
+ * Hence, we designed it so that we assign the max base asset value only once, on the first
+ * calculation, so that both the max base asset value and percentage to withdraw remain
  * un-updated even if the max amount of shares after profit share fee changes due to
  * account data subscription.
  */
@@ -410,9 +421,13 @@ const WithdrawForm = ({
 	const vaultDepositorAccount = useAppStore(
 		(s) => s.vaults[vaultPubkey?.toString() ?? '']?.vaultDepositorAccount
 	);
+	const uiVault = getUiVaultConfig(vaultPubkey);
+	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
+	const baseAssetSymbol = spotMarketConfig.symbol;
+
 	const { devSwitchIsOn } = useDevSwitchIsOn();
 
-	const [maxSharesUsdcValue, setMaxSharesUsdcValue] = useState(new BN(0));
+	const [maxSharesBaseValue, setMaxSharesBaseValue] = useState(new BN(0));
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
@@ -421,7 +436,7 @@ const WithdrawForm = ({
 
 	const hasCalcMaxSharesOnce = useRef(false);
 
-	const tvl = vaultStats.totalAccountValue;
+	const tvlBaseValue = vaultStats.totalAccountBaseValue;
 
 	// withdrawal variables
 	const withdrawalWaitingPeriod = redeemPeriodToString(
@@ -432,19 +447,20 @@ const WithdrawForm = ({
 		(vaultAccountData?.redeemPeriod.toNumber() ?? 0);
 	const lastRequestedShares =
 		vaultDepositorAccountData?.lastWithdrawRequest.shares ?? new BN(0);
-	const lastRequestedUsdcValue = calcLastRequestedUsdcValue();
+	const lastRequestedUsdcValue = calcLastRequestedBaseValue();
 
 	const isButtonDisabled =
 		(+amount === 0 && withdrawalState === WithdrawalState.UnRequested) ||
 		loading ||
-		+amount > maxSharesUsdcValue.toNumber() / QUOTE_PRECISION.toNumber();
+		+amount >
+			maxSharesBaseValue.toNumber() / spotMarketConfig.precision.toNumber();
 
 	// we only want to set the max shares once, when all data is available,
 	// to prevent the max amount from constantly updating due to data change subscriptions.
 	useEffect(() => {
 		if (!vaultDepositorAccount) {
 			hasCalcMaxSharesOnce.current = false;
-			setMaxSharesUsdcValue(ZERO);
+			setMaxSharesBaseValue(ZERO);
 			return;
 		}
 
@@ -452,16 +468,18 @@ const WithdrawForm = ({
 			vault?.vaultAccount &&
 			vaultAccountData &&
 			vaultDepositorAccount !== undefined &&
-			!tvl.eq(new BN(0)) &&
+			!tvlBaseValue.eq(new BN(0)) &&
 			!hasCalcMaxSharesOnce.current
 		) {
 			// apply management fee first
 			const { totalShares: totalSharesAfterMgmtFees } =
-				vault.vaultAccount.calcSharesAfterManagementFee(tvl);
+				vault.vaultAccount.calcSharesAfterManagementFee(tvlBaseValue);
 
 			// user variables
 			const userShares = vaultDepositorAccountData?.vaultShares ?? new BN(0);
-			const userEquity = userShares.mul(tvl).div(totalSharesAfterMgmtFees);
+			const userEquity = userShares
+				.mul(tvlBaseValue)
+				.div(totalSharesAfterMgmtFees);
 
 			// profit share fee variables
 			const vaultProfitShareFee = new BN(vaultAccountData.profitShare);
@@ -475,14 +493,14 @@ const WithdrawForm = ({
 				.div(PERCENTAGE_PRECISION);
 			const userSharesAfterFees = userShares.sub(profitShareFeeShares);
 
-			const maxSharesUsdcValue = userSharesAfterFees
-				.mul(tvl)
+			const maxSharesBaseValue = userSharesAfterFees
+				.mul(tvlBaseValue)
 				.div(totalSharesAfterMgmtFees);
 
-			setMaxSharesUsdcValue(maxSharesUsdcValue);
+			setMaxSharesBaseValue(maxSharesBaseValue);
 			hasCalcMaxSharesOnce.current = true;
 		}
-	}, [vaultDepositorAccount, vaultAccountData, tvl]);
+	}, [vaultDepositorAccount, vaultAccountData, tvlBaseValue]);
 
 	// update withdrawal state
 	useEffect(() => {
@@ -502,7 +520,10 @@ const WithdrawForm = ({
 		}
 	}, [withdrawalAvailableTs, lastRequestedShares.toNumber()]);
 
-	const handleOnValueChange = handleOnValueChangeCurried(setAmount);
+	const handleOnValueChange = handleOnValueChangeCurried(
+		setAmount,
+		spotMarketConfig
+	);
 
 	const handleOnClick = async () => {
 		if (!vaultPubkey) return;
@@ -511,10 +532,10 @@ const WithdrawForm = ({
 			setLoading(true);
 			if (withdrawalState === WithdrawalState.UnRequested) {
 				const pctToWithdraw = new BN(
-					+amount * 10 ** QUOTE_PRECISION_EXP.toNumber()
+					+amount * 10 ** spotMarketConfig.precision.toNumber()
 				)
 					.mul(PERCENTAGE_PRECISION)
-					.div(maxSharesUsdcValue);
+					.div(maxSharesBaseValue);
 
 				await appActions.requestVaultWithdrawal(vaultPubkey, pctToWithdraw);
 			} else if (withdrawalState === WithdrawalState.Requested) {
@@ -531,13 +552,13 @@ const WithdrawForm = ({
 		}
 	};
 
-	function calcLastRequestedUsdcValue() {
-		if (!vault?.vaultAccount || tvl.eq(ZERO)) return ZERO;
+	function calcLastRequestedBaseValue() {
+		if (!vault?.vaultAccount || tvlBaseValue.eq(ZERO)) return ZERO;
 
 		const { totalShares } =
-			vault.vaultAccount.calcSharesAfterManagementFee(tvl);
+			vault.vaultAccount.calcSharesAfterManagementFee(tvlBaseValue);
 		const lastRequestedUsdcValue =
-			lastRequestedShares.mul(tvl).div(totalShares) ?? ZERO;
+			lastRequestedShares.mul(tvlBaseValue).div(totalShares) ?? ZERO;
 
 		return lastRequestedUsdcValue;
 	}
@@ -554,15 +575,16 @@ const WithdrawForm = ({
 				<Form
 					tab={Tab.Withdraw}
 					maxAmount={BigNum.from(
-						maxSharesUsdcValue,
-						QUOTE_PRECISION_EXP
+						maxSharesBaseValue,
+						spotMarketConfig.precisionExp
 					).toNum()}
 					maxAmountString={`${BigNum.from(
-						maxSharesUsdcValue,
-						QUOTE_PRECISION_EXP
-					).toFixed(2)} USDC`}
+						maxSharesBaseValue,
+						spotMarketConfig.precisionExp
+					).toFixed(2)} ${baseAssetSymbol}`}
 					setAmount={handleOnValueChange}
 					amount={amount}
+					spotMarketConfig={spotMarketConfig}
 				/>
 			)}
 
@@ -578,7 +600,11 @@ const WithdrawForm = ({
 										<span className="flex justify-between w-full">
 											<span>TVL:</span>
 											<span>
-												{BigNum.from(tvl, QUOTE_PRECISION_EXP).toNum()} USDC
+												{BigNum.from(
+													tvlBaseValue,
+													spotMarketConfig.precisionExp
+												).toNum()}{' '}
+												{baseAssetSymbol}
 											</span>
 										</span>
 										<span className="flex justify-between w-full">
@@ -586,7 +612,7 @@ const WithdrawForm = ({
 											<span>
 												{BigNum.from(
 													lastRequestedShares,
-													QUOTE_PRECISION_EXP
+													spotMarketConfig.precisionExp
 												).toNum()}{' '}
 											</span>
 										</span>
@@ -595,19 +621,19 @@ const WithdrawForm = ({
 											<span>
 												{BigNum.from(
 													vaultAccountData?.totalShares,
-													QUOTE_PRECISION_EXP
+													spotMarketConfig.precisionExp
 												).toNum()}{' '}
 											</span>
 										</span>
 										<span className="flex justify-between w-full">
 											<span>Total Shares (After M-Fee):</span>
 											<span>
-												{!tvl.eq(ZERO) &&
+												{!tvlBaseValue.eq(ZERO) &&
 													BigNum.from(
 														vault?.vaultAccount.calcSharesAfterManagementFee(
-															tvl
+															tvlBaseValue
 														).totalShares ?? ZERO,
-														QUOTE_PRECISION_EXP
+														spotMarketConfig.precisionExp
 													).toNum()}{' '}
 											</span>
 										</span>
@@ -616,11 +642,11 @@ const WithdrawForm = ({
 											<span>
 												{BigNum.from(
 													vaultDepositorAccountData?.lastWithdrawRequest.shares
-														.mul(tvl)
+														.mul(tvlBaseValue)
 														.div(vaultAccountData?.totalShares ?? ZERO) ?? ZERO,
-													QUOTE_PRECISION_EXP
+													spotMarketConfig.precisionExp
 												).toNum()}{' '}
-												USDC
+												{baseAssetSymbol}
 											</span>
 										</span>
 										<span className="flex justify-between w-full">
@@ -628,9 +654,9 @@ const WithdrawForm = ({
 											<span>
 												{BigNum.from(
 													lastRequestedUsdcValue,
-													QUOTE_PRECISION_EXP
+													spotMarketConfig.precisionExp
 												).toNum()}{' '}
-												USDC
+												{baseAssetSymbol}
 											</span>
 										</span>
 									</div>
@@ -649,11 +675,11 @@ const WithdrawForm = ({
 								>
 									{BigNum.from(
 										lastRequestedUsdcValue,
-										QUOTE_PRECISION_EXP
-									).toPrecision(QUOTE_PRECISION_EXP.toNumber())}{' '}
+										spotMarketConfig.precisionExp
+									).toPrecision(spotMarketConfig.precisionExp.toNumber())}{' '}
 									{withdrawalState === WithdrawalState.Requested
-										? 'USDC withdrawal requested'
-										: 'USDC available for withdrawal'}
+										? `${baseAssetSymbol} withdrawal requested`
+										: `${baseAssetSymbol} available for withdrawal`}
 								</span>
 							</>
 						)}

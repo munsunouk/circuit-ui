@@ -1,9 +1,11 @@
-import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BigNum, ZERO } from '@drift-labs/sdk';
 import { decodeName } from '@drift-labs/vaults-sdk';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
+
+import { displayAssetValue } from '@/utils/utils';
 
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
@@ -49,9 +51,10 @@ export default function VaultHero() {
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
+	const basePrecisionExp = uiVaultConfig?.depositAsset?.precisionExp ?? ZERO;
 
 	const name = decodeName(vaultAccountData?.name ?? []);
-	const tvl = vaultStats.totalAccountValue;
+	const tvlBaseValue = vaultStats.totalAccountBaseValue;
 	const maxCapacity = vaultAccountData?.maxTokens;
 
 	return (
@@ -92,13 +95,21 @@ export default function VaultHero() {
 			<div className="z-10 flex items-center justify-center w-full gap-5 md:gap-11">
 				<StatsBox
 					label="Total Value Locked"
-					value={BigNum.from(tvl, QUOTE_PRECISION_EXP).toNotional()}
+					value={displayAssetValue(
+						BigNum.from(tvlBaseValue, basePrecisionExp),
+						uiVaultConfig?.depositAsset.marketIndex ?? 0,
+						true
+					)}
 					position="left"
 				/>
 				<div className="h-12 border-r border-container-border" />
 				<StatsBox
 					label="Max Capacity"
-					value={BigNum.from(maxCapacity, QUOTE_PRECISION_EXP).toNotional()}
+					value={displayAssetValue(
+						BigNum.from(maxCapacity, basePrecisionExp),
+						uiVaultConfig?.depositAsset.marketIndex ?? 0,
+						true
+					)}
 					position="right"
 				/>
 			</div>

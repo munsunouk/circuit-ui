@@ -2,7 +2,8 @@
 
 import useAppStore from '@/stores/app/useAppStore';
 import { useCommonDriftStore } from '@drift-labs/react';
-import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BN, BigNum } from '@drift-labs/sdk';
+import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,13 +16,15 @@ import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
 import { encodeVaultName } from '@/utils/utils';
-import { getModifiedDietzApy } from '@/utils/vaults';
+import { getModifiedDietzApy, getUiVaultConfig } from '@/utils/vaults';
 
+import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { UiVaultConfig } from '@/constants/vaults';
 
 import Badge from '../elements/Badge';
 import Button from '../elements/Button';
+import MarketIcon from '../elements/MarketIcon';
 import { Lock } from '../icons';
 import Particles from './Particles';
 
@@ -59,6 +62,7 @@ interface VaultStatsProps {
 	userBalance?: string;
 	capacity: number;
 	loading: boolean;
+	assetLabel: string;
 }
 
 function VaultStats({
@@ -67,6 +71,7 @@ function VaultStats({
 	capacity,
 	loading,
 	userBalance,
+	assetLabel,
 }: VaultStatsProps) {
 	const [isMounted, setIsMounted] = useState(false);
 
@@ -80,14 +85,18 @@ function VaultStats({
 				<VaultStat label={'APY'} value={apy} loading={loading} />
 				{!!userBalance && (
 					<VaultStat
-						label={'Your Balance'}
-						value={`$${userBalance}`}
+						label={`Your Balance${assetLabel ? ` (${assetLabel})` : ''}`}
+						value={`${assetLabel ? '' : '$'}${userBalance}`}
 						loading={loading}
 					/>
 				)}
-				<VaultStat label={'TVL'} value={`$${tvl}`} loading={loading} />
 				<VaultStat
-					label={'Capacity'}
+					label={`TVL${assetLabel ? ` (${assetLabel})` : ''}`}
+					value={`${assetLabel ? '' : '$'}${tvl}`}
+					loading={loading}
+				/>
+				<VaultStat
+					label={`Capacity`}
 					value={`${capacity.toFixed(2)}%`}
 					loading={loading}
 				/>
@@ -169,19 +178,24 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		s.getVaultAccountData(vaultPubkey),
 		s.getVaultDepositorAccountData(vaultPubkey),
 	]);
+	const uiVaultConfig = getUiVaultConfig(vaultPubkey);
+	const spotMarketConfig = uiVaultConfig?.depositAsset ?? USDC_MARKET;
 
 	const vaultStats = useVaultStats(vaultPubkey);
 
 	const [isHover, setIsHover] = useState(false);
 
-	const tvl = vaultStats.totalAccountValue;
+	const tvl = vaultStats.totalAccountBaseValue;
 	const maxCapacity = vaultAccountData?.maxTokens ?? new BN(1);
 	const capacityPct = Math.min(
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
 		100
 	);
-	const historicalApy = getModifiedDietzApy(
-		BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
+	const apy = getModifiedDietzApy(
+		BigNum.from(
+			vaultStats.totalAccountBaseValue,
+			spotMarketConfig.precisionExp
+		).toNum(),
 		vaultStore?.vaultDeposits ?? []
 	);
 
@@ -193,15 +207,21 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 	const userSharesProportion = userVaultShares / (totalVaultShares ?? 1) || 0;
 
 	// User's net deposits
-	const vaultAccountBalance = vaultStats.totalAccountValue.toNumber();
+	const vaultAccountBaseBalance = vaultStats.totalAccountBaseValue.toNumber();
 	const userAccountBalanceProportion =
-		vaultAccountBalance * userSharesProportion;
+		vaultAccountBaseBalance * userSharesProportion;
 	const userAccountBalanceProportionBigNum = BigNum.from(
 		userAccountBalanceProportion,
-		QUOTE_PRECISION_EXP
+		spotMarketConfig.precisionExp
 	);
 	const userAccountValueString =
 		userAccountBalanceProportionBigNum.toMillified();
+
+	// UI variables
+	const assetLabel =
+		spotMarketConfig.marketIndex === USDC_SPOT_MARKET_INDEX
+			? ''
+			: spotMarketConfig.symbol;
 
 	// fetch vault account data
 	useEffect(() => {
@@ -282,15 +302,28 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 							{vault.name}
 						</span>
 						<div className="flex flex-col items-center gap-2">
-							<span>{vault.description}</span>
-							{vault.permissioned && (
-								<Badge>
-									<div className="flex items-center justify-center gap-1 whitespace-nowrap">
-										<Lock />
-										<span>Whitelist Only</span>
-									</div>
+							{/* <span>{vault.description}</span> */}
+							<div className="flex items-center gap-2">
+								{vault.permissioned && (
+									<Badge>
+										<div className="flex items-center justify-center gap-1 whitespace-nowrap">
+											<Lock />
+											<span>Whitelist Only</span>
+										</div>
+									</Badge>
+								)}
+								<Badge
+									outlined
+									borderColor={uiVaultConfig?.assetColor}
+									className="flex items-center"
+								>
+									<MarketIcon
+										marketName={spotMarketConfig.symbol}
+										className="mr-1"
+									/>
+									<span>{spotMarketConfig.symbol}</span>
 								</Badge>
-							)}
+							</div>
 						</div>
 					</div>
 					<div className="w-full grow flex flex-col items-center justify-end h-[136px]">
@@ -307,8 +340,11 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						{!!vault?.pubkeyString && (
 							<div className="flex flex-col items-center justify-end w-full">
 								<VaultStats
-									apy={`${(historicalApy * 100).toFixed(2)}%`}
-									tvl={BigNum.from(tvl, QUOTE_PRECISION_EXP).toMillified()}
+									apy={`${((isNaN(apy) ? 0 : apy) * 100).toFixed(2)}%`}
+									tvl={BigNum.from(
+										tvl,
+										spotMarketConfig.precisionExp
+									).toMillified()}
 									capacity={capacityPct}
 									loading={!vaultStats.isLoaded}
 									userBalance={
@@ -316,6 +352,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 											? undefined
 											: userAccountValueString
 									}
+									assetLabel={assetLabel}
 								/>
 								<div className="overflow-hidden transition-all group-hover:mt-5 w-full group-hover:h-[32px] h-0">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>
