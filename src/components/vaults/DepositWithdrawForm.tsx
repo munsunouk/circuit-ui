@@ -291,7 +291,7 @@ const DepositForm = ({
 
 	// Max amount that can be deposited
 	const maxCapacity = vaultAccountData?.maxTokens;
-	const tvlWithoutHistory = vaultStats.totalAccountQuoteValue;
+	const tvlWithoutHistory = vaultStats.totalAccountBaseValue;
 	const maxAvailableCapacity = BigNum.from(
 		maxCapacity?.sub(tvlWithoutHistory),
 		spotMarketConfig.precisionExp
