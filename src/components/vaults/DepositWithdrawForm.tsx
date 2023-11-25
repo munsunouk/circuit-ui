@@ -8,6 +8,8 @@ import {
 	SpotMarketConfig,
 	ZERO,
 } from '@drift-labs/sdk';
+import { VaultDepositorAction } from '@drift-labs/vaults-sdk';
+import { ENUM_UTILS } from '@drift/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
@@ -289,7 +291,7 @@ const DepositForm = ({
 		+amount * spotMarketConfig.precision.toNumber() <
 			(vaultAccountData?.minDepositAmount.toNumber() ?? 0);
 
-	// Max amount that can be deposited
+	// Max amount that can be depositedw
 	const maxCapacity = vaultAccountData?.maxTokens;
 	const tvlWithoutHistory = vaultStats.totalAccountBaseValue;
 	const maxAvailableCapacity = BigNum.from(
@@ -421,6 +423,8 @@ const WithdrawForm = ({
 	const vaultDepositorAccount = useAppStore(
 		(s) => s.vaults[vaultPubkey?.toString() ?? '']?.vaultDepositorAccount
 	);
+	const eventRecords = vault?.eventRecords?.records ?? [];
+
 	const uiVault = getUiVaultConfig(vaultPubkey);
 	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
 	const baseAssetSymbol = spotMarketConfig.symbol;
@@ -552,15 +556,34 @@ const WithdrawForm = ({
 		}
 	};
 
+	// The maximum amount of base asset that can be withdrawn equals
+	// min(sharesBasedWithdrawAmountAtRequestTime, sharesBasedWithdrawAmountAtWithdrawTime).
+	// This means that the user cannot withdraw more than what they requested, and can
+	// withdraw less than what they requested if the vault loses value in that period.
+	// Any positive value accrued during the period of withdrawal is attributed to the rest
+	// of the shares.
 	function calcLastRequestedBaseValue() {
 		if (!vault?.vaultAccount || tvlBaseValue.eq(ZERO)) return ZERO;
 
 		const { totalShares } =
 			vault.vaultAccount.calcSharesAfterManagementFee(tvlBaseValue);
-		const lastRequestedUsdcValue =
+		const currentBaseValueOfRequest =
 			lastRequestedShares.mul(tvlBaseValue).div(totalShares) ?? ZERO;
 
-		return lastRequestedUsdcValue;
+		const lastWithdrawRequest = eventRecords.find((record) =>
+			ENUM_UTILS.match(record.action, VaultDepositorAction.WITHDRAW_REQUEST)
+		);
+		if (!lastWithdrawRequest) {
+			return currentBaseValueOfRequest;
+		}
+		const lastWithdrawRequestBaseValue = lastWithdrawRequest.amount;
+
+		const minBaseValueRequested = BN.min(
+			currentBaseValueOfRequest,
+			lastWithdrawRequestBaseValue
+		);
+
+		return minBaseValueRequested;
 	}
 
 	return (

@@ -156,7 +156,7 @@ function TransactionHistory() {
 
 		if (eventRecords.length === 0) {
 			return (
-				<div className="text-base md:text-lg text-left w-full">
+				<div className="w-full text-base text-left md:text-lg">
 					No transactions yet.
 				</div>
 			);
