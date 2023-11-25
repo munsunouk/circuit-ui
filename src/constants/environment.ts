@@ -46,6 +46,7 @@ const Env: EnvironmentVariables = {
 // Spot markets
 export const SPOT_MARKETS_LOOKUP = CommonConfig.spotMarketsLookup;
 export const USDC_MARKET = SPOT_MARKETS_LOOKUP[USDC_SPOT_MARKET_INDEX];
+export const WETH_MARKET = SPOT_MARKETS_LOOKUP[4];
 export const JITOSOL_MARKET = SPOT_MARKETS_LOOKUP[6];
 
 // Perp markets

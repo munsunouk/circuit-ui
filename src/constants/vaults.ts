@@ -1,7 +1,7 @@
 import { PerformanceGraphData } from '@/types';
 import { SpotMarketConfig } from '@drift-labs/sdk';
 
-import { JITOSOL_MARKET, USDC_MARKET } from './environment';
+import { JITOSOL_MARKET, USDC_MARKET, WETH_MARKET } from './environment';
 import {
 	SUPERCHARGER_PAST_DATA,
 	SUPERCHARGER_VAULT_PUBKEY,
@@ -26,12 +26,15 @@ const JITOSOL_DEPOSIT_ASSET = {
 	market: JITOSOL_MARKET,
 	borderColor: '#AFE9B8',
 };
+const WETH_DEPOSIT_ASSET = {
+	market: WETH_MARKET,
+	borderColor: '#CFADF2',
+};
 
 export interface UiVaultConfig {
 	name: string;
 	pubkeyString?: string;
 	description: string;
-	comingSoon?: boolean;
 	permissioned?: boolean;
 	previewBackdropUrl: string;
 	backdropParticlesColor: string;
@@ -112,23 +115,24 @@ const SUPERCHARGER_VAULT: UiVaultConfig = {
 const JITOSOL_BASIS_VAULT = {
 	name: 'jitoSOL Basis Vault',
 	pubkeyString: 'ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4',
-	description: 'Basis trading strategy',
-	comingSoon: true,
+	description: 'Basis trading strategy for jitoSOL',
 	previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
 	backdropParticlesColor: '#3DBC9D',
 	market: JITOSOL_DEPOSIT_ASSET.market,
 	assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
 };
 
+const WETH_BASIS_VAULT = {
+	name: '',
+	pubkeyString: '',
+	description: 'Basis trading strategy for wETH',
+	previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
+	backdropParticlesColor: '#88c9ff',
+	market: WETH_DEPOSIT_ASSET.market,
+	assetColor: WETH_DEPOSIT_ASSET.borderColor,
+};
+
 export const VAULTS: UiVaultConfig[] = [
 	SUPERCHARGER_VAULT,
 	JITOSOL_BASIS_VAULT,
-	// {
-	// 	name: 'Basis Trading Vault (wETH)',
-	// 	// pubkey: new PublicKey('B4LBd4DEKZZLvkn7eazUf7xU9RuTpvxH4th18VgVzMpB'),
-	// 	description: 'Hedged Drift Liquidity Provider (DLP) strategy',
-	// 	comingSoon: true,
-	// 	previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
-	// 	backdropParticlesColor: '#88c9ff',
-	// },
 ];
