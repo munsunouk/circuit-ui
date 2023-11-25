@@ -51,7 +51,7 @@ export default function VaultHero() {
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
-	const basePrecisionExp = uiVaultConfig?.depositAsset?.precisionExp ?? ZERO;
+	const basePrecisionExp = uiVaultConfig?.market?.precisionExp ?? ZERO;
 
 	const name = decodeName(vaultAccountData?.name ?? []);
 	const tvlBaseValue = vaultStats.totalAccountBaseValue;
@@ -97,7 +97,7 @@ export default function VaultHero() {
 					label="Total Value Locked"
 					value={displayAssetValue(
 						BigNum.from(tvlBaseValue, basePrecisionExp),
-						uiVaultConfig?.depositAsset.marketIndex ?? 0,
+						uiVaultConfig?.market.marketIndex ?? 0,
 						true
 					)}
 					position="left"
@@ -107,7 +107,7 @@ export default function VaultHero() {
 					label="Max Capacity"
 					value={displayAssetValue(
 						BigNum.from(maxCapacity, basePrecisionExp),
-						uiVaultConfig?.depositAsset.marketIndex ?? 0,
+						uiVaultConfig?.market.marketIndex ?? 0,
 						true
 					)}
 					position="right"

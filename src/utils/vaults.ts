@@ -198,6 +198,9 @@ export const getModifiedDietzApy = (
 	const modifiedDietzReturns =
 		(endingMarkeValue - startingMarketValue - totalNetFlow) /
 		(startingMarketValue + weightedNetFlow);
+
+	if (modifiedDietzReturns < 0) return 0;
+
 	const annualized =
 		Math.pow(1 + modifiedDietzReturns, (86400 * 365) / totalDuration) - 1;
 

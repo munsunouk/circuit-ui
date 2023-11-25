@@ -274,7 +274,7 @@ const DepositForm = ({
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultStats = useCurrentVaultStats();
 	const uiVault = getUiVaultConfig(vaultPubkey);
-	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
+	const spotMarketConfig = uiVault?.market ?? USDC_MARKET;
 	const baseAssetSymbol = spotMarketConfig.symbol;
 
 	const depositAssetBalance = balances[spotMarketConfig?.symbol ?? ''];
@@ -426,7 +426,7 @@ const WithdrawForm = ({
 	const eventRecords = vault?.eventRecords?.records ?? [];
 
 	const uiVault = getUiVaultConfig(vaultPubkey);
-	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
+	const spotMarketConfig = uiVault?.market ?? USDC_MARKET;
 	const baseAssetSymbol = spotMarketConfig.symbol;
 
 	const { devSwitchIsOn } = useDevSwitchIsOn();

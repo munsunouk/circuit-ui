@@ -66,7 +66,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 			return DEFAULT_VAULT_STATS;
 
 		const baseAssetQuotePrice = getMarketPriceData(
-			MarketId.createSpotMarket(uiVaultConfig.depositAsset.marketIndex)
+			MarketId.createSpotMarket(uiVaultConfig.market.marketIndex)
 		).priceData.price;
 
 		// calculate total account value
@@ -82,7 +82,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		).toNum();
 		const totalAccountBaseValue = BigNum.fromPrint(
 			`${totalAccountBaseValueNum}`,
-			uiVaultConfig.depositAsset.precisionExp
+			uiVaultConfig.market.precisionExp
 		).val;
 
 		// calculate all time total pnl
@@ -96,7 +96,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		).toNum();
 		const allTimeTotalPnlBaseValue = BigNum.fromPrint(
 			`${allTimeTotalPnlBaseValueNum}`,
-			uiVaultConfig.depositAsset.precisionExp
+			uiVaultConfig.market.precisionExp
 		).val;
 
 		return {

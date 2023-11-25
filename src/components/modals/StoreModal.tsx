@@ -25,7 +25,7 @@ export default function StoreModal() {
 	const vaultDepositor = useCurrentVaultDepositorAccData();
 	const vault = useCurrentVaultAccountData();
 	const uiVaultConfig = getUiVaultConfig(vault?.pubkey);
-	const spotMarketConfig = uiVaultConfig?.depositAsset ?? USDC_MARKET;
+	const spotMarketConfig = uiVaultConfig?.market ?? USDC_MARKET;
 	const basePrecisionExp = spotMarketConfig.precisionExp;
 
 	const [tab, setTab] = useState(Tab.Vault);

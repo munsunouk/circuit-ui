@@ -7,7 +7,6 @@ import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
-	BulkAccountLoader,
 	DRIFT_PROGRAM_ID,
 	DriftClient,
 	DriftClientConfig,
@@ -29,7 +28,6 @@ import {
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
-import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -47,9 +45,6 @@ import Env, {
 } from '@/constants/environment';
 
 dayjs.extend(isSameOrAfter);
-
-const POLLING_FREQUENCY_MS = 1000;
-const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
 
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
@@ -182,17 +177,14 @@ const createAppActions = (
 
 	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {
 		const commonState = getCommon();
+		const accountLoader = commonState.bulkAccountLoader;
 
 		invariant(commonState.connection, 'No connection');
+		invariant(accountLoader, 'No account loader');
 
 		// Create Vault's DriftClient
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultPubKey);
 
-		const accountLoader = new BulkAccountLoader(
-			commonState.connection,
-			DEFAULT_COMMITMENT_LEVEL,
-			POLLING_FREQUENCY_MS
-		);
 		const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
 			getMarketsAndOraclesForSubscription(Env.driftEnv);
 		const vaultDriftClientConfig: DriftClientConfig = {
@@ -262,14 +254,11 @@ const createAppActions = (
 
 	const initVaultSubscriber = async (vaultAddress: PublicKey) => {
 		const connection = getCommon().connection;
+		const accountLoader = getCommon().bulkAccountLoader;
 
 		invariant(connection, 'No connection');
+		invariant(accountLoader, 'No account loader');
 
-		const accountLoader = new BulkAccountLoader(
-			connection,
-			DEFAULT_COMMITMENT_LEVEL,
-			POLLING_FREQUENCY_MS
-		);
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultAddress);
 
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
@@ -303,18 +292,14 @@ const createAppActions = (
 		authority: PublicKey
 	) => {
 		const connection = getCommon().connection;
+		const accountLoader = getCommon().bulkAccountLoader;
 
-		if (!authority || !connection) return;
+		if (!authority || !connection || !accountLoader) return;
 
 		const vaultDepositorAddress = getVaultDepositorAddressSync(
 			VAULT_PROGRAM_ID,
 			vaultAddress,
 			authority
-		);
-		const accountLoader = new BulkAccountLoader(
-			connection,
-			DEFAULT_COMMITMENT_LEVEL,
-			POLLING_FREQUENCY_MS
 		);
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(
 			vaultDepositorAddress

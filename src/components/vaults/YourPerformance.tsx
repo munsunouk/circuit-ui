@@ -52,7 +52,7 @@ export default function YourPerformance() {
 	const vaultStats = useCurrentVaultStats();
 	const vault = useCurrentVault();
 	const uiVault = getUiVaultConfig(vault?.vaultAccountData.pubkey);
-	const spotMarketConfig = uiVault?.depositAsset ?? USDC_MARKET;
+	const spotMarketConfig = uiVault?.market ?? USDC_MARKET;
 	const basePrecisionExp = spotMarketConfig.precisionExp;
 
 	const showUserInfo = connected || !!authority;

@@ -37,17 +37,17 @@ export interface UiVaultConfig {
 	backdropParticlesColor: string;
 	pastPerformanceHistory?: PerformanceGraphData[];
 	vaultOverview?: OverviewSection[];
-	depositAsset: SpotMarketConfig;
-	assetColor: string;
+	market: SpotMarketConfig;
+	assetColor: string; // primarily used for the deposit asset border color
 }
 
-export const SUPERCHARGER_VAULT: UiVaultConfig = {
+const SUPERCHARGER_VAULT: UiVaultConfig = {
 	name: 'Supercharger',
 	pubkeyString: SUPERCHARGER_VAULT_PUBKEY,
 	description:
 		'Multiply your yields with delta-neutral market making strategies',
 	permissioned: true,
-	depositAsset: USDC_DEPOSIT_ASSET.market,
+	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,
 	previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
 	backdropParticlesColor: '#88c9ff',
@@ -109,18 +109,20 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	],
 };
 
+const JITOSOL_BASIS_VAULT = {
+	name: 'jitoSOL Basis Vault',
+	pubkeyString: 'ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4',
+	description: 'Basis trading strategy',
+	comingSoon: true,
+	previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
+	backdropParticlesColor: '#3DBC9D',
+	market: JITOSOL_DEPOSIT_ASSET.market,
+	assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
+};
+
 export const VAULTS: UiVaultConfig[] = [
 	SUPERCHARGER_VAULT,
-	{
-		name: 'jitoSOL Basis Vault',
-		pubkeyString: 'ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4',
-		description: 'Basis trading strategy',
-		comingSoon: true,
-		previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
-		backdropParticlesColor: '#3DBC9D',
-		depositAsset: JITOSOL_DEPOSIT_ASSET.market,
-		assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
-	},
+	JITOSOL_BASIS_VAULT,
 	// {
 	// 	name: 'Basis Trading Vault (wETH)',
 	// 	// pubkey: new PublicKey('B4LBd4DEKZZLvkn7eazUf7xU9RuTpvxH4th18VgVzMpB'),

@@ -123,7 +123,7 @@ export default function VaultPerformance() {
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
-	const spotMarketConfig = uiVaultConfig?.depositAsset ?? USDC_MARKET;
+	const spotMarketConfig = uiVaultConfig?.market ?? USDC_MARKET;
 	const basePrecisionExp = spotMarketConfig.precisionExp;
 
 	const overallTimelineOptions: Option[] = [

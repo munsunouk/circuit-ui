@@ -179,7 +179,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		s.getVaultDepositorAccountData(vaultPubkey),
 	]);
 	const uiVaultConfig = getUiVaultConfig(vaultPubkey);
-	const spotMarketConfig = uiVaultConfig?.depositAsset ?? USDC_MARKET;
+	const spotMarketConfig = uiVaultConfig?.market ?? USDC_MARKET;
 
 	const vaultStats = useVaultStats(vaultPubkey);
 
