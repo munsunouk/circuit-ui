@@ -277,7 +277,7 @@ const DepositForm = ({
 	const spotMarketConfig = uiVault?.market ?? USDC_MARKET;
 	const baseAssetSymbol = spotMarketConfig.symbol;
 
-	const depositAssetBalance = balances[spotMarketConfig?.symbol ?? ''];
+	const depositAssetBalance = balances[spotMarketConfig?.symbol ?? ''] ?? 0;
 
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);

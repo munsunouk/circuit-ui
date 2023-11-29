@@ -1,23 +1,31 @@
+import { PublicKey } from '@drift-labs/sdk';
 import { useEffect } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 
-import { JITOSOL_MARKET, USDC_MARKET } from '@/constants/environment';
+import { DEPOSIT_ASSET_MARKETS } from '@/constants/vaults';
 
 import useAppStore from '../stores/app/useAppStore';
 import useSPLTokenBalance from './useSPLTokenBalance';
 
+const mints = DEPOSIT_ASSET_MARKETS.map((m) => m.mint);
+
+const useUserSPLTokenBalances = (mint: PublicKey) => {
+	return useSPLTokenBalance(mint);
+};
+
 function useDepositAssetsBalances() {
-	const usdcBalance = useSPLTokenBalance(USDC_MARKET.mint);
-	const jitoSolBalance = useSPLTokenBalance(JITOSOL_MARKET.mint);
+	const balances = mints.map(useUserSPLTokenBalances);
 
 	const setStore = useAppStore((s) => s.set);
 
 	useEffect(() => {
 		setStore((s) => {
-			s.balances[USDC_MARKET.symbol] = usdcBalance;
-			s.balances[JITOSOL_MARKET.symbol] = jitoSolBalance;
+			balances.forEach((balance, index) => {
+				const marketSymbol = DEPOSIT_ASSET_MARKETS[index].symbol;
+				s.balances[marketSymbol] = balance;
+			});
 		});
-	}, [usdcBalance]);
+	}, [balances]);
 }
 
 export default singletonHook(undefined, useDepositAssetsBalances);
