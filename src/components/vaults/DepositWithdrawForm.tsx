@@ -33,6 +33,7 @@ import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
 import Input from '../elements/Input';
+import MarketIcon from '../elements/MarketIcon';
 import { ExternalLink } from '../icons';
 import { VaultTab } from './VaultTabs';
 
@@ -206,6 +207,7 @@ const Form = ({
 						isFocused && 'border-container-border-selected'
 					)}
 				>
+					<MarketIcon marketName={spotMarketConfig.symbol} className="mr-1" />
 					{spotMarketConfig.symbol}
 				</div>
 			</div>
