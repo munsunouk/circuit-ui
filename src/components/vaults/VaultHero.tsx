@@ -83,14 +83,16 @@ export default function VaultHero() {
 				<span className="font-light leading-none md:text-2xl">
 					{uiVaultConfig?.description}
 				</span>
-				<span>
-					<Badge>
-						<div className="flex items-center justify-center gap-1 whitespace-nowrap">
-							<Lock />
-							<span>Whitelist Only</span>
-						</div>
-					</Badge>
-				</span>
+				{uiVaultConfig?.permissioned && (
+					<span>
+						<Badge>
+							<div className="flex items-center justify-center gap-1 whitespace-nowrap">
+								<Lock />
+								<span>Whitelist Only</span>
+							</div>
+						</Badge>
+					</span>
+				)}
 			</div>
 			<div className="z-10 flex items-center justify-center w-full gap-5 md:gap-11">
 				<StatsBox

@@ -111,6 +111,7 @@ const TopBar = () => {
 					width="30"
 					height="33"
 					className="w-[20px] h-[22px] md:w-[30px] md:h-[33px]"
+					priority
 				/>
 				<span
 					className={twMerge(

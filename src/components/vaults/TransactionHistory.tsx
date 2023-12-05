@@ -37,7 +37,7 @@ const getLabel = (record: WrappedEvent<EventType>) => {
 			return `Deposited ${BigNum.from(
 				record.amount,
 				spotMarket.precisionExp
-			).toNum()} ${spotMarket.symbol}`;
+			).prettyPrint(true)} ${spotMarket.symbol}`;
 		case enumToStr(VaultDepositorAction.WITHDRAW):
 			const isFullWithdrawal = record.vaultSharesAfter.eq(ZERO);
 
@@ -45,7 +45,9 @@ const getLabel = (record: WrappedEvent<EventType>) => {
 				<>
 					<span>
 						Withdrew{' '}
-						{BigNum.from(record.amount, spotMarket.precisionExp).toNum()}{' '}
+						{BigNum.from(record.amount, spotMarket.precisionExp).prettyPrint(
+							true
+						)}{' '}
 						{spotMarket.symbol}
 					</span>
 					<span className="opacity-60">

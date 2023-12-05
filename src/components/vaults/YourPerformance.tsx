@@ -95,7 +95,6 @@ export default function YourPerformance() {
 	) {
 		totalEarnings = BigNum.zero(basePrecisionExp);
 	}
-	const totalEarningsString = totalEarnings.toNotional();
 
 	const roi =
 		(totalEarnings

@@ -458,7 +458,7 @@ const createAppActions = (
 				tx,
 				`You have successfully deposited ${BigNum.from(
 					amount,
-					spotMarketConfig.precision
+					spotMarketConfig.precisionExp
 				).prettyPrint()} ${spotMarketConfig.symbol}`
 			);
 

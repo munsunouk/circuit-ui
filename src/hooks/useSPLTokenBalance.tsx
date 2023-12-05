@@ -15,6 +15,8 @@ export default function useSPLTokenBalance(
 
 	const tokenAccountListener = useRef<number>();
 
+	const hasDisplayedWarning = useRef(false);
+
 	useEffect(() => {
 		tokenAccountListener.current &&
 			connection?.removeAccountChangeListener(tokenAccountListener.current);
@@ -34,9 +36,11 @@ export default function useSPLTokenBalance(
 
 		if (!tokenAccount) return;
 		if (tokenAccounts.length > 1) {
-			NOTIFICATION_UTILS.toast.warn(
-				'Multiple token accounts found, which may lead to incorrect wallet balances being detected.'
-			);
+			!hasDisplayedWarning.current &&
+				NOTIFICATION_UTILS.toast.warn(
+					'Multiple token accounts found, which may lead to incorrect wallet balances being detected.'
+				);
+			hasDisplayedWarning.current = true;
 		}
 
 		const newBalance =

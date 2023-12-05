@@ -53,7 +53,7 @@ function ButtonTabs({
 						)}
 					/>
 				)}
-				<ButtonTab {...tab} className={tabClassName} />
+				<ButtonTab {...tab} key={tab.key} className={tabClassName} />
 			</React.Fragment>
 		));
 	};
