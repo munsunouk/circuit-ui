@@ -61,7 +61,7 @@ const useFetchAssetPriceHistory = (
 			const data = response.data;
 			const prices = data.prices;
 			const assetPriceHistory = prices.map((price) => ({
-				timestamp: price[0],
+				timestamp: Math.round(price[0] / 1000),
 				price: price[1],
 			}));
 

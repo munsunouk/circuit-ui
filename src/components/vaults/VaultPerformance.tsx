@@ -1,15 +1,17 @@
 import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
+import { useOraclePriceStore } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
+	PRICE_PRECISION,
 	PRICE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
-import { HistoryResolution } from '@drift/common';
+import { HistoryResolution, MarketId } from '@drift/common';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
@@ -111,6 +113,7 @@ export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
+	const { getMarketPriceData } = useOraclePriceStore();
 
 	const [selectedGraphOption, setSelectedGraphOption] = useState(
 		PERFORMANCE_GRAPH_OPTIONS[0]
@@ -138,7 +141,7 @@ export default function VaultPerformance() {
 	];
 	if (uiVaultConfig?.pastPerformanceHistory)
 		overallTimelineOptions.push({
-			label: 'Historical',
+			label: uiVaultConfig.historyType ?? 'Historical',
 			value: OverallTimeline.Historical,
 		});
 
@@ -236,29 +239,14 @@ export default function VaultPerformance() {
 		)
 			return [];
 
-		const quoteData = uiVaultConfig.pastPerformanceHistory.map((history) => ({
-			epochTs: history.epochTs,
-			quoteValue: history[graphView.snapshotAttribute].mul(
-				spotMarketConfig.precision
-			),
+		const data = uiVaultConfig.pastPerformanceHistory.map((history) => ({
+			x: history.epochTs,
+			y: history[graphView.snapshotAttribute] // historical data is initially already in base value, whereas current data is in quote value
+				.mul(spotMarketConfig.precision)
+				.toNum(),
 		}));
 
-		const baseData = quoteData.map((history) => {
-			const priceOfAssetAtTime = isUsdcMarket
-				? 1
-				: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs).price;
-
-			return {
-				x: history.epochTs,
-				y: history.quoteValue
-					.div(
-						BigNum.fromPrint(priceOfAssetAtTime.toString(), PRICE_PRECISION_EXP)
-					)
-					.toNum(),
-			};
-		});
-
-		return baseData;
+		return data;
 	};
 
 	const getDisplayedDataForCurrent = (): DisplayedData => {
@@ -320,10 +308,21 @@ export default function VaultPerformance() {
 				),
 			}));
 
-		const baseData = quoteData.map((history) => {
-			const priceOfAssetAtTime = isUsdcMarket
+		const baseAssetQuotePrice = getMarketPriceData(
+			MarketId.createSpotMarket(spotMarketConfig.marketIndex)
+		).priceData.price;
+
+		const baseData = quoteData.map((history, index) => {
+			let priceOfAssetAtTime = isUsdcMarket
 				? 1
 				: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs).price;
+
+			if (index === quoteData.length - 1) {
+				// we want the last data point to be the current oracle price and not the CoinGecko price, so as to match the earnings display
+				// however for some reason, the division in useVaultStats appears to give a result slightly off the expected result, hence there
+				// will still be discrepancies between the graph and the earnings display
+				priceOfAssetAtTime = baseAssetQuotePrice;
+			}
 
 			return {
 				x: history.epochTs,
@@ -331,6 +330,7 @@ export default function VaultPerformance() {
 					.div(
 						BigNum.fromPrint(priceOfAssetAtTime.toString(), PRICE_PRECISION_EXP)
 					)
+					.scale(spotMarketConfig.precision, PRICE_PRECISION)
 					.toNum(),
 			};
 		});
@@ -399,14 +399,9 @@ export default function VaultPerformance() {
 						}))}
 						tabClassName="whitespace-nowrap px-4 py-2"
 					/>
-					{overallTimelineOptions.length > 1 && (
+					{selectedTimelineOption.value === OverallTimeline.Current && (
 						<Dropdown
-							options={
-								graphView.value === GraphView.VaultBalance &&
-								uiVaultConfig?.pastPerformanceHistory
-									? PERFORMANCE_GRAPH_OPTIONS
-									: PERFORMANCE_GRAPH_OPTIONS
-							}
+							options={PERFORMANCE_GRAPH_OPTIONS}
 							selectedOption={selectedGraphOption}
 							setSelectedOption={
 								setSelectedGraphOption as (option: {

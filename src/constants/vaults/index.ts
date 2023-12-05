@@ -7,6 +7,10 @@ import {
 	WETH_DEPOSIT_ASSET,
 } from '../assets';
 import {
+	JITOSOL_BASIS_BACKTEST_DATA,
+	JITOSOL_BASIS_VAULT_PUBKEY,
+} from './jitosol-basis';
+import {
 	SUPERCHARGER_PAST_DATA,
 	SUPERCHARGER_VAULT_PUBKEY,
 } from './supercharger';
@@ -33,6 +37,7 @@ export interface UiVaultConfig {
 	vaultOverview?: OverviewSection[];
 	market: SpotMarketConfig;
 	assetColor: string; // primarily used for the deposit asset border color
+	historyType?: 'Historical' | 'Backtest';
 }
 
 const SUPERCHARGER_VAULT: UiVaultConfig = {
@@ -46,6 +51,7 @@ const SUPERCHARGER_VAULT: UiVaultConfig = {
 	previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',
 	backdropParticlesColor: '#88c9ff',
 	pastPerformanceHistory: SUPERCHARGER_PAST_DATA,
+	historyType: 'Historical',
 	vaultOverview: [
 		{
 			title: 'Strategy',
@@ -103,14 +109,16 @@ const SUPERCHARGER_VAULT: UiVaultConfig = {
 	],
 };
 
-const JITOSOL_BASIS_VAULT = {
+const JITOSOL_BASIS_VAULT: UiVaultConfig = {
 	name: 'jitoSOL Basis Vault',
-	pubkeyString: 'ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4',
+	pubkeyString: JITOSOL_BASIS_VAULT_PUBKEY,
 	description: 'Basis trading strategy for jitoSOL',
 	previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
 	backdropParticlesColor: '#3DBC9D',
 	market: JITOSOL_DEPOSIT_ASSET.market,
 	assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
+	pastPerformanceHistory: JITOSOL_BASIS_BACKTEST_DATA,
+	historyType: 'Backtest',
 };
 
 const WETH_BASIS_VAULT = {
@@ -126,7 +134,7 @@ const WETH_BASIS_VAULT = {
 export const VAULTS: UiVaultConfig[] = [
 	SUPERCHARGER_VAULT,
 	JITOSOL_BASIS_VAULT,
-	WETH_BASIS_VAULT,
+	// WETH_BASIS_VAULT,
 ];
 
 export const DEPOSIT_ASSET_MARKETS = VAULTS.map((v) => v.market);

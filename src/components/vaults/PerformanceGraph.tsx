@@ -1,6 +1,6 @@
 'use client';
 
-import { BigNum, PRICE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BigNum } from '@drift-labs/sdk';
 import { Config } from '@drift/common';
 import dayjs from 'dayjs';
 import {
@@ -49,7 +49,7 @@ const CustomTooltip = ({
 					{isProfit && isPnl && '+'}
 					{`${isUsdcAsset ? '$' : ''}${BigNum.from(
 						value,
-						PRICE_PRECISION_EXP
+						market.precisionExp
 					).prettyPrint(true)}${isUsdcAsset ? '' : ` ${market.symbol}`}`}
 				</p>
 			</div>
@@ -264,10 +264,10 @@ export default function PerformanceGraph({
 					tickMargin={8}
 				/>
 				<YAxis
-					tickFormatter={(tick) =>
+					tickFormatter={(tick: number) =>
 						`${isUsdcAsset ? '$' : ''}${BigNum.from(
 							tick,
-							PRICE_PRECISION_EXP
+							Config.spotMarketsLookup[marketIndex].precisionExp
 						).toMillified()}`
 					}
 					tickMargin={8}
