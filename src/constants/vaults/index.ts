@@ -1,7 +1,11 @@
 import { PerformanceGraphData } from '@/types';
 import { SpotMarketConfig } from '@drift-labs/sdk';
 
-import { JITOSOL_MARKET, USDC_MARKET, WETH_MARKET } from './environment';
+import {
+	JITOSOL_DEPOSIT_ASSET,
+	USDC_DEPOSIT_ASSET,
+	WETH_DEPOSIT_ASSET,
+} from '../assets';
 import {
 	SUPERCHARGER_PAST_DATA,
 	SUPERCHARGER_VAULT_PUBKEY,
@@ -17,19 +21,6 @@ export interface OverviewSection {
 
 export const FEES_PLACEHOLDER = '{fees_placeholder}';
 export const PERIOD_PLACEHOLDER = '{period_placeholder}';
-
-const USDC_DEPOSIT_ASSET = {
-	market: USDC_MARKET,
-	borderColor: 'var(--main-blue)',
-};
-const JITOSOL_DEPOSIT_ASSET = {
-	market: JITOSOL_MARKET,
-	borderColor: '#AFE9B8',
-};
-const WETH_DEPOSIT_ASSET = {
-	market: WETH_MARKET,
-	borderColor: '#CFADF2',
-};
 
 export interface UiVaultConfig {
 	name: string;

@@ -1,9 +1,11 @@
+import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
 import {
 	BN,
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
+	PRICE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
@@ -15,7 +17,10 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
-import { displayAssetValue as displayAssetValueBase } from '@/utils/utils';
+import {
+	displayAssetValue as displayAssetValueBase,
+	getAssetPriceFromClosestTs,
+} from '@/utils/utils';
 import {
 	getMaxDailyDrawdown,
 	getMaxDailyDrawdownFromAccValue,
@@ -100,6 +105,8 @@ const DEFAULT_DISPLAYED_DATA = {
 	maxDailyDrawdown: 0,
 };
 
+const NOW_TS = dayjs().unix();
+
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultAccountData = useCurrentVaultAccountData();
@@ -139,6 +146,14 @@ export default function VaultPerformance() {
 		overallTimelineOptions[0]
 	);
 
+	const earliestTs =
+		uiVaultConfig?.pastPerformanceHistory?.[0]?.epochTs ??
+		vault?.pnlHistory.dailyAllTimePnls?.[0]?.epochTs ??
+		NOW_TS;
+
+	const { assetPriceHistory, loading: assetPriceHistoryLoading } =
+		useGetAssetPriceHistory(spotMarketConfig.marketIndex, earliestTs);
+
 	const allTimePnlHistory =
 		vault?.pnlHistory.dailyAllTimePnls
 			.map((pnl) => ({
@@ -149,7 +164,7 @@ export default function VaultPerformance() {
 			.concat({
 				totalAccountValue: vaultStats.totalAccountQuoteValue.toNumber(),
 				allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
-				epochTs: dayjs().unix(),
+				epochTs: NOW_TS,
 			}) ?? [];
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
 	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
@@ -213,14 +228,37 @@ export default function VaultPerformance() {
 	};
 
 	const getDisplayedGraphForHistorical = () => {
-		if (!uiVaultConfig?.pastPerformanceHistory) return [];
+		const isUsdcMarket =
+			spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
+		if (
+			!uiVaultConfig?.pastPerformanceHistory ||
+			(assetPriceHistoryLoading && !isUsdcMarket)
+		)
+			return [];
 
-		return uiVaultConfig.pastPerformanceHistory.map((history) => ({
-			x: history.epochTs,
-			y: history[graphView.snapshotAttribute]
-				.mul(spotMarketConfig.precision)
-				.toNum(),
+		const quoteData = uiVaultConfig.pastPerformanceHistory.map((history) => ({
+			epochTs: history.epochTs,
+			quoteValue: history[graphView.snapshotAttribute].mul(
+				spotMarketConfig.precision
+			),
 		}));
+
+		const baseData = quoteData.map((history) => {
+			const priceOfAssetAtTime = isUsdcMarket
+				? 1
+				: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs).price;
+
+			return {
+				x: history.epochTs,
+				y: history.quoteValue
+					.div(
+						BigNum.fromPrint(priceOfAssetAtTime.toString(), PRICE_PRECISION_EXP)
+					)
+					.toNum(),
+			};
+		});
+
+		return baseData;
 	};
 
 	const getDisplayedDataForCurrent = (): DisplayedData => {
@@ -262,16 +300,42 @@ export default function VaultPerformance() {
 	};
 
 	const getDisplayedGraphForCurrent = () => {
-		return allTimePnlHistory
+		const isUsdcMarket =
+			spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
+
+		if (assetPriceHistoryLoading && !isUsdcMarket) return [];
+
+		const quoteData = allTimePnlHistory
 			.map((snapshot) => ({
-				x: snapshot.epochTs,
-				y: snapshot[graphView.snapshotAttribute],
+				epochTs: snapshot.epochTs,
+				quoteValue: snapshot[graphView.snapshotAttribute],
 			}))
-			.filter((snapshot) => snapshot.y !== undefined)
-			.slice(-1 * selectedGraphOption.days) as {
-			x: number;
-			y: number;
-		}[];
+			.filter((snapshot) => snapshot.quoteValue !== undefined)
+			.slice(-1 * selectedGraphOption.days)
+			.map((snapshot) => ({
+				epochTs: snapshot.epochTs,
+				quoteValue: BigNum.fromPrint(
+					snapshot.quoteValue.toString(),
+					QUOTE_PRECISION_EXP
+				),
+			}));
+
+		const baseData = quoteData.map((history) => {
+			const priceOfAssetAtTime = isUsdcMarket
+				? 1
+				: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs).price;
+
+			return {
+				x: history.epochTs,
+				y: history.quoteValue
+					.div(
+						BigNum.fromPrint(priceOfAssetAtTime.toString(), PRICE_PRECISION_EXP)
+					)
+					.toNum(),
+			};
+		});
+
+		return baseData;
 	};
 
 	const displayAssetValue = (value: BigNum) =>
@@ -356,7 +420,11 @@ export default function VaultPerformance() {
 				</div>
 				<div className="w-full h-[320px]">
 					{!!displayedGraph?.length && (
-						<PerformanceGraph data={displayedGraph} />
+						<PerformanceGraph
+							data={displayedGraph}
+							marketIndex={spotMarketConfig.marketIndex}
+							isPnl={graphView.value === GraphView.PnL}
+						/>
 					)}
 				</div>
 			</FadeInDiv>

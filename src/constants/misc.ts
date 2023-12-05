@@ -9,3 +9,5 @@ export const CIRCUIT_TERMS_AND_CONDITIONS_URL =
 	'https://docs.circuit.trade/misc/terms-and-conditions';
 
 export const MARKET_ICON_PATH = '/icons/markets';
+
+export const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3';
