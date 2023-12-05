@@ -100,7 +100,8 @@ export default function VaultHero() {
 					value={displayAssetValue(
 						BigNum.from(tvlBaseValue, basePrecisionExp),
 						uiVaultConfig?.market.marketIndex ?? 0,
-						true
+						false,
+						2
 					)}
 					position="left"
 				/>
@@ -110,7 +111,8 @@ export default function VaultHero() {
 					value={displayAssetValue(
 						BigNum.from(maxCapacity, basePrecisionExp),
 						uiVaultConfig?.market.marketIndex ?? 0,
-						true
+						false,
+						2
 					)}
 					position="right"
 				/>

@@ -1,9 +1,10 @@
-import { PerformanceGraphData } from '@/types';
+import { PerformanceGraphData, UiVaultConfig } from '@/types';
 import { BigNum } from '@drift-labs/sdk';
 import dayjs from 'dayjs';
 
 import { normalizeDate } from '@/utils/utils';
 
+import { JITOSOL_DEPOSIT_ASSET } from '../assets';
 import { JITOSOL_MARKET } from '../environment';
 
 const JITOSOL_BASIS_BACKTEST_RAW_DATA = [
@@ -156,3 +157,31 @@ export const JITOSOL_BASIS_BACKTEST_DATA: PerformanceGraphData[] =
 
 export const JITOSOL_BASIS_VAULT_PUBKEY =
 	'ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4';
+
+export const JITOSOL_BASIS_VAULT: UiVaultConfig = {
+	name: 'JitoSOL Basis Vault',
+	pubkeyString: JITOSOL_BASIS_VAULT_PUBKEY,
+	description: 'Basis trading strategy for JitoSOL',
+	previewBackdropUrl: '/backdrops/turbocharger-backdrop.svg',
+	backdropParticlesColor: '#3DBC9D',
+	market: JITOSOL_DEPOSIT_ASSET.market,
+	assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
+	pastPerformanceHistory: JITOSOL_BASIS_BACKTEST_DATA,
+	historyType: 'Backtest',
+	vaultOverview: [
+		{
+			title: 'Description',
+			paragraphs: [
+				{
+					text: 'Basis trading, also known as “cash and carry”, is a delta-neutral arbitrage strategy that effectively captures the premium between futures contracts and the underlying spot pair. This strategy is denominated in JitoSOL, meaning that returns will be calculated in JitoSOL (versus USDC). Any profits or losses will be denominated in the underlying currency (JitoSOL). ',
+				},
+				{
+					text: 'The strategy takes in JitoSOL as collateral, borrows 1x additional SOL to maintain exposure to SOL and hedges out the delta by going 1x short SOL-PERP on Drift. As long as the funding rate (the premium between the perp contract and spot) remains positive, the strategy will continue to stay short. If funding is flat or negative for a sustained period (>5 days), the strategy will unwind its short hedge. The strategy actively scales in and out of its basis position based on market conditions, capitalizing on volatility and outperforming merely holding the basis position.',
+				},
+				{
+					text: 'If the funding rate for SOL-PERP remains positive, the basis trading strategy should be profitable and any trader who is short continues to receive hourly funding payments. However, when the funding rate turns negative, any trader that holds a short position will start paying (instead of receiving) funding payments and the basis trade will be closed out and the short position will be closed.',
+				},
+			],
+		},
+	],
+};

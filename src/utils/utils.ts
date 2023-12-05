@@ -75,14 +75,19 @@ export function shortenPubkey(pubkey: string | undefined, length = 4) {
 export function displayAssetValue(
 	value: BigNum,
 	marketIndex: number,
-	toTradePrecision = false
+	toTradePrecision = false,
+	toFixed?: number
 ) {
 	if (marketIndex === USDC_SPOT_MARKET_INDEX) {
 		return value.toNotional();
 	} else {
-		return `${toTradePrecision ? value.toTradePrecision() : value.toNum()} ${
-			SPOT_MARKETS_LOOKUP[marketIndex].symbol
-		}`;
+		return `${
+			toTradePrecision
+				? value.toTradePrecision()
+				: toFixed === undefined
+				  ? value.toNum()
+				  : value.toNum().toFixed(toFixed)
+		} ${SPOT_MARKETS_LOOKUP[marketIndex].symbol}`;
 	}
 }
 

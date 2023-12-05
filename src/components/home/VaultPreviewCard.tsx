@@ -1,6 +1,7 @@
 'use client';
 
 import useAppStore from '@/stores/app/useAppStore';
+import { UiVaultConfig } from '@/types';
 import { useCommonDriftStore } from '@drift-labs/react';
 import { BN, BigNum } from '@drift-labs/sdk';
 import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
@@ -20,7 +21,6 @@ import { getModifiedDietzApy, getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
-import { UiVaultConfig } from '@/constants/vaults';
 
 import Badge from '../elements/Badge';
 import Button from '../elements/Button';

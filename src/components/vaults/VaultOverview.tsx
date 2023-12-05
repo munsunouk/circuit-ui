@@ -1,3 +1,4 @@
+import { OverviewSection } from '@/types';
 import { PERCENTAGE_PRECISION } from '@drift-labs/sdk';
 import { twMerge } from 'tailwind-merge';
 
@@ -5,12 +6,8 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 
 import { redeemPeriodToString } from '@/utils/utils';
 
-import {
-	FEES_PLACEHOLDER,
-	OverviewSection,
-	PERIOD_PLACEHOLDER,
-	VAULTS,
-} from '@/constants/vaults';
+import { FEES_PLACEHOLDER, PERIOD_PLACEHOLDER } from '@/constants/misc';
+import { VAULTS } from '@/constants/vaults';
 
 import SectionHeader from '../SectionHeader';
 import FadeInDiv from '../elements/FadeInDiv';
