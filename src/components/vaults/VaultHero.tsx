@@ -40,7 +40,7 @@ const StatsBox = ({
 				<span
 					className={twMerge(
 						sourceCodePro.className,
-						'text-xl md:text-4xl font-medium text-text-emphasis'
+						'text-xl sm:text-2xl md:text-4xl font-medium text-text-emphasis'
 					)}
 					data-tooltip-id={tooltip?.id}
 				>
