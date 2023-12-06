@@ -14,6 +14,7 @@ import {
 import { HistoryResolution, MarketId } from '@drift/common';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
@@ -31,6 +32,7 @@ import {
 } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
+import { sourceCodePro } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
 import SectionHeader from '../SectionHeader';
@@ -96,12 +98,14 @@ const GRAPH_VIEW_OPTIONS: {
 
 type DisplayedData = {
 	totalEarnings: BigNum;
+	totalEarningsQuote: BigNum;
 	cumulativeReturnsPct: number;
 	apy: number;
 	maxDailyDrawdown: number;
 };
 const DEFAULT_DISPLAYED_DATA = {
 	totalEarnings: BigNum.zero(),
+	totalEarningsQuote: BigNum.zero(),
 	cumulativeReturnsPct: 0,
 	apy: 0,
 	maxDailyDrawdown: 0,
@@ -174,6 +178,14 @@ export default function VaultPerformance() {
 	const takerVol30Day = vaultUserStats?.takerVolume30D ?? ZERO;
 	const totalVol30Day = makerVol30Day.add(takerVol30Day);
 
+	const currentAssetPrice =
+		getMarketPriceData(MarketId.createSpotMarket(spotMarketConfig.marketIndex))
+			?.priceData.price ?? 0;
+	const currentAssetPriceBigNum = BigNum.fromPrint(
+		currentAssetPrice.toString(),
+		PRICE_PRECISION_EXP
+	);
+
 	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
 
@@ -201,6 +213,10 @@ export default function VaultPerformance() {
 		const firstHistoryData = uiVaultConfig.pastPerformanceHistory[0];
 
 		const totalEarnings = lastHistoryData.allTimeTotalPnl;
+		const totalEarningsQuote = totalEarnings
+			.shiftTo(PRICE_PRECISION_EXP)
+			.mul(currentAssetPriceBigNum);
+
 		const cumulativeReturnsPct = totalEarnings
 			.mul(PERCENTAGE_PRECISION)
 			.mul(new BN(100))
@@ -224,6 +240,7 @@ export default function VaultPerformance() {
 
 		return {
 			totalEarnings,
+			totalEarningsQuote,
 			cumulativeReturnsPct,
 			apy,
 			maxDailyDrawdown,
@@ -254,6 +271,9 @@ export default function VaultPerformance() {
 			vaultStats.allTimeTotalPnlBaseValue,
 			basePrecisionExp
 		);
+		const totalEarningsQuote = totalEarnings
+			.shiftTo(PRICE_PRECISION_EXP)
+			.mul(currentAssetPriceBigNum);
 
 		const totalAccountValueBigNum = BigNum.from(
 			vaultStats.totalAccountBaseValue,
@@ -281,6 +301,7 @@ export default function VaultPerformance() {
 
 		return {
 			totalEarnings,
+			totalEarningsQuote,
 			cumulativeReturnsPct,
 			apy,
 			maxDailyDrawdown,
@@ -360,6 +381,15 @@ export default function VaultPerformance() {
 					<BreakdownRow
 						label="Total Earnings (All Time)"
 						value={displayAssetValue(displayedData.totalEarnings)}
+						tooltip={{
+							id: 'notional-earnings-tooltip',
+							content: (
+								<span className={twMerge(sourceCodePro.className)}>
+									{displayedData.totalEarningsQuote.toNotional()}
+								</span>
+							),
+							hide: spotMarketConfig.marketIndex === USDC_MARKET.marketIndex,
+						}}
 					/>
 					<BreakdownRow
 						label="Cumulative Return"

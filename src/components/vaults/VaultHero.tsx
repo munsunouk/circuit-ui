@@ -1,5 +1,6 @@
-import { BigNum, ZERO } from '@drift-labs/sdk';
+import { BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 import { decodeName } from '@drift-labs/vaults-sdk';
+import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
@@ -11,16 +12,22 @@ import { sourceCodePro, syne } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
 import Badge from '../elements/Badge';
+import { Tooltip } from '../elements/Tooltip';
 import { Lock } from '../icons';
 
 const StatsBox = ({
 	label,
 	value,
 	position,
+	tooltip,
 }: {
 	label: string;
 	value: string;
 	position: 'left' | 'right';
+	tooltip?: {
+		id: string;
+		content: React.ReactNode;
+	};
 }) => {
 	return (
 		<div
@@ -35,9 +42,15 @@ const StatsBox = ({
 						sourceCodePro.className,
 						'text-xl md:text-4xl font-medium text-text-emphasis'
 					)}
+					data-tooltip-id={tooltip?.id}
 				>
 					{value}
 				</span>
+				{tooltip && (
+					<Tooltip id={tooltip.id}>
+						<span className="text-xl">{tooltip.content}</span>
+					</Tooltip>
+				)}
 				<span className="text-sm md:text-xl">{label}</span>
 			</div>
 		</div>
@@ -55,7 +68,11 @@ export default function VaultHero() {
 
 	const name = decodeName(vaultAccountData?.name ?? []);
 	const tvlBaseValue = vaultStats.totalAccountBaseValue;
+	const tvlQuoteValue = vaultStats.totalAccountQuoteValue;
 	const maxCapacity = vaultAccountData?.maxTokens;
+
+	const isUsdcMarket =
+		uiVaultConfig?.market?.marketIndex === USDC_SPOT_MARKET_INDEX;
 
 	return (
 		<div
@@ -104,6 +121,21 @@ export default function VaultHero() {
 						2
 					)}
 					position="left"
+					tooltip={
+						isUsdcMarket
+							? undefined
+							: {
+									id: 'tvl-tooltip',
+									content: (
+										<span className={twMerge(sourceCodePro.className)}>
+											{BigNum.from(
+												tvlQuoteValue,
+												QUOTE_PRECISION_EXP
+											).toNotional()}
+										</span>
+									),
+							  }
+					}
 				/>
 				<div className="h-12 border-r border-container-border" />
 				<StatsBox

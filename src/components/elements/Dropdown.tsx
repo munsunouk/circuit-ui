@@ -24,7 +24,7 @@ const DropdownOption = ({
 			<Button
 				onClick={() => onSelect(option)}
 				secondary
-				className="justify-start w-full font-medium border-none border-container-border text-text-default hover:text-black"
+				className="justify-start w-full font-medium border-none text-text-default hover:text-black"
 			>
 				{option.label}
 			</Button>
@@ -83,7 +83,7 @@ export default function Dropdown({
 	};
 
 	return (
-		<div className="relative z-40" ref={containerRef}>
+		<div className="relative" ref={containerRef}>
 			<Button
 				secondary
 				innerClassName="flex gap-1 font-medium justify-between w-full"
@@ -103,7 +103,7 @@ export default function Dropdown({
 			{isOpen && (
 				<div
 					className={twMerge(
-						'absolute top-[calc(100%+8px)] border border-container-border-selected min-w-full bg-black flex flex-col',
+						'absolute top-[calc(100%+8px)] border border-container-border-selected min-w-full bg-black flex flex-col z-40',
 						'right-0'
 					)}
 				>

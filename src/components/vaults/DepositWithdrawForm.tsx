@@ -538,7 +538,7 @@ const WithdrawForm = ({
 			setLoading(true);
 			if (withdrawalState === WithdrawalState.UnRequested) {
 				const pctToWithdraw = new BN(
-					+amount * 10 ** spotMarketConfig.precision.toNumber()
+					+amount * 10 ** spotMarketConfig.precisionExp.toNumber()
 				)
 					.mul(PERCENTAGE_PRECISION)
 					.div(maxSharesBaseValue);

@@ -1,11 +1,13 @@
-import { useCommonDriftStore } from '@drift-labs/react';
+import { useCommonDriftStore, useOraclePriceStore } from '@drift-labs/react';
 import {
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
+	PRICE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 } from '@drift-labs/sdk';
 import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
+import { MarketId } from '@drift/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { twMerge } from 'tailwind-merge';
 
@@ -23,10 +25,23 @@ import { sourceCodePro } from '@/constants/fonts';
 import ConnectButton from '../ConnectButton';
 import SectionHeader from '../SectionHeader';
 import FadeInDiv from '../elements/FadeInDiv';
+import { Tooltip } from '../elements/Tooltip';
 import BreakdownRow from './BreakdownRow';
 import TransactionHistory from './TransactionHistory';
 
-const StatsBox = ({ label, value }: { label: string; value: string }) => {
+const StatsBox = ({
+	label,
+	value,
+	tooltip,
+}: {
+	label: string;
+	value: string;
+	tooltip?: {
+		id: string;
+		content: React.ReactNode;
+		hide?: boolean;
+	};
+}) => {
 	return (
 		<div className="flex flex-col items-center flex-1 gap-1 text-center">
 			<span
@@ -34,9 +49,17 @@ const StatsBox = ({ label, value }: { label: string; value: string }) => {
 					sourceCodePro.className,
 					'text-lg md:text-2xl font-medium text-text-emphasis'
 				)}
+				data-tooltip-id={tooltip?.id}
 			>
 				{value}
 			</span>
+			{tooltip && !tooltip?.hide && (
+				<Tooltip id={tooltip.id}>
+					<span className={twMerge(sourceCodePro.className, 'text-xl')}>
+						{tooltip.content}
+					</span>
+				</Tooltip>
+			)}
 			<span className="text-sm md:text-lg">{label}</span>
 		</div>
 	);
@@ -52,10 +75,20 @@ export default function YourPerformance() {
 	const vaultStats = useCurrentVaultStats();
 	const vault = useCurrentVault();
 	const uiVault = getUiVaultConfig(vault?.vaultAccountData.pubkey);
+	const getMarketPriceData = useOraclePriceStore((s) => s.getMarketPriceData);
 	const spotMarketConfig = uiVault?.market ?? USDC_MARKET;
 	const basePrecisionExp = spotMarketConfig.precisionExp;
+	const isUsdcMarket = spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
 
 	const showUserInfo = connected || !!authority;
+	const marketOraclePriceBigNum = BigNum.fromPrint(
+		(
+			getMarketPriceData(
+				MarketId.createSpotMarket(spotMarketConfig.marketIndex)
+			)?.priceData.price ?? 0
+		).toString(),
+		PRICE_PRECISION_EXP
+	);
 
 	// User's vault share proportion
 	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
@@ -65,6 +98,9 @@ export default function YourPerformance() {
 	// User's net deposits
 	const netBaseDeposits = vaultDepositorAccData?.netDeposits;
 	const netBaseDepositsBigNum = BigNum.from(netBaseDeposits, basePrecisionExp);
+	const netQuoteDepositsBigNum = netBaseDepositsBigNum.mul(
+		marketOraclePriceBigNum
+	);
 	const vaultAccountBaseBalance = BigNum.from(
 		vaultStats.totalAccountBaseValue,
 		basePrecisionExp
@@ -75,6 +111,8 @@ export default function YourPerformance() {
 		`${userAccountBaseBalanceProportion}`,
 		basePrecisionExp
 	);
+	const userAccountQuoteBalanceProportionBigNum =
+		userAccountBaseBalanceProportionBigNum.mul(marketOraclePriceBigNum);
 
 	// User's total earnings
 	const userTotalDepositsBigNum = BigNum.from(
@@ -95,6 +133,7 @@ export default function YourPerformance() {
 	) {
 		totalEarnings = BigNum.zero(basePrecisionExp);
 	}
+	const totalEarningsQuote = totalEarnings.mul(marketOraclePriceBigNum);
 
 	const roi =
 		(totalEarnings
@@ -140,11 +179,21 @@ export default function YourPerformance() {
 								? displayAssetValue(userAccountBaseBalanceProportionBigNum)
 								: '--'
 						}
+						tooltip={{
+							id: 'total-user-balance-summary-tooltip',
+							content: userAccountQuoteBalanceProportionBigNum.toNotional(),
+							hide: isUsdcMarket,
+						}}
 					/>
 					<div className="h-12 border-r border-container-border" />
 					<StatsBox
 						label="Total Earnings (All Time)"
 						value={showUserInfo ? displayAssetValue(totalEarnings) : '--'}
+						tooltip={{
+							id: 'total-earnings-summary-tooltip',
+							content: totalEarningsQuote.toNotional(),
+							hide: isUsdcMarket,
+						}}
 					/>
 				</div>
 			</FadeInDiv>
@@ -154,10 +203,28 @@ export default function YourPerformance() {
 					<BreakdownRow
 						label="Total Earnings (All Time)"
 						value={displayAssetValue(totalEarnings)}
+						tooltip={{
+							id: 'total-earnings-tooltip',
+							content: (
+								<span className={twMerge(sourceCodePro.className)}>
+									{totalEarningsQuote.toNotional()}
+								</span>
+							),
+							hide: isUsdcMarket,
+						}}
 					/>
 					<BreakdownRow
 						label="Your Cumulative Net Deposits"
 						value={displayAssetValue(netBaseDepositsBigNum)}
+						tooltip={{
+							id: 'total-user-cumulative-net-deposits-tooltip',
+							content: (
+								<span className={twMerge(sourceCodePro.className)}>
+									{netQuoteDepositsBigNum.toNotional()}
+								</span>
+							),
+							hide: isUsdcMarket,
+						}}
 					/>
 					<BreakdownRow
 						label="Your Balance"
@@ -166,6 +233,15 @@ export default function YourPerformance() {
 								? displayAssetValue(userAccountBaseBalanceProportionBigNum)
 								: '--'
 						}
+						tooltip={{
+							id: 'total-user-balance-tooltip',
+							content: (
+								<span className={twMerge(sourceCodePro.className)}>
+									{userAccountQuoteBalanceProportionBigNum.toNotional()}
+								</span>
+							),
+							hide: isUsdcMarket,
+						}}
 					/>
 					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
 					<BreakdownRow
