@@ -186,6 +186,8 @@ export default function VaultPerformance() {
 		PRICE_PRECISION_EXP
 	);
 
+	const loading = !vaultStats.isLoaded;
+
 	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
 
@@ -390,20 +392,24 @@ export default function VaultPerformance() {
 							),
 							hide: spotMarketConfig.marketIndex === USDC_MARKET.marketIndex,
 						}}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Cumulative Return"
 						value={`${displayedData.cumulativeReturnsPct.toFixed(2)}%`}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="APY"
 						value={`${(
 							(isNaN(displayedData.apy) ? 0 : displayedData.apy) * 100
 						).toFixed(2)}%`}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Max Daily Drawdown"
 						value={`${(displayedData.maxDailyDrawdown * 100).toFixed(2)}%`}
+						loading={loading}
 					/>
 					{selectedTimelineOption.value === OverallTimeline.Current && (
 						<BreakdownRow
@@ -412,6 +418,7 @@ export default function VaultPerformance() {
 								totalVol30Day,
 								QUOTE_PRECISION_EXP
 							).toNotional()}`}
+							loading={loading}
 						/>
 					)}
 				</div>

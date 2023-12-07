@@ -9,6 +9,7 @@ import {
 import { VAULT_SHARES_PRECISION_EXP } from '@drift-labs/vaults-sdk';
 import { MarketId } from '@drift/common';
 import { useWallet } from '@solana/wallet-adapter-react';
+import Skeleton from 'react-loading-skeleton';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
@@ -33,6 +34,7 @@ const StatsBox = ({
 	label,
 	value,
 	tooltip,
+	loading,
 }: {
 	label: string;
 	value: string;
@@ -41,18 +43,23 @@ const StatsBox = ({
 		content: React.ReactNode;
 		hide?: boolean;
 	};
+	loading?: boolean;
 }) => {
 	return (
 		<div className="flex flex-col items-center flex-1 gap-1 text-center">
-			<span
-				className={twMerge(
-					sourceCodePro.className,
-					'text-lg md:text-2xl font-medium text-text-emphasis'
-				)}
-				data-tooltip-id={tooltip?.id}
-			>
-				{value}
-			</span>
+			{loading ? (
+				<Skeleton className="w-10 h-6 md:h-7" />
+			) : (
+				<span
+					className={twMerge(
+						sourceCodePro.className,
+						'text-lg md:text-2xl font-medium text-text-emphasis'
+					)}
+					data-tooltip-id={tooltip?.id}
+				>
+					{value}
+				</span>
+			)}
 			{tooltip && !tooltip?.hide && (
 				<Tooltip id={tooltip.id}>
 					<span className={twMerge(sourceCodePro.className, 'text-xl')}>
@@ -89,6 +96,8 @@ export default function YourPerformance() {
 		).toString(),
 		PRICE_PRECISION_EXP
 	);
+
+	const loading = !vaultStats.isLoaded;
 
 	// User's vault share proportion
 	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
@@ -184,6 +193,7 @@ export default function YourPerformance() {
 							content: userAccountQuoteBalanceProportionBigNum.toNotional(),
 							hide: isUsdcMarket,
 						}}
+						loading={loading}
 					/>
 					<div className="h-12 border-r border-container-border" />
 					<StatsBox
@@ -194,6 +204,7 @@ export default function YourPerformance() {
 							content: totalEarningsQuote.toNotional(),
 							hide: isUsdcMarket,
 						}}
+						loading={loading}
 					/>
 				</div>
 			</FadeInDiv>
@@ -212,6 +223,7 @@ export default function YourPerformance() {
 							),
 							hide: isUsdcMarket,
 						}}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Your Cumulative Net Deposits"
@@ -225,6 +237,7 @@ export default function YourPerformance() {
 							),
 							hide: isUsdcMarket,
 						}}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Your Balance"
@@ -242,8 +255,13 @@ export default function YourPerformance() {
 							),
 							hide: isUsdcMarket,
 						}}
+						loading={loading}
 					/>
-					<BreakdownRow label="ROI" value={`${roi.toFixed(4)}%`} />
+					<BreakdownRow
+						label="ROI"
+						value={`${roi.toFixed(4)}%`}
+						loading={loading}
+					/>
 					<BreakdownRow
 						label="Vault Share"
 						value={`${Number(
@@ -251,10 +269,12 @@ export default function YourPerformance() {
 								VAULT_SHARES_PRECISION_EXP.toNumber() - 2
 							)
 						)}%`}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Max Daily Drawdown"
 						value={`${(maxDailyDrawdown * 100).toFixed(2)}%`}
+						loading={loading}
 					/>
 				</div>
 			</FadeInDiv>
@@ -264,10 +284,12 @@ export default function YourPerformance() {
 					<BreakdownRow
 						label="Profit Share Fees Paid"
 						value={displayAssetValue(profitShareFeePaid)}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="High-Water Mark"
 						value={displayAssetValue(highWaterMarkWithCurrentDeposit)}
+						loading={loading}
 					/>
 				</div>
 			</FadeInDiv>

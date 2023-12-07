@@ -1,7 +1,7 @@
 import { useOraclePriceStore } from '@drift-labs/react';
 import { BN, BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { MarketId } from '@drift/common';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { VAULTS } from '@/constants/vaults';
 
@@ -38,6 +38,8 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 
 	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
 
+	const refreshStatsIntervalRef = useRef<NodeJS.Timer>();
+
 	const uiVaultConfig = VAULTS.find(
 		(vault) => vault.pubkeyString === vaultPubKey?.toString()
 	);
@@ -47,14 +49,20 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 			setVaultStats(newVaultStats);
 		});
 
-		const interval = setInterval(() => {
-			calcVaultStats().then((newVaultStats) => {
-				setVaultStats(newVaultStats);
-			});
-		}, UPDATE_FREQUENCY_MS);
+		if (!refreshStatsIntervalRef.current) {
+			refreshStatsIntervalRef.current = setInterval(() => {
+				calcVaultStats().then((newVaultStats) => {
+					setVaultStats(newVaultStats);
+				});
+			}, UPDATE_FREQUENCY_MS);
+		}
 
-		return () => clearInterval(interval);
-	}, [vaultDriftUser, uiVaultConfig, vaultAccountData, vaultClient, vault]);
+		return () => {
+			if (refreshStatsIntervalRef.current) {
+				clearInterval(refreshStatsIntervalRef.current);
+			}
+		};
+	}, [vaultPubKey, !!vaultAccountData, !!vaultDriftUser]);
 
 	async function calcVaultStats() {
 		if (

@@ -87,13 +87,14 @@ const createAppActions = (
 			initVaultSubscriber(vaultAddress),
 		]);
 
-		const vaultSnapshots = await fetchVaultSnapshots(vaultAccount.user);
-		// const combinedSnapshotsHistories = combineVaultHistories(
-		// 	vaultAddress.toString(),
-		// 	vaultSnapshots,
-		// 	false // we only combine historical P&L data since its easier to combine because we can assume there were no concurrent deposits/withdrawals in the previous strategy
-		// );
-		const vaultDeposits = await fetchAllDeposits(vaultAccount.user);
+		const vaultSnapshotsPromise = fetchVaultSnapshots(vaultAccount.user);
+		const vaultDepositsPromise = fetchAllDeposits(vaultAccount.user);
+
+		const [vaultSnapshots, vaultDeposits] = await Promise.all([
+			vaultSnapshotsPromise,
+			vaultDepositsPromise,
+		]);
+
 		const currentVaultState = get().vaults[vaultAddress.toString()];
 		const updatedVaultState = {
 			vaultDriftClient,
