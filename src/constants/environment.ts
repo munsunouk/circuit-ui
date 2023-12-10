@@ -39,13 +39,17 @@ const Env: EnvironmentVariables = {
 	historyServerUrl: process.env.NEXT_PUBLIC_EXCHANGE_HISTORY_SERVER_URL
 		? process.env.NEXT_PUBLIC_EXCHANGE_HISTORY_SERVER_URL
 		: process.env.NEXT_PUBLIC_DRIFT_ENV === 'mainnet-beta'
-		  ? EnvironmentConstants.historyServerUrl.mainnet
-		  : EnvironmentConstants.historyServerUrl.dev,
+		? EnvironmentConstants.historyServerUrl.mainnet
+		: EnvironmentConstants.historyServerUrl.dev,
 };
+
+CommonConfig.spotMarketsLookup[6].symbol = 'JitoSOL';
 
 // Spot markets
 export const SPOT_MARKETS_LOOKUP = CommonConfig.spotMarketsLookup;
 export const USDC_MARKET = SPOT_MARKETS_LOOKUP[USDC_SPOT_MARKET_INDEX];
+export const WETH_MARKET = SPOT_MARKETS_LOOKUP[4];
+export const JITOSOL_MARKET = SPOT_MARKETS_LOOKUP[6];
 
 // Perp markets
 export const PERP_MARKETS_LOOKUP = CommonConfig.perpMarketsLookup;

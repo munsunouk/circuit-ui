@@ -1,6 +1,7 @@
 'use client';
 
-import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BigNum } from '@drift-labs/sdk';
+import { Config } from '@drift/common';
 import dayjs from 'dayjs';
 import {
 	Area,
@@ -17,16 +18,25 @@ import { twMerge } from 'tailwind-merge';
 
 import { normalizeDate } from '@/utils/utils';
 
+import { USDC_MARKET } from '@/constants/environment';
+
 const CustomTooltip = ({
 	active,
 	payload,
 	label,
-}: TooltipProps<number, string>) => {
+	marketIndex,
+	isPnl,
+}: TooltipProps<number, string> & {
+	marketIndex: number;
+	isPnl: boolean;
+}) => {
 	if (active && payload && payload.length) {
 		const date = dayjs.unix(label).format('D MMM YYYY');
-		const pnl = payload[0].value ?? 0;
+		const value = payload[0].value ?? 0;
 
-		const isProfit = pnl > 0;
+		const isProfit = value > 0;
+		const market = Config.spotMarketsLookup[marketIndex];
+		const isUsdcAsset = marketIndex === USDC_MARKET.marketIndex;
 
 		return (
 			<div className="bg-black border border-[#32D7D720] p-2">
@@ -36,8 +46,11 @@ const CustomTooltip = ({
 						isProfit ? 'text-success-green-border' : 'text-error-red-border'
 					)}
 				>
-					{isProfit && '+'}
-					{BigNum.from(pnl, QUOTE_PRECISION_EXP).toNotional()}
+					{isProfit && isPnl && '+'}
+					{`${isUsdcAsset ? '$' : ''}${BigNum.from(
+						value,
+						market.precisionExp
+					).prettyPrint(true)}${isUsdcAsset ? '' : ` ${market.symbol}`}`}
 				</p>
 			</div>
 		);
@@ -114,11 +127,15 @@ const CustomActiveDot = (props: DotProps & { payload: { y: number } }) => {
 
 export default function PerformanceGraph({
 	data,
+	marketIndex,
+	isPnl,
 }: {
 	data: {
 		x: number;
 		y: number;
 	}[];
+	marketIndex: number;
+	isPnl: boolean;
 }) {
 	const minX = data.reduce((acc, curr) => Math.min(acc, curr.x), Infinity);
 	const maxX = data.reduce((acc, curr) => Math.max(acc, curr.x), -Infinity);
@@ -127,6 +144,8 @@ export default function PerformanceGraph({
 	const minY = data.reduce((acc, curr) => Math.min(acc, curr.y), Infinity);
 	const maxY = data.reduce((acc, curr) => Math.max(acc, curr.y), -Infinity);
 	const yDomain = getYDomain(minY, maxY);
+
+	const isUsdcAsset = marketIndex === USDC_MARKET.marketIndex;
 
 	/**
 	 * The color of the area under the graph/line of graph works as such:
@@ -245,16 +264,21 @@ export default function PerformanceGraph({
 					tickMargin={8}
 				/>
 				<YAxis
-					tickFormatter={(tick) =>
-						`$${BigNum.from(tick, QUOTE_PRECISION_EXP).toMillified()}`
+					tickFormatter={(tick: number) =>
+						`${isUsdcAsset ? '$' : ''}${BigNum.from(
+							tick,
+							Config.spotMarketsLookup[marketIndex].precisionExp
+						).toMillified()}`
 					}
 					tickMargin={8}
 					// @ts-ignore
 					domain={yDomain}
 				/>
 				<Tooltip
-					/* @ts-ignore */
-					content={(props) => <CustomTooltip {...props} />}
+					content={(props) => (
+						/* @ts-ignore */
+						<CustomTooltip {...props} marketIndex={marketIndex} isPnl={isPnl} />
+					)}
 					cursor={{ stroke: '#32D7D740' }}
 				/>
 			</AreaChart>

@@ -7,12 +7,10 @@ import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
-	BulkAccountLoader,
 	DRIFT_PROGRAM_ID,
 	DriftClient,
 	DriftClientConfig,
 	PublicKey,
-	QUOTE_PRECISION_EXP,
 	fetchLogs,
 	getMarketsAndOraclesForSubscription,
 } from '@drift-labs/sdk';
@@ -30,7 +28,6 @@ import {
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
-import { Commitment } from '@solana/web3.js';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -42,12 +39,12 @@ import { TransactionErrorHandler } from '@/utils/TransactionErrorHandler';
 import NOTIFICATION_UTILS, { ToastWithMessage } from '@/utils/notifications';
 import { redeemPeriodToString } from '@/utils/utils';
 
-import Env, { ARBITRARY_WALLET } from '@/constants/environment';
+import Env, {
+	ARBITRARY_WALLET,
+	SPOT_MARKETS_LOOKUP,
+} from '@/constants/environment';
 
 dayjs.extend(isSameOrAfter);
-
-const POLLING_FREQUENCY_MS = 1000;
-const DEFAULT_COMMITMENT_LEVEL: Commitment = 'confirmed';
 
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
@@ -90,13 +87,14 @@ const createAppActions = (
 			initVaultSubscriber(vaultAddress),
 		]);
 
-		const vaultSnapshots = await fetchVaultSnapshots(vaultAccount.user);
-		// const combinedSnapshotsHistories = combineVaultHistories(
-		// 	vaultAddress.toString(),
-		// 	vaultSnapshots,
-		// 	false // we only combine historical P&L data since its easier to combine because we can assume there were no concurrent deposits/withdrawals in the previous strategy
-		// );
-		const vaultDeposits = await fetchAllDeposits(vaultAccount.user);
+		const vaultSnapshotsPromise = fetchVaultSnapshots(vaultAccount.user);
+		const vaultDepositsPromise = fetchAllDeposits(vaultAccount.user);
+
+		const [vaultSnapshots, vaultDeposits] = await Promise.all([
+			vaultSnapshotsPromise,
+			vaultDepositsPromise,
+		]);
+
 		const currentVaultState = get().vaults[vaultAddress.toString()];
 		const updatedVaultState = {
 			vaultDriftClient,
@@ -180,17 +178,14 @@ const createAppActions = (
 
 	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {
 		const commonState = getCommon();
+		const accountLoader = commonState.bulkAccountLoader;
 
 		invariant(commonState.connection, 'No connection');
+		invariant(accountLoader, 'No account loader');
 
 		// Create Vault's DriftClient
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultPubKey);
 
-		const accountLoader = new BulkAccountLoader(
-			commonState.connection,
-			DEFAULT_COMMITMENT_LEVEL,
-			POLLING_FREQUENCY_MS
-		);
 		const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
 			getMarketsAndOraclesForSubscription(Env.driftEnv);
 		const vaultDriftClientConfig: DriftClientConfig = {
@@ -260,14 +255,11 @@ const createAppActions = (
 
 	const initVaultSubscriber = async (vaultAddress: PublicKey) => {
 		const connection = getCommon().connection;
+		const accountLoader = getCommon().bulkAccountLoader;
 
 		invariant(connection, 'No connection');
+		invariant(accountLoader, 'No account loader');
 
-		const accountLoader = new BulkAccountLoader(
-			connection,
-			DEFAULT_COMMITMENT_LEVEL,
-			POLLING_FREQUENCY_MS
-		);
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(vaultAddress);
 
 		const driftVaultsProgram = getDriftVaultProgram(connection, newWallet);
@@ -301,18 +293,14 @@ const createAppActions = (
 		authority: PublicKey
 	) => {
 		const connection = getCommon().connection;
+		const accountLoader = getCommon().bulkAccountLoader;
 
-		if (!authority || !connection) return;
+		if (!authority || !connection || !accountLoader) return;
 
 		const vaultDepositorAddress = getVaultDepositorAddressSync(
 			VAULT_PROGRAM_ID,
 			vaultAddress,
 			authority
-		);
-		const accountLoader = new BulkAccountLoader(
-			connection,
-			DEFAULT_COMMITMENT_LEVEL,
-			POLLING_FREQUENCY_MS
 		);
 		const newWallet = COMMON_UI_UTILS.createThrowawayIWallet(
 			vaultDepositorAddress
@@ -428,6 +416,9 @@ const createAppActions = (
 			const connection = getCommon().connection;
 
 			invariant(connection, 'No connection');
+			invariant(vaultInfo, 'No vault info in deposit');
+
+			const spotMarketConfig = SPOT_MARKETS_LOOKUP[vaultInfo?.spotMarketIndex];
 
 			if (!vaultDepositor && vaultInfo?.permissioned) {
 				NOTIFICATION_UTILS.toast.error(
@@ -468,8 +459,8 @@ const createAppActions = (
 				tx,
 				`You have successfully deposited ${BigNum.from(
 					amount,
-					QUOTE_PRECISION_EXP
-				).prettyPrint()} USDC`
+					spotMarketConfig.precisionExp
+				).prettyPrint()} ${spotMarketConfig.symbol}`
 			);
 
 			return tx;

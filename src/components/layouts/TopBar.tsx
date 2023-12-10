@@ -11,6 +11,7 @@ import { twMerge } from 'tailwind-merge';
 
 import useOpenConnectWalletModal from '@/hooks/useOpenConnectWalletModal';
 
+import { JITOSOL_MARKET, USDC_MARKET } from '@/constants/environment';
 import { syne } from '@/constants/fonts';
 
 import Chevron from '../elements/Chevron';
@@ -95,7 +96,8 @@ const TopBar = () => {
 			});
 
 			s.balances = {
-				usdc: 0,
+				[USDC_MARKET.symbol]: 0,
+				[JITOSOL_MARKET.symbol]: 0,
 			};
 		});
 	};
@@ -109,6 +111,7 @@ const TopBar = () => {
 					width="30"
 					height="33"
 					className="w-[20px] h-[22px] md:w-[30px] md:h-[33px]"
+					priority
 				/>
 				<span
 					className={twMerge(

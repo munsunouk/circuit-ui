@@ -1,9 +1,5 @@
 import useAppStore from '@/stores/app/useAppStore';
-import {
-	BigNum,
-	PERCENTAGE_PRECISION,
-	QUOTE_PRECISION_EXP,
-} from '@drift-labs/sdk';
+import { BigNum, PERCENTAGE_PRECISION } from '@drift-labs/sdk';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
@@ -11,6 +7,9 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 
 import { redeemPeriodToString, shortenPubkey } from '@/utils/utils';
+import { getUiVaultConfig } from '@/utils/vaults';
+
+import { USDC_MARKET } from '@/constants/environment';
 
 import ButtonTabs from '../elements/ButtonTabs';
 import Row from '../elements/Row';
@@ -25,6 +24,9 @@ export default function StoreModal() {
 	const setAppStore = useAppStore((s) => s.set);
 	const vaultDepositor = useCurrentVaultDepositorAccData();
 	const vault = useCurrentVaultAccountData();
+	const uiVaultConfig = getUiVaultConfig(vault?.pubkey);
+	const spotMarketConfig = uiVaultConfig?.market ?? USDC_MARKET;
+	const basePrecisionExp = spotMarketConfig.precisionExp;
 
 	const [tab, setTab] = useState(Tab.Vault);
 
@@ -65,30 +67,30 @@ export default function StoreModal() {
 								label="Net Deposits"
 								value={BigNum.from(
 									vaultDepositor?.netDeposits,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Total Deposits"
 								value={BigNum.from(
 									vaultDepositor?.totalDeposits,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Total Withdraws"
 								value={BigNum.from(
 									vaultDepositor?.totalWithdraws,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 
 							<Row
 								label="Cumulative Profit Share Amount"
 								value={BigNum.from(
 									vaultDepositor?.cumulativeProfitShareAmount,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Vault Shares"
@@ -100,8 +102,8 @@ export default function StoreModal() {
 								label="Profit Share Fee Paid"
 								value={BigNum.from(
 									vaultDepositor?.profitShareFeePaid,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Last Withdraw Request Timestamp"
@@ -113,15 +115,15 @@ export default function StoreModal() {
 								label="Last Withdraw Request Shares"
 								value={BigNum.from(
 									vaultDepositor?.lastWithdrawRequest.shares,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Last Withdraw Request Value"
 								value={BigNum.from(
 									vaultDepositor?.lastWithdrawRequest.value,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 						</>
 					)}
@@ -169,58 +171,58 @@ export default function StoreModal() {
 								label="Net Deposits"
 								value={BigNum.from(
 									vault?.netDeposits,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 
 							<Row
 								label="Total Deposits"
 								value={BigNum.from(
 									vault?.totalDeposits,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Total Withdrawals"
 								value={BigNum.from(
 									vault?.totalWithdraws,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Manager Net Deposits"
 								value={BigNum.from(
 									vault?.managerNetDeposits,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Manager Total Deposits"
 								value={BigNum.from(
 									vault?.managerTotalDeposits,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Manager Total Withdraws"
 								value={BigNum.from(
 									vault?.managerTotalWithdraws,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Manager Total Profit Share"
 								value={BigNum.from(
 									vault?.managerTotalProfitShare,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Manager Total Fee"
 								value={BigNum.from(
 									vault?.managerTotalFee,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Last Fee Update Timestamp"
@@ -232,8 +234,8 @@ export default function StoreModal() {
 								label="Total Withdraws Requested"
 								value={BigNum.from(
 									vault?.totalWithdrawRequested,
-									QUOTE_PRECISION_EXP
-								).toPrecision(QUOTE_PRECISION_EXP.toNumber())}
+									basePrecisionExp
+								).toPrecision(basePrecisionExp.toNumber())}
 							/>
 							<Row
 								label="Redemption Period"

@@ -157,7 +157,7 @@ export const getModifiedDietzApy = (
 	vaultDeposits: SerializedDepositHistory[]
 ): number => {
 	if (vaultDeposits.length === 0) {
-		return -1;
+		return 0;
 	}
 
 	const startingMarketValue = 0;
@@ -167,11 +167,11 @@ export const getModifiedDietzApy = (
 	const nowTs = Date.now() / 1000;
 	if (nowTs < firstDepositTs) {
 		console.error('nowTs < firstDepositTs');
-		return -1;
+		return 0;
 	}
 	if (lastDepositTs < firstDepositTs) {
 		console.error('lastDepositTs < firstDepositTs');
-		return -1;
+		return 0;
 	}
 	const totalDuration = nowTs - firstDepositTs;
 
@@ -198,10 +198,14 @@ export const getModifiedDietzApy = (
 	const modifiedDietzReturns =
 		(endingMarkeValue - startingMarketValue - totalNetFlow) /
 		(startingMarketValue + weightedNetFlow);
+
+	if (modifiedDietzReturns < 0) return 0;
+
 	const annualized =
 		Math.pow(1 + modifiedDietzReturns, (86400 * 365) / totalDuration) - 1;
 
-	return annualized;
+	const positiveApy = Math.max(annualized, 0);
+	return positiveApy;
 };
 
 // Calculation explanation: https://chat.openai.com/share/f6a3c630-f37b-428d-aaa2-dfeeca290da0

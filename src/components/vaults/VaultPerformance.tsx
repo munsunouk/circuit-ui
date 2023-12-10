@@ -1,21 +1,29 @@
+import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
+import { useOraclePriceStore } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
-	QUOTE_PRECISION,
+	PRICE_PRECISION,
+	PRICE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
-import { HistoryResolution } from '@drift/common';
+import { HistoryResolution, MarketId } from '@drift/common';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
+import {
+	displayAssetValue as displayAssetValueBase,
+	getAssetPriceFromClosestTs,
+} from '@/utils/utils';
 import {
 	getMaxDailyDrawdown,
 	getMaxDailyDrawdownFromAccValue,
@@ -23,6 +31,8 @@ import {
 	getSimpleHistoricalApy,
 } from '@/utils/vaults';
 
+import { USDC_MARKET } from '@/constants/environment';
+import { sourceCodePro } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
 import SectionHeader from '../SectionHeader';
@@ -64,11 +74,6 @@ enum OverallTimeline {
 	Historical,
 }
 
-const OVERALL_TIMELINE_OPTIONS: Option[] = [
-	{ label: 'Current', value: OverallTimeline.Current },
-	{ label: 'Historical', value: OverallTimeline.Historical },
-];
-
 enum GraphView {
 	PnL,
 	VaultBalance,
@@ -93,29 +98,31 @@ const GRAPH_VIEW_OPTIONS: {
 
 type DisplayedData = {
 	totalEarnings: BigNum;
+	totalEarningsQuote: BigNum;
 	cumulativeReturnsPct: number;
 	apy: number;
 	maxDailyDrawdown: number;
 };
 const DEFAULT_DISPLAYED_DATA = {
 	totalEarnings: BigNum.zero(),
+	totalEarningsQuote: BigNum.zero(),
 	cumulativeReturnsPct: 0,
 	apy: 0,
 	maxDailyDrawdown: 0,
 };
 
+const NOW_TS = dayjs().unix();
+
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
+	const { getMarketPriceData } = useOraclePriceStore();
 
 	const [selectedGraphOption, setSelectedGraphOption] = useState(
 		PERFORMANCE_GRAPH_OPTIONS[0]
 	);
 	const [graphView, setGraphView] = useState(GRAPH_VIEW_OPTIONS[0]);
-	const [selectedTimelineOption, setSelectedTimelineOption] = useState(
-		OVERALL_TIMELINE_OPTIONS[0]
-	);
 
 	const [displayedData, setDisplayedData] = useState<DisplayedData>(
 		DEFAULT_DISPLAYED_DATA
@@ -130,6 +137,30 @@ export default function VaultPerformance() {
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
+	const spotMarketConfig = uiVaultConfig?.market ?? USDC_MARKET;
+	const basePrecisionExp = spotMarketConfig.precisionExp;
+
+	const overallTimelineOptions: Option[] = [
+		{ label: 'Current', value: OverallTimeline.Current },
+	];
+	if (uiVaultConfig?.pastPerformanceHistory)
+		overallTimelineOptions.push({
+			label: uiVaultConfig.historyType ?? 'Historical',
+			value: OverallTimeline.Historical,
+		});
+
+	const [selectedTimelineOption, setSelectedTimelineOption] = useState(
+		overallTimelineOptions[0]
+	);
+
+	const earliestTs =
+		uiVaultConfig?.pastPerformanceHistory?.[0]?.epochTs ??
+		vault?.pnlHistory.dailyAllTimePnls?.[0]?.epochTs ??
+		NOW_TS;
+
+	const { assetPriceHistory, loading: assetPriceHistoryLoading } =
+		useGetAssetPriceHistory(spotMarketConfig.marketIndex, earliestTs);
+
 	const allTimePnlHistory =
 		vault?.pnlHistory.dailyAllTimePnls
 			.map((pnl) => ({
@@ -138,14 +169,24 @@ export default function VaultPerformance() {
 				epochTs: pnl.epochTs,
 			}))
 			.concat({
-				totalAccountValue: vaultStats.totalAccountValue.toNumber(),
-				allTimeTotalPnl: vaultStats.allTimeTotalPnlWithHistory.toNumber(),
-				epochTs: dayjs().unix(),
+				totalAccountValue: vaultStats.totalAccountQuoteValue.toNumber(),
+				allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
+				epochTs: NOW_TS,
 			}) ?? [];
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
 	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
 	const takerVol30Day = vaultUserStats?.takerVolume30D ?? ZERO;
 	const totalVol30Day = makerVol30Day.add(takerVol30Day);
+
+	const currentAssetPrice =
+		getMarketPriceData(MarketId.createSpotMarket(spotMarketConfig.marketIndex))
+			?.priceData.price ?? 0;
+	const currentAssetPriceBigNum = BigNum.fromPrint(
+		currentAssetPrice.toString(),
+		PRICE_PRECISION_EXP
+	);
+
+	const loading = !vaultStats.isLoaded;
 
 	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
@@ -174,6 +215,10 @@ export default function VaultPerformance() {
 		const firstHistoryData = uiVaultConfig.pastPerformanceHistory[0];
 
 		const totalEarnings = lastHistoryData.allTimeTotalPnl;
+		const totalEarningsQuote = totalEarnings
+			.shiftTo(PRICE_PRECISION_EXP)
+			.mul(currentAssetPriceBigNum);
+
 		const cumulativeReturnsPct = totalEarnings
 			.mul(PERCENTAGE_PRECISION)
 			.mul(new BN(100))
@@ -181,7 +226,8 @@ export default function VaultPerformance() {
 			.toNum();
 
 		const apy = getSimpleHistoricalApy(
-			lastHistoryData.netDeposits.toNumber() / QUOTE_PRECISION.toNumber(),
+			lastHistoryData.netDeposits.toNumber() /
+				spotMarketConfig.precision.toNumber(),
 			lastHistoryData.totalAccountValue.toNum(),
 			firstHistoryData.epochTs,
 			lastHistoryData.epochTs
@@ -196,6 +242,7 @@ export default function VaultPerformance() {
 
 		return {
 			totalEarnings,
+			totalEarningsQuote,
 			cumulativeReturnsPct,
 			apy,
 			maxDailyDrawdown,
@@ -203,27 +250,40 @@ export default function VaultPerformance() {
 	};
 
 	const getDisplayedGraphForHistorical = () => {
-		if (!uiVaultConfig?.pastPerformanceHistory) return [];
+		const isUsdcMarket =
+			spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
+		if (
+			!uiVaultConfig?.pastPerformanceHistory ||
+			(assetPriceHistoryLoading && !isUsdcMarket)
+		)
+			return [];
 
-		return uiVaultConfig.pastPerformanceHistory.map((history) => ({
+		const data = uiVaultConfig.pastPerformanceHistory.map((history) => ({
 			x: history.epochTs,
-			y: history[graphView.snapshotAttribute].mul(QUOTE_PRECISION).toNum(),
+			y: history[graphView.snapshotAttribute] // historical data is initially already in base value, whereas current data is in quote value
+				.mul(spotMarketConfig.precision)
+				.toNum(),
 		}));
+
+		return data;
 	};
 
 	const getDisplayedDataForCurrent = (): DisplayedData => {
 		const totalEarnings = BigNum.from(
-			vaultStats.allTimeTotalPnl,
-			QUOTE_PRECISION_EXP
+			vaultStats.allTimeTotalPnlBaseValue,
+			basePrecisionExp
 		);
+		const totalEarningsQuote = totalEarnings
+			.shiftTo(PRICE_PRECISION_EXP)
+			.mul(currentAssetPriceBigNum);
 
 		const totalAccountValueBigNum = BigNum.from(
-			vaultStats.totalAccountValue,
-			QUOTE_PRECISION_EXP
+			vaultStats.totalAccountBaseValue,
+			basePrecisionExp
 		);
 		const netDepositsBigNum = BigNum.from(
 			vaultAccountData?.netDeposits,
-			QUOTE_PRECISION_EXP
+			basePrecisionExp
 		);
 		const cumulativeReturnsPct =
 			totalAccountValueBigNum
@@ -233,7 +293,7 @@ export default function VaultPerformance() {
 				.toNum() * 100;
 
 		const apy = getModifiedDietzApy(
-			BigNum.from(vaultStats.totalAccountValue, QUOTE_PRECISION_EXP).toNum(),
+			BigNum.from(vaultStats.totalAccountBaseValue, basePrecisionExp).toNum(),
 			vault?.vaultDeposits ?? []
 		);
 
@@ -243,6 +303,7 @@ export default function VaultPerformance() {
 
 		return {
 			totalEarnings,
+			totalEarningsQuote,
 			cumulativeReturnsPct,
 			apy,
 			maxDailyDrawdown,
@@ -250,49 +311,105 @@ export default function VaultPerformance() {
 	};
 
 	const getDisplayedGraphForCurrent = () => {
-		return allTimePnlHistory
+		const isUsdcMarket =
+			spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
+
+		if (assetPriceHistoryLoading && !isUsdcMarket) return [];
+
+		const quoteData = allTimePnlHistory
 			.map((snapshot) => ({
-				x: snapshot.epochTs,
-				y: snapshot[graphView.snapshotAttribute],
+				epochTs: snapshot.epochTs,
+				quoteValue: snapshot[graphView.snapshotAttribute],
 			}))
-			.filter((snapshot) => snapshot.y !== undefined)
-			.slice(-1 * selectedGraphOption.days) as {
-			x: number;
-			y: number;
-		}[];
+			.filter((snapshot) => snapshot.quoteValue !== undefined)
+			.slice(-1 * selectedGraphOption.days)
+			.map((snapshot) => ({
+				epochTs: snapshot.epochTs,
+				quoteValue: BigNum.fromPrint(
+					snapshot.quoteValue.toString(),
+					QUOTE_PRECISION_EXP
+				),
+			}));
+
+		const baseAssetQuotePrice = getMarketPriceData(
+			MarketId.createSpotMarket(spotMarketConfig.marketIndex)
+		).priceData.price;
+
+		const baseData = quoteData.map((history, index) => {
+			let priceOfAssetAtTime = isUsdcMarket
+				? 1
+				: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs).price;
+
+			if (index === quoteData.length - 1) {
+				// we want the last data point to be the current oracle price and not the CoinGecko price, so as to match the earnings display
+				// however for some reason, the division in useVaultStats appears to give a result slightly off the expected result, hence there
+				// will still be discrepancies between the graph and the earnings display
+				priceOfAssetAtTime = baseAssetQuotePrice;
+			}
+
+			return {
+				x: history.epochTs,
+				y: history.quoteValue
+					.div(
+						BigNum.fromPrint(priceOfAssetAtTime.toString(), PRICE_PRECISION_EXP)
+					)
+					.scale(spotMarketConfig.precision, PRICE_PRECISION)
+					.toNum(),
+			};
+		});
+
+		return baseData;
 	};
+
+	const displayAssetValue = (value: BigNum) =>
+		displayAssetValueBase(value, spotMarketConfig.marketIndex ?? 0, true);
 
 	return (
 		<div className="flex flex-col w-full gap-8">
 			<FadeInDiv className="flex flex-col w-full gap-4">
 				<div className="flex items-center justify-between">
 					<SectionHeader>Performance Breakdown</SectionHeader>
-					<Dropdown
-						options={OVERALL_TIMELINE_OPTIONS}
-						selectedOption={selectedTimelineOption}
-						setSelectedOption={setSelectedTimelineOption}
-						width={120}
-					/>
+					{overallTimelineOptions.length > 1 && (
+						<Dropdown
+							options={overallTimelineOptions}
+							selectedOption={selectedTimelineOption}
+							setSelectedOption={setSelectedTimelineOption}
+							width={120}
+						/>
+					)}
 				</div>
 
 				<div className="flex flex-col w-full gap-1 md:gap-2">
 					<BreakdownRow
 						label="Total Earnings (All Time)"
-						value={displayedData.totalEarnings.toNotional()}
+						value={displayAssetValue(displayedData.totalEarnings)}
+						tooltip={{
+							id: 'notional-earnings-tooltip',
+							content: (
+								<span className={twMerge(sourceCodePro.className)}>
+									{displayedData.totalEarningsQuote.toNotional()}
+								</span>
+							),
+							hide: spotMarketConfig.marketIndex === USDC_MARKET.marketIndex,
+						}}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Cumulative Return"
 						value={`${displayedData.cumulativeReturnsPct.toFixed(2)}%`}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="APY"
 						value={`${(
 							(isNaN(displayedData.apy) ? 0 : displayedData.apy) * 100
 						).toFixed(2)}%`}
+						loading={loading}
 					/>
 					<BreakdownRow
 						label="Max Daily Drawdown"
 						value={`${(displayedData.maxDailyDrawdown * 100).toFixed(2)}%`}
+						loading={loading}
 					/>
 					{selectedTimelineOption.value === OverallTimeline.Current && (
 						<BreakdownRow
@@ -301,6 +418,7 @@ export default function VaultPerformance() {
 								totalVol30Day,
 								QUOTE_PRECISION_EXP
 							).toNotional()}`}
+							loading={loading}
 						/>
 					)}
 				</div>
@@ -318,14 +436,9 @@ export default function VaultPerformance() {
 						}))}
 						tabClassName="whitespace-nowrap px-4 py-2"
 					/>
-					{selectedTimelineOption === OVERALL_TIMELINE_OPTIONS[0] && (
+					{selectedTimelineOption.value === OverallTimeline.Current && (
 						<Dropdown
-							options={
-								graphView.value === GraphView.VaultBalance &&
-								uiVaultConfig?.pastPerformanceHistory
-									? PERFORMANCE_GRAPH_OPTIONS
-									: PERFORMANCE_GRAPH_OPTIONS
-							}
+							options={PERFORMANCE_GRAPH_OPTIONS}
 							selectedOption={selectedGraphOption}
 							setSelectedOption={
 								setSelectedGraphOption as (option: {
@@ -339,7 +452,11 @@ export default function VaultPerformance() {
 				</div>
 				<div className="w-full h-[320px]">
 					{!!displayedGraph?.length && (
-						<PerformanceGraph data={displayedGraph} />
+						<PerformanceGraph
+							data={displayedGraph}
+							marketIndex={spotMarketConfig.marketIndex}
+							isPnl={graphView.value === GraphView.PnL}
+						/>
 					)}
 				</div>
 			</FadeInDiv>

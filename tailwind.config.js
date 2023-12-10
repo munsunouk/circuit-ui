@@ -30,6 +30,7 @@ const SEMANTIC_CLASSES = {
 	'success-green-border': 'var(--success-green-border)',
 	'success-green-bg': 'var(--success-green-bg)',
 	'warning-yellow-border': 'var(--warning-yellow-border)',
+	'warning-yellow-bg': 'var(--warning-yellow-bg)',
 	'error-red-border': 'var(--error-red-border)',
 	'error-red-bg': 'var(--error-red-bg)',
 };

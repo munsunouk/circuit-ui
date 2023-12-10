@@ -20,6 +20,8 @@ import { create } from 'zustand';
 
 import { UISerializableOrderWithOraclePrice } from '@/hooks/table-data/useVaultOpenOrders';
 
+import { JITOSOL_MARKET, USDC_MARKET } from '@/constants/environment';
+
 export type UIVault = {
 	vaultDriftClient: DriftClient;
 	vaultDriftUser: User; // used to get vault's drift account data (e.g. vault balance)
@@ -58,7 +60,8 @@ export interface AppStoreState {
 		[vaultPubKey: string]: UIVault | undefined;
 	};
 	balances: {
-		usdc: number;
+		// use actual SpotMarketConfig symbol
+		[key: string]: number;
 	};
 	set: (x: (s: AppStoreState) => void) => void;
 	get: () => AppStoreState;
@@ -90,7 +93,8 @@ const DEFAULT_APP_STORE_STATE = {
 	vaultClient: undefined,
 	vaults: {},
 	balances: {
-		usdc: 0,
+		[USDC_MARKET.symbol]: 0,
+		[JITOSOL_MARKET.symbol]: 0,
 	},
 };
 

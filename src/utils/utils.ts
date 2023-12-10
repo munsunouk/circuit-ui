@@ -1,5 +1,9 @@
-import { HistoryResolution } from '@drift/common';
+import { HistoricalPrice } from '@/stores/assetPriceHistory/useAssetPriceHistoryStore';
+import { BigNum } from '@drift-labs/sdk';
+import { HistoryResolution, USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import dayjs from 'dayjs';
+
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 
 export const redeemPeriodToString = (seconds = 0) => {
 	const totalHours = Math.floor(seconds / 60 / 60);
@@ -27,10 +31,10 @@ export const getRpcLatencyColor = (latency: number | undefined) => {
 	return !latency || latency < 0
 		? 'bg-container-border-light'
 		: latency < 250
-		  ? 'bg-success-green-border'
-		  : latency < 500
-		    ? 'bg-warning-yellow-border'
-		    : 'bg-error-red-border';
+		? 'bg-success-green-border'
+		: latency < 500
+		? 'bg-warning-yellow-border'
+		: 'bg-error-red-border';
 };
 
 // replace space with '-', and uri encode vault name
@@ -66,4 +70,55 @@ export const normalizeDate = (
 export function shortenPubkey(pubkey: string | undefined, length = 4) {
 	if (!pubkey) return '';
 	return `${pubkey.slice(0, length)}...${pubkey.slice(44 - length, 44)}`;
+}
+
+export function displayAssetValue(
+	value: BigNum,
+	marketIndex: number,
+	toTradePrecision = false,
+	toFixed?: number
+) {
+	if (marketIndex === USDC_SPOT_MARKET_INDEX) {
+		return value.toNotional();
+	} else {
+		return `${
+			toTradePrecision
+				? value.toTradePrecision()
+				: toFixed === undefined
+				? value.toNum()
+				: value.toNum().toFixed(toFixed)
+		} ${SPOT_MARKETS_LOOKUP[marketIndex].symbol}`;
+	}
+}
+
+export function getAssetPriceFromClosestTs(
+	assetPriceHistory: HistoricalPrice[],
+	targetTs: number
+) {
+	// use binary search to find the closest timestamp and return the price
+	let start = 0;
+	let end = assetPriceHistory.length - 1;
+	let closest = assetPriceHistory[0];
+
+	while (start <= end) {
+		let mid = Math.floor((start + end) / 2);
+		let midPrice = assetPriceHistory[mid];
+
+		if (
+			Math.abs(targetTs - closest.timestamp) >
+			Math.abs(targetTs - midPrice.timestamp)
+		) {
+			closest = midPrice;
+		}
+
+		if (midPrice.timestamp < targetTs) {
+			start = mid + 1;
+		} else if (midPrice.timestamp > targetTs) {
+			end = mid - 1;
+		} else {
+			break;
+		}
+	}
+
+	return closest ?? { timestamp: 0, price: 1 }; // prevent dividing price by 0
 }

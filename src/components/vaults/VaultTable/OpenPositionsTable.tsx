@@ -71,16 +71,16 @@ const columns = [
 		(row) => (
 			<div
 				className={twMerge(
-					row.pnl.lt(ZERO)
+					row.pnlVsMark.lt(ZERO)
 						? 'text-text-negative-red'
 						: 'text-text-success-green'
 				)}
 			>
-				{row.pnl.lt(ZERO) ? '-' : ''}$
-				{BigNum.from(row.pnl, PRICE_PRECISION_EXP).abs().prettyPrint()}
+				{row.pnlVsMark.lt(ZERO) ? '-' : ''}$
+				{BigNum.from(row.pnlVsMark, PRICE_PRECISION_EXP).abs().prettyPrint()}
 				<div className="text-[13px]">
 					{COMMON_UI_UTILS.calculatePnlPctFromPosition(
-						row.pnl,
+						row.pnlVsMark,
 						row.quoteEntryAmount
 					).toFixed(3)}
 					%

@@ -17,9 +17,9 @@ import { useEffect } from 'react';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
+import useDepositAssetBalances from '@/hooks/useDepositAssetBalances';
 import useShowAcknowledgeModal from '@/hooks/useShowAcknowledgeModal';
 import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
-import useUsdcBalance from '@/hooks/useUsdcBalance';
 
 import Env, {
 	PERP_MARKETS_LOOKUP,
@@ -45,7 +45,7 @@ SPOT_MARKETS_LOOKUP.forEach((market) => {
 const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useSyncWalletToStore();
 	useFetchVault();
-	useUsdcBalance();
+	useDepositAssetBalances();
 	useAllRpcLatencies();
 	useEmulation();
 	useShowAcknowledgeModal();

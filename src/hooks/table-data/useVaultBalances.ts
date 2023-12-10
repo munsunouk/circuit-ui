@@ -33,7 +33,6 @@ export const useVaultBalances = (
 
 		try {
 			const spotPositions = vaultDriftUserAccount.spotPositions;
-
 			const userBalances = spotPositions
 				.map((spotPosition) => {
 					const spotMarketAccount = driftClient.getSpotMarketAccount(
@@ -80,6 +79,7 @@ export const useVaultBalances = (
 						quoteValue,
 						marketIndex: spotPosition.marketIndex,
 						liquidationPrice,
+						spotBalanceType: spotPosition.balanceType,
 					};
 				})
 				.filter((userBalance) => userBalance.baseBalance.gt(ZERO));

@@ -15,7 +15,10 @@ export default function ToastContainer() {
 					'relative flex bg-white p-2 border border-black text-black mt-2 overflow-hidden text-text-emphasis',
 					context?.type === 'success' &&
 						'border-success-green-border bg-success-green-bg',
-					context?.type === 'error' && 'border-error-red-border bg-error-red-bg'
+					context?.type === 'error' &&
+						'border-error-red-border bg-error-red-bg',
+					context?.type === 'warning' &&
+						'border-warning-yellow-border bg-warning-yellow-bg'
 				)
 			}
 			hideProgressBar
