@@ -184,4 +184,5 @@ export const JITOSOL_BASIS_VAULT: UiVaultConfig = {
 			],
 		},
 	],
+	comingSoon: true,
 };

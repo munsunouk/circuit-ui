@@ -65,12 +65,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 	}, [vaultPubKey, !!vaultAccountData, !!vaultDriftUser]);
 
 	async function calcVaultStats() {
-		if (
-			!vaultDriftUser ||
-			!vaultClient ||
-			!vault.vaultAccount ||
-			!uiVaultConfig
-		)
+		if (!vaultDriftUser || !vaultClient || !vaultAccountData || !uiVaultConfig)
 			return DEFAULT_VAULT_STATS;
 
 		const baseAssetQuotePrice = getMarketPriceData(
@@ -79,7 +74,7 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 
 		// calculate total account value
 		const totalAccountQuoteValue = await vaultClient.calculateVaultEquity({
-			vault: vault.vaultAccountData,
+			vault: vaultAccountData,
 		});
 		const totalAccountBaseValueBN = totalAccountQuoteValue.div(
 			BigNum.from(baseAssetQuotePrice, QUOTE_PRECISION_EXP).val
@@ -94,10 +89,11 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 		).val;
 
 		// calculate all time total pnl
+		const netDepositBase = vaultAccountData?.netDeposits;
+
 		const allTimeTotalPnlQuoteValue = vaultDriftUser.getTotalAllTimePnl();
-		const allTimeTotalPnlBaseValueBN = allTimeTotalPnlQuoteValue.div(
-			BigNum.from(baseAssetQuotePrice, QUOTE_PRECISION_EXP).val
-		);
+		const allTimeTotalPnlBaseValueBN =
+			totalAccountBaseValue.sub(netDepositBase);
 		const allTimeTotalPnlBaseValueNum = BigNum.from(
 			allTimeTotalPnlBaseValueBN,
 			QUOTE_PRECISION_EXP

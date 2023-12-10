@@ -306,7 +306,7 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	pubkeyString: SUPERCHARGER_VAULT_PUBKEY,
 	description:
 		'Multiply your yields with delta-neutral market making strategies',
-	permissioned: true,
+	permissioned: false,
 	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,
 	previewBackdropUrl: '/backdrops/supercharger-backdrop.svg',

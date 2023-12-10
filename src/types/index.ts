@@ -1,4 +1,4 @@
-import { BN, BigNum, SpotMarketConfig } from '@drift-labs/sdk';
+import { BN, BigNum, SpotBalanceType, SpotMarketConfig } from '@drift-labs/sdk';
 import { UISerializableAccountSnapshot } from '@drift/common';
 
 export type SnapshotKey = keyof Pick<
@@ -45,6 +45,7 @@ export type UserBalance = {
 	quoteValue: BigNum;
 	marketIndex: number;
 	liquidationPrice: BigNum;
+	spotBalanceType: SpotBalanceType;
 };
 
 export interface OverviewSection {
@@ -67,4 +68,5 @@ export interface UiVaultConfig {
 	market: SpotMarketConfig;
 	assetColor: string; // primarily used for the deposit asset border color
 	historyType?: 'Historical' | 'Backtest';
+	comingSoon?: boolean;
 }

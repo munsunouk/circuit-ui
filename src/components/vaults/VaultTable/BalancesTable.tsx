@@ -1,5 +1,6 @@
 import { UserBalance } from '@/types';
-import { UIMarket } from '@drift/common';
+import { SpotBalanceType } from '@drift-labs/sdk';
+import { ENUM_UTILS, UIMarket } from '@drift/common';
 import { createColumnHelper } from '@tanstack/react-table';
 
 import Table from '@/components/elements/Table';
@@ -29,7 +30,9 @@ const columns = [
 	),
 	columnHelper.accessor(
 		(row) =>
-			`${row.baseBalance.prettyPrint()} ${
+			`${
+				ENUM_UTILS.match(row.spotBalanceType, SpotBalanceType.BORROW) ? '-' : ''
+			}${row.baseBalance.prettyPrint()} ${
 				SPOT_MARKETS_LOOKUP[row.marketIndex].symbol
 			}`,
 		{
@@ -42,14 +45,21 @@ const columns = [
 			),
 		}
 	),
-	columnHelper.accessor('quoteValue', {
-		header: () => 'Notional',
-		cell: (info) => (
-			<Table.NumericValue className="w-[190px]">
-				${info.getValue().prettyPrint()}
-			</Table.NumericValue>
-		),
-	}),
+	columnHelper.accessor(
+		(row) =>
+			`${
+				ENUM_UTILS.match(row.spotBalanceType, SpotBalanceType.BORROW) ? '-' : ''
+			}$${row.quoteValue.prettyPrint()}`,
+		{
+			id: 'quoteValue',
+			header: () => 'Notional',
+			cell: (info) => (
+				<Table.NumericValue className="w-[190px]">
+					{info.getValue()}
+				</Table.NumericValue>
+			),
+		}
+	),
 	columnHelper.accessor('liquidationPrice', {
 		header: () => 'Liq. Price',
 		cell: (info) => (

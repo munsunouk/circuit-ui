@@ -222,6 +222,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		spotMarketConfig.marketIndex === USDC_SPOT_MARKET_INDEX
 			? ''
 			: spotMarketConfig.symbol;
+	const comingSoon = !vault.pubkeyString || !!uiVaultConfig?.comingSoon;
 
 	// fetch vault account data
 	useEffect(() => {
@@ -262,7 +263,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 
 	return (
 		<CardContainer
-			comingSoon={!vault.pubkeyString}
+			comingSoon={comingSoon}
 			handleMouseEnter={handleMouseEnter}
 			handleMouseLeave={handleMouseLeave}
 			vaultName={vault.name}
@@ -327,7 +328,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						</div>
 					</div>
 					<div className="w-full grow flex flex-col items-center justify-end h-[136px]">
-						{!vault?.pubkeyString && (
+						{comingSoon ? (
 							<span
 								className={twMerge(
 									sourceCodePro.className,
@@ -336,8 +337,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 							>
 								Coming Soon
 							</span>
-						)}
-						{!!vault?.pubkeyString && (
+						) : (
 							<div className="flex flex-col items-center justify-end w-full">
 								<VaultStats
 									apy={`${((isNaN(apy) ? 0 : apy) * 100).toFixed(2)}%`}
