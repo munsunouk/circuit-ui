@@ -20,6 +20,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import useDepositAssetBalances from '@/hooks/useDepositAssetBalances';
 import useShowAcknowledgeModal from '@/hooks/useShowAcknowledgeModal';
 import useSyncWalletToStore from '@/hooks/useSyncWalletToStore';
+import { useSyncVaultStats } from '@/hooks/useVaultStats';
 
 import Env, {
 	PERP_MARKETS_LOOKUP,
@@ -50,6 +51,7 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useEmulation();
 	useShowAcknowledgeModal();
 	useSyncOraclePriceStore(marketsAndAccounts);
+	useSyncVaultStats();
 
 	return <>{children}</>;
 };

@@ -1,13 +1,21 @@
+import { UiVaultConfig } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
-import { BN, BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import {
+	BN,
+	BigNum,
+	PublicKey,
+	QUOTE_PRECISION_EXP,
+	User,
+} from '@drift-labs/sdk';
+import { Vault, VaultClient } from '@drift-labs/vaults-sdk';
 import { MarketId } from '@drift/common';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
+import { singletonHook } from 'react-singleton-hook';
 
 import { VAULTS } from '@/constants/vaults';
 
 import useAppStore from '../stores/app/useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
-import { useVault } from './useVault';
 
 const UPDATE_FREQUENCY_MS = 10_000;
 
@@ -27,47 +35,66 @@ const DEFAULT_VAULT_STATS: VaultStats = {
 	isLoaded: false,
 };
 
-export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
-	const vault = useVault(vaultPubKey);
-	const vaultDriftUser = vault?.vaultDriftUser;
-	const vaultAccountData = useAppStore((s) =>
-		s.getVaultAccountData(vaultPubKey)
-	);
-	const vaultClient = useAppStore((s) => s.vaultClient);
+function useSyncVaultsStatsImpl() {
+	const vaultKeys = useAppStore((s) => Object.keys(s.vaults));
+	const getAppStore = useAppStore((s) => s.get);
+	const setAppStore = useAppStore((s) => s.set);
 	const { getMarketPriceData } = useOraclePriceStore();
 
-	const [vaultStats, setVaultStats] = useState(DEFAULT_VAULT_STATS);
-
-	const refreshStatsIntervalRef = useRef<NodeJS.Timer>();
-
-	const uiVaultConfig = VAULTS.find(
-		(vault) => vault.pubkeyString === vaultPubKey?.toString()
-	);
+	const combinedVaultKeysString = vaultKeys.join(',');
 
 	useEffect(() => {
-		calcVaultStats().then((newVaultStats) => {
-			setVaultStats(newVaultStats);
-		});
+		fetchAllVaultsStats();
 
-		if (!refreshStatsIntervalRef.current) {
-			refreshStatsIntervalRef.current = setInterval(() => {
-				calcVaultStats().then((newVaultStats) => {
-					setVaultStats(newVaultStats);
-				});
-			}, UPDATE_FREQUENCY_MS);
-		}
+		const refreshStatsInterval = setInterval(() => {
+			fetchAllVaultsStats();
+		}, UPDATE_FREQUENCY_MS);
 
 		return () => {
-			if (refreshStatsIntervalRef.current) {
-				clearInterval(refreshStatsIntervalRef.current);
-			}
+			clearInterval(refreshStatsInterval);
 		};
-	}, [vaultPubKey, !!vaultAccountData, !!vaultDriftUser]);
+	}, [combinedVaultKeysString]);
 
-	async function calcVaultStats() {
-		if (!vaultDriftUser || !vaultClient || !vaultAccountData || !uiVaultConfig)
-			return DEFAULT_VAULT_STATS;
+	async function fetchAllVaultsStats() {
+		const vaultClient = getAppStore().vaultClient;
+		const vaults = getAppStore().vaults;
+		const vaultsKeys = Object.keys(vaults);
 
+		if (!vaultClient) return;
+
+		vaultsKeys.forEach((vaultKey) => {
+			const vault = vaults[vaultKey];
+			const vaultDriftUser = vault?.vaultDriftUser;
+			const vaultAccountData = vault?.vaultAccountData;
+			const uiVaultConfig = VAULTS.find(
+				(vault) => vault.pubkeyString === vaultKey
+			);
+
+			if (vaultDriftUser && vaultAccountData && uiVaultConfig) {
+				fetchVaultStats(
+					vaultClient,
+					vaultDriftUser,
+					vaultAccountData,
+					uiVaultConfig
+				)
+					.then((newVaultStats) => {
+						setAppStore((s) => {
+							s.vaults[vaultKey]!.vaultStats = newVaultStats;
+						});
+					})
+					.catch((err) => {
+						console.error(err);
+					});
+			}
+		});
+	}
+
+	async function fetchVaultStats(
+		vaultClient: VaultClient,
+		vaultDriftUser: User,
+		vaultAccountData: Vault,
+		uiVaultConfig: UiVaultConfig
+	) {
 		const baseAssetQuotePrice = getMarketPriceData(
 			MarketId.createSpotMarket(uiVaultConfig.market.marketIndex)
 		).priceData.price;
@@ -111,8 +138,16 @@ export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
 			isLoaded: true,
 		};
 	}
+}
 
-	return vaultStats;
+export const useSyncVaultStats = singletonHook(
+	undefined,
+	useSyncVaultsStatsImpl
+);
+
+export function useVaultStats(vaultPubKey: PublicKey | undefined): VaultStats {
+	const vaultStats = useAppStore((s) => s.getVaultStats(vaultPubKey));
+	return vaultStats ?? DEFAULT_VAULT_STATS;
 }
 
 export function useCurrentVaultStats(): VaultStats {
