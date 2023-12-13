@@ -402,9 +402,13 @@ export default function VaultPerformance() {
 					/>
 					<BreakdownRow
 						label="APY"
-						value={`${(
-							(isNaN(displayedData.apy) ? 0 : displayedData.apy) * 100
-						).toFixed(2)}%`}
+						value={`${
+							uiVaultConfig?.temporaryApy
+								? uiVaultConfig.temporaryApy
+								: (
+										(isNaN(displayedData.apy) ? 0 : displayedData.apy) * 100
+								  ).toFixed(2)
+						}%`}
 						loading={loading}
 					/>
 					<BreakdownRow
