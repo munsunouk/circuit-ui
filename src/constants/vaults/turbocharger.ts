@@ -7,7 +7,7 @@ export const TURBOCHARGER_VAULT: UiVaultConfig = {
 	name: 'Turbocharger',
 	pubkeyString: 'F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr',
 	description:
-		'Multiply your yields with delta-neutral market making strategies',
+		'Multiply your yields with delta-neutral market making strategies focused on BTC and ETH',
 	permissioned: false,
 	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,

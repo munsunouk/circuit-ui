@@ -305,7 +305,7 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	name: 'Supercharger',
 	pubkeyString: SUPERCHARGER_VAULT_PUBKEY,
 	description:
-		'Multiply your yields with delta-neutral market making strategies',
+		'Multiply your yields with delta-neutral market making strategies focused on SOL',
 	permissioned: false,
 	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,
