@@ -452,11 +452,16 @@ export default function VaultPerformance() {
 				</div>
 				<div className="w-full h-[320px]">
 					{!!displayedGraph?.length && (
-						<PerformanceGraph
-							data={displayedGraph}
-							marketIndex={spotMarketConfig.marketIndex}
-							isPnl={graphView.value === GraphView.PnL}
-						/>
+						<div>
+							<PerformanceGraph
+								data={displayedGraph}
+								marketIndex={spotMarketConfig.marketIndex}
+								isPnl={graphView.value === GraphView.PnL}
+							/>
+							<div className="text-xs text-right text-gray-600">
+								Powered by Coingecko
+							</div>
+						</div>
 					)}
 				</div>
 			</FadeInDiv>

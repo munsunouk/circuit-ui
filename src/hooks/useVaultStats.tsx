@@ -119,16 +119,7 @@ function useSyncVaultsStatsImpl() {
 		const netDepositBase = vaultAccountData?.netDeposits;
 
 		const allTimeTotalPnlQuoteValue = vaultDriftUser.getTotalAllTimePnl();
-		const allTimeTotalPnlBaseValueBN =
-			totalAccountBaseValue.sub(netDepositBase);
-		const allTimeTotalPnlBaseValueNum = BigNum.from(
-			allTimeTotalPnlBaseValueBN,
-			QUOTE_PRECISION_EXP
-		).toNum();
-		const allTimeTotalPnlBaseValue = BigNum.fromPrint(
-			`${allTimeTotalPnlBaseValueNum}`,
-			uiVaultConfig.market.precisionExp
-		).val;
+		const allTimeTotalPnlBaseValue = totalAccountBaseValue.sub(netDepositBase);
 
 		return {
 			totalAccountQuoteValue,
