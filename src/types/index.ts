@@ -72,4 +72,5 @@ export interface UiVaultConfig {
 	historyType?: 'Historical' | 'Backtest';
 	assetsOperatedOn?: Asset[];
 	comingSoon?: boolean;
+	temporaryApy?: number; // used at the start of a new vault to show a temporary APY
 }

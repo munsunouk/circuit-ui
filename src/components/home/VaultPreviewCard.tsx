@@ -25,7 +25,7 @@ import { sourceCodePro, syne } from '@/constants/fonts';
 import Badge from '../elements/Badge';
 import Button from '../elements/Button';
 import MarketIcon from '../elements/MarketIcon';
-import { ArrowRight, Lock } from '../icons';
+import { Lock } from '../icons';
 import Particles from './Particles';
 
 function VaultStat({
@@ -297,30 +297,65 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 			>
 				{/** Background blur + grayscale (separated to allow isolation of inner content from grayscale ) */}
 				<div className="absolute inset-0 backdrop-blur" />
-				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-8 md:py-10 isolate grow">
+				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-8 md:pb-10 md:pt-8 isolate grow">
 					<div className="flex flex-col items-center w-full gap-2">
 						<span className={twMerge(syne.className, 'text-4xl font-bold')}>
 							{vault.name}
 						</span>
 						<div className="flex flex-col items-center w-full gap-2">
 							{/* <span>{vault.description}</span> */}
-							<div className="flex items-center justify-center w-full gap-3">
-								<Badge
-									outlined
-									borderColor={uiVaultConfig?.assetColor}
-									className="flex items-center"
-								>
+
+							<div className="flex items-center">
+								<span>Deposit: </span>
+								<span>
+									{' '}
 									<MarketIcon
+										key={spotMarketConfig.symbol}
 										marketName={spotMarketConfig.symbol}
-										className="mr-1"
+										className="ml-1"
 									/>
-									<span>{spotMarketConfig.symbol}</span>
-								</Badge>
+								</span>
 
+								<div className="h-4 w-[1px] bg-white mx-2"></div>
+
+								<span>Trading: </span>
 								{uiVaultConfig?.assetsOperatedOn && (
-									<>
-										<ArrowRight className="[&>path]:stroke-white" />
+									<div className="flex gap-1">
+										{uiVaultConfig?.assetsOperatedOn?.map((asset) => {
+											return (
+												<MarketIcon
+													key={asset.market.symbol}
+													marketName={asset.market.symbol}
+													className="ml-1"
+												/>
+											);
+										})}
+									</div>
+								)}
+							</div>
 
+							{/* <div className="flex flex-col items-center justify-center w-full gap-3">
+								<div className="flex items-center gap-1">
+									<span>Deposit:</span>
+									<Badge
+										outlined
+										borderColor={uiVaultConfig?.assetColor}
+										className="flex items-center"
+									>
+										<MarketIcon
+											marketName={spotMarketConfig.symbol}
+											className="mr-1"
+										/>
+										<span>{spotMarketConfig.symbol}</span>
+									</Badge>
+								</div>
+
+								<div className="h-8 w-[1px] bg-white"></div>
+
+								<div className="flex items-center gap-1">
+									<span>Trading:</span>
+
+									{uiVaultConfig?.assetsOperatedOn && (
 										<div className="flex gap-1">
 											{uiVaultConfig?.assetsOperatedOn?.map((asset) => {
 												return (
@@ -339,9 +374,9 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 												);
 											})}
 										</div>
-									</>
-								)}
-							</div>
+									)}
+								</div>
+							</div> */}
 							{vault.permissioned && (
 								<Badge>
 									<div className="flex items-center justify-center gap-1 whitespace-nowrap">
@@ -365,7 +400,11 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						) : (
 							<div className="flex flex-col items-center justify-end w-full">
 								<VaultStats
-									apy={`${((isNaN(apy) ? 0 : apy) * 100).toFixed(2)}%`}
+									apy={`${
+										uiVaultConfig?.temporaryApy
+											? uiVaultConfig?.temporaryApy
+											: ((isNaN(apy) ? 0 : apy) * 100).toFixed(2)
+									}%`}
 									tvl={BigNum.from(
 										tvl,
 										spotMarketConfig.precisionExp
