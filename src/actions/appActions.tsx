@@ -96,6 +96,7 @@ const createAppActions = (
 		]);
 
 		const currentVaultState = get().vaults[vaultAddress.toString()];
+
 		const updatedVaultState = {
 			vaultDriftClient,
 			vaultDriftUser,
@@ -113,7 +114,7 @@ const createAppActions = (
 				balances: [],
 				openOrders: [],
 			},
-			vaultStats: DEFAULT_VAULT_STATS,
+			vaultStats: currentVaultState?.vaultStats ?? DEFAULT_VAULT_STATS,
 		};
 
 		set((s) => {
