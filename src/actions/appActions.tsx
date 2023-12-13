@@ -1,4 +1,4 @@
-import { AppStoreState } from '@/stores/app/useAppStore';
+import { AppStoreState, DEFAULT_VAULT_STATS } from '@/stores/app/useAppStore';
 import {
 	SerializedDepositHistory,
 	SerializedPerformanceHistory,
@@ -113,6 +113,7 @@ const createAppActions = (
 				balances: [],
 				openOrders: [],
 			},
+			vaultStats: DEFAULT_VAULT_STATS,
 		};
 
 		set((s) => {

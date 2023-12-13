@@ -3,7 +3,7 @@ import {
 	SerializedPerformanceHistory,
 	UserBalance,
 } from '@/types';
-import { DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
+import { BN, DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
 import {
 	EventType,
 	Vault,
@@ -21,6 +21,22 @@ import { create } from 'zustand';
 import { UISerializableOrderWithOraclePrice } from '@/hooks/table-data/useVaultOpenOrders';
 
 import { JITOSOL_MARKET, USDC_MARKET } from '@/constants/environment';
+
+export interface VaultStats {
+	totalAccountQuoteValue: BN;
+	totalAccountBaseValue: BN;
+	allTimeTotalPnlQuoteValue: BN;
+	allTimeTotalPnlBaseValue: BN;
+	isLoaded: boolean;
+}
+
+export const DEFAULT_VAULT_STATS: VaultStats = {
+	totalAccountQuoteValue: new BN(0),
+	totalAccountBaseValue: new BN(0),
+	allTimeTotalPnlQuoteValue: new BN(0),
+	allTimeTotalPnlBaseValue: new BN(0),
+	isLoaded: false,
+};
 
 export type UIVault = {
 	vaultDriftClient: DriftClient;
@@ -40,6 +56,7 @@ export type UIVault = {
 		balances: UserBalance[];
 		openOrders: UISerializableOrderWithOraclePrice[];
 	};
+	vaultStats: VaultStats;
 };
 
 export interface AppStoreState {
@@ -78,6 +95,9 @@ export interface AppStoreState {
 		vaultAddress: PublicKey | undefined
 	) => UserAccount | undefined;
 	getVaultDriftUser: (vaultAddress: PublicKey | undefined) => User | undefined;
+	getVaultStats: (
+		vaultAddress: PublicKey | undefined
+	) => VaultStats | undefined;
 }
 
 const DEFAULT_APP_STORE_STATE = {
@@ -141,6 +161,9 @@ const useAppStore = create<AppStoreState>((set, get) => {
 		},
 		getVaultDriftUser: (vaultAddress: PublicKey | undefined) => {
 			return vaultPropGetter(get, vaultAddress, 'vaultDriftUser') as User;
+		},
+		getVaultStats: (vaultAddress: PublicKey | undefined) => {
+			return vaultPropGetter(get, vaultAddress, 'vaultStats') as VaultStats;
 		},
 	};
 });

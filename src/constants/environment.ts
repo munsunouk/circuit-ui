@@ -48,6 +48,8 @@ CommonConfig.spotMarketsLookup[6].symbol = 'JitoSOL';
 // Spot markets
 export const SPOT_MARKETS_LOOKUP = CommonConfig.spotMarketsLookup;
 export const USDC_MARKET = SPOT_MARKETS_LOOKUP[USDC_SPOT_MARKET_INDEX];
+export const SOL_MARKET = SPOT_MARKETS_LOOKUP[1];
+export const WBTC_MARKET = SPOT_MARKETS_LOOKUP[3];
 export const WETH_MARKET = SPOT_MARKETS_LOOKUP[4];
 export const JITOSOL_MARKET = SPOT_MARKETS_LOOKUP[6];
 

@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import { normalizeDate } from '@/utils/utils';
 
-import { USDC_DEPOSIT_ASSET } from '../assets';
+import { SOL_DEPOSIT_ASSET, USDC_DEPOSIT_ASSET } from '../assets';
 import { FEES_PLACEHOLDER, PERIOD_PLACEHOLDER } from '../misc';
 
 const SUPERCHARGER_PAST_RAW_DATA = [
@@ -305,7 +305,7 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	name: 'Supercharger',
 	pubkeyString: SUPERCHARGER_VAULT_PUBKEY,
 	description:
-		'Multiply your yields with delta-neutral market making strategies',
+		'Multiply your yields with delta-neutral market making strategies focused on SOL',
 	permissioned: false,
 	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,
@@ -313,6 +313,7 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	backdropParticlesColor: '#88c9ff',
 	pastPerformanceHistory: SUPERCHARGER_PAST_DATA,
 	historyType: 'Historical',
+	assetsOperatedOn: [SOL_DEPOSIT_ASSET],
 	vaultOverview: [
 		{
 			title: 'Strategy',

@@ -3,6 +3,7 @@ import { UiVaultConfig } from '@/types';
 import { WETH_DEPOSIT_ASSET } from '../assets';
 import { JITOSOL_BASIS_VAULT } from './jitosol-basis';
 import { SUPERCHARGER_VAULT } from './supercharger';
+import { TURBOCHARGER_VAULT } from './turbocharger';
 
 const WETH_BASIS_VAULT: UiVaultConfig = {
 	name: 'wETH Basis Vault',
@@ -16,6 +17,7 @@ const WETH_BASIS_VAULT: UiVaultConfig = {
 
 export const VAULTS: UiVaultConfig[] = [
 	SUPERCHARGER_VAULT,
+	TURBOCHARGER_VAULT,
 	JITOSOL_BASIS_VAULT,
 	// WETH_BASIS_VAULT,
 ];

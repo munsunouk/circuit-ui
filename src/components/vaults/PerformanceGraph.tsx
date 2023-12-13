@@ -34,7 +34,7 @@ const CustomTooltip = ({
 		const date = dayjs.unix(label).format('D MMM YYYY');
 		const value = payload[0].value ?? 0;
 
-		const isProfit = value > 0;
+		const isProfit = value >= 0;
 		const market = Config.spotMarketsLookup[marketIndex];
 		const isUsdcAsset = marketIndex === USDC_MARKET.marketIndex;
 

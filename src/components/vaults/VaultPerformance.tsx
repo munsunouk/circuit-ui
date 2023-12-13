@@ -161,7 +161,7 @@ export default function VaultPerformance() {
 	const { assetPriceHistory, loading: assetPriceHistoryLoading } =
 		useGetAssetPriceHistory(spotMarketConfig.marketIndex, earliestTs);
 
-	const allTimePnlHistory =
+	const allTimeQuotePnlHistory =
 		vault?.pnlHistory.dailyAllTimePnls
 			.map((pnl) => ({
 				totalAccountValue: pnl.totalAccountValue,
@@ -173,6 +173,7 @@ export default function VaultPerformance() {
 				allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
 				epochTs: NOW_TS,
 			}) ?? [];
+
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
 	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
 	const takerVol30Day = vaultUserStats?.takerVolume30D ?? ZERO;
@@ -316,7 +317,7 @@ export default function VaultPerformance() {
 
 		if (assetPriceHistoryLoading && !isUsdcMarket) return [];
 
-		const quoteData = allTimePnlHistory
+		const quoteData = allTimeQuotePnlHistory
 			.map((snapshot) => ({
 				epochTs: snapshot.epochTs,
 				quoteValue: snapshot[graphView.snapshotAttribute],
@@ -452,11 +453,16 @@ export default function VaultPerformance() {
 				</div>
 				<div className="w-full h-[320px]">
 					{!!displayedGraph?.length && (
-						<PerformanceGraph
-							data={displayedGraph}
-							marketIndex={spotMarketConfig.marketIndex}
-							isPnl={graphView.value === GraphView.PnL}
-						/>
+						<div>
+							<PerformanceGraph
+								data={displayedGraph}
+								marketIndex={spotMarketConfig.marketIndex}
+								isPnl={graphView.value === GraphView.PnL}
+							/>
+							<div className="text-xs text-right text-gray-600">
+								Powered by Coingecko
+							</div>
+						</div>
 					)}
 				</div>
 			</FadeInDiv>

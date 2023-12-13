@@ -1,3 +1,4 @@
+export { default as ArrowRight } from './ArrowRight';
 export { default as Checkmark } from './Checkmark';
 export { default as Chevron } from './Chevron';
 export { default as Close } from './Close';
