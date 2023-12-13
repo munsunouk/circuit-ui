@@ -5,7 +5,7 @@ import { FEES_PLACEHOLDER, PERIOD_PLACEHOLDER } from '../misc';
 
 export const TURBOCHARGER_VAULT: UiVaultConfig = {
 	name: 'Turbocharger',
-	pubkeyString: '',
+	pubkeyString: 'F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr',
 	description:
 		'Multiply your yields with delta-neutral market making strategies',
 	permissioned: false,
