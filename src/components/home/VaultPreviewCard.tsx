@@ -25,7 +25,7 @@ import { sourceCodePro, syne } from '@/constants/fonts';
 import Badge from '../elements/Badge';
 import Button from '../elements/Button';
 import MarketIcon from '../elements/MarketIcon';
-import { Lock } from '../icons';
+import { ArrowRight, Lock } from '../icons';
 import Particles from './Particles';
 
 function VaultStat({
@@ -298,21 +298,13 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 				{/** Background blur + grayscale (separated to allow isolation of inner content from grayscale ) */}
 				<div className="absolute inset-0 backdrop-blur" />
 				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-8 md:py-10 isolate grow">
-					<div className="flex flex-col items-center gap-2">
+					<div className="flex flex-col items-center w-full gap-2">
 						<span className={twMerge(syne.className, 'text-4xl font-bold')}>
 							{vault.name}
 						</span>
-						<div className="flex flex-col items-center gap-2">
+						<div className="flex flex-col items-center w-full gap-2">
 							{/* <span>{vault.description}</span> */}
-							<div className="flex items-center gap-2">
-								{vault.permissioned && (
-									<Badge>
-										<div className="flex items-center justify-center gap-1 whitespace-nowrap">
-											<Lock />
-											<span>Whitelist Only</span>
-										</div>
-									</Badge>
-								)}
+							<div className="flex items-center justify-center w-full gap-3">
 								<Badge
 									outlined
 									borderColor={uiVaultConfig?.assetColor}
@@ -324,7 +316,40 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									/>
 									<span>{spotMarketConfig.symbol}</span>
 								</Badge>
+
+								{uiVaultConfig?.assetsOperatedOn && (
+									<>
+										<ArrowRight className="[&>path]:stroke-white" />
+
+										<div className="flex gap-1">
+											{uiVaultConfig?.assetsOperatedOn?.map((asset) => {
+												return (
+													<Badge
+														key={asset.market.symbol}
+														outlined
+														borderColor={asset.borderColor}
+														className="flex items-center"
+													>
+														<MarketIcon
+															marketName={asset.market.symbol}
+															className="mr-1"
+														/>
+														<span>{asset.market.symbol}</span>
+													</Badge>
+												);
+											})}
+										</div>
+									</>
+								)}
 							</div>
+							{vault.permissioned && (
+								<Badge>
+									<div className="flex items-center justify-center gap-1 whitespace-nowrap">
+										<Lock />
+										<span>Whitelist Only</span>
+									</div>
+								</Badge>
+							)}
 						</div>
 					</div>
 					<div className="w-full grow flex flex-col items-center justify-end h-[136px]">

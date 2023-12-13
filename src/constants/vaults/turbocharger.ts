@@ -1,6 +1,10 @@
 import { UiVaultConfig } from '@/types';
 
-import { USDC_DEPOSIT_ASSET } from '../assets';
+import {
+	USDC_DEPOSIT_ASSET,
+	WBTC_DEPOSIT_ASSET,
+	WETH_DEPOSIT_ASSET,
+} from '../assets';
 import { FEES_PLACEHOLDER, PERIOD_PLACEHOLDER } from '../misc';
 
 export const TURBOCHARGER_VAULT: UiVaultConfig = {
@@ -14,6 +18,7 @@ export const TURBOCHARGER_VAULT: UiVaultConfig = {
 	previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
 	backdropParticlesColor: '#88c9ff',
 	historyType: 'Historical',
+	assetsOperatedOn: [WETH_DEPOSIT_ASSET, WBTC_DEPOSIT_ASSET],
 	vaultOverview: [
 		{
 			title: 'Strategy',
