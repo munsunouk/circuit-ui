@@ -1,6 +1,12 @@
 import { HistoricalPrice } from '@/stores/assetPriceHistory/useAssetPriceHistoryStore';
-import { BigNum } from '@drift-labs/sdk';
-import { HistoryResolution, USDC_SPOT_MARKET_INDEX } from '@drift/common';
+import { SerializedPerformanceHistory } from '@/types';
+import { BN, BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { Vault } from '@drift-labs/vaults-sdk';
+import {
+	HistoryResolution,
+	UISerializableDepositRecord,
+	USDC_SPOT_MARKET_INDEX,
+} from '@drift/common';
 import dayjs from 'dayjs';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
@@ -121,4 +127,72 @@ export function getAssetPriceFromClosestTs(
 	}
 
 	return closest ?? { timestamp: 0, price: 1 }; // prevent dividing price by 0
+}
+
+export function getBasePnlHistoryFromVaultDeposits(
+	vault: Vault,
+	depositsHistory: UISerializableDepositRecord[],
+	quotePnlHistory: Pick<
+		SerializedPerformanceHistory,
+		'epochTs' | 'totalAccountValue'
+	>[],
+	assetPriceHistory: HistoricalPrice[]
+) {
+	const basePrecisionExp =
+		SPOT_MARKETS_LOOKUP[vault.spotMarketIndex].precisionExp;
+	let currentNetDeposit = BigNum.zero(basePrecisionExp);
+
+	// calculate net deposits history
+	let netDepositsHistory = depositsHistory.map((deposit) => {
+		currentNetDeposit = !!deposit.direction.deposit
+			? currentNetDeposit.add(deposit.amount)
+			: currentNetDeposit.sub(deposit.amount);
+		return {
+			ts: deposit.ts.toNumber(),
+			netDeposit: currentNetDeposit,
+		};
+	});
+
+	const basePnlHistory = [];
+
+	for (let quotePnl of quotePnlHistory) {
+		// find nearest net deposit before pnl snapshot epochTs
+		let nearestNetDeposit = netDepositsHistory[0];
+		let nearestNetDepositIndex;
+		for (
+			nearestNetDepositIndex = 0;
+			nearestNetDepositIndex < netDepositsHistory.length;
+			nearestNetDepositIndex++
+		) {
+			const netDeposit = netDepositsHistory[nearestNetDepositIndex];
+			if (netDeposit.ts <= quotePnl.epochTs) {
+				nearestNetDeposit = netDeposit;
+			} else {
+				break;
+			}
+		}
+
+		// base pnl = (totalAccountValue / assetPriceOfTheDay) - netDeposit
+		const assetPriceOfTheDay = getAssetPriceFromClosestTs(
+			assetPriceHistory,
+			quotePnl.epochTs
+		);
+		const totalAccountBaseValueBigNum = BigNum.from(
+			quotePnl.totalAccountValue / assetPriceOfTheDay.price,
+			QUOTE_PRECISION_EXP
+		).shiftTo(basePrecisionExp);
+		const basePnl = totalAccountBaseValueBigNum
+			.sub(nearestNetDeposit.netDeposit)
+			.mul(new BN(10).pow(basePrecisionExp));
+
+		basePnlHistory.push({
+			epochTs: quotePnl.epochTs,
+			pnl: basePnl.toNum(),
+		});
+
+		// remove net deposits that are before the current epochTs
+		netDepositsHistory = netDepositsHistory.slice(nearestNetDepositIndex - 1);
+	}
+
+	return basePnlHistory;
 }

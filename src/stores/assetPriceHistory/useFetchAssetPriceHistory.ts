@@ -5,7 +5,10 @@ import invariant from 'tiny-invariant';
 import { ASSETS } from '@/constants/assets';
 import { COINGECKO_API_URL } from '@/constants/misc';
 
-import { useAssetPriceHistoryStore } from './useAssetPriceHistoryStore';
+import {
+	HistoricalPrice,
+	useAssetPriceHistoryStore,
+} from './useAssetPriceHistoryStore';
 
 type CoinGeckoMarketRangeResult = {
 	prices: [number, number][];
@@ -72,6 +75,8 @@ const useFetchAssetPriceHistory = (
 	}, [earliestTs, assetMarketIndex, currentAssetPriceHistory.length]);
 };
 
+const DEFAULT_ASSET_PRICE_HISTORY: HistoricalPrice[] = [];
+
 export const useGetAssetPriceHistory = (
 	assetMarketIndex: number,
 	earliestTs: number
@@ -79,7 +84,7 @@ export const useGetAssetPriceHistory = (
 	const [loading, setLoading] = useState(true);
 
 	const assetPriceHistory = useAssetPriceHistoryStore(
-		(s) => s.assets[assetMarketIndex] ?? []
+		(s) => s.assets[assetMarketIndex] ?? DEFAULT_ASSET_PRICE_HISTORY
 	);
 
 	const earliestFetchedTs =

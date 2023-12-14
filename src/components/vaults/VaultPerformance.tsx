@@ -1,3 +1,4 @@
+import { DriftHistoryServerClient } from '@/api/drift-history';
 import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
@@ -11,9 +12,13 @@ import {
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
-import { HistoryResolution, MarketId } from '@drift/common';
+import {
+	HistoryResolution,
+	MarketId,
+	UISerializableDepositRecord,
+} from '@drift/common';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
@@ -23,6 +28,7 @@ import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 import {
 	displayAssetValue as displayAssetValueBase,
 	getAssetPriceFromClosestTs,
+	getBasePnlHistoryFromVaultDeposits,
 } from '@/utils/utils';
 import {
 	getMaxDailyDrawdown,
@@ -133,6 +139,9 @@ export default function VaultPerformance() {
 			y: number;
 		}[]
 	>([]);
+	const [vaultTotalDepositsHistory, setVaultTotalDepositsHistory] = useState<
+		UISerializableDepositRecord[]
+	>([]);
 
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
@@ -161,18 +170,21 @@ export default function VaultPerformance() {
 	const { assetPriceHistory, loading: assetPriceHistoryLoading } =
 		useGetAssetPriceHistory(spotMarketConfig.marketIndex, earliestTs);
 
-	const allTimeQuotePnlHistory =
-		vault?.pnlHistory.dailyAllTimePnls
-			.map((pnl) => ({
-				totalAccountValue: pnl.totalAccountValue,
-				allTimeTotalPnl: pnl.allTimeTotalPnl,
-				epochTs: pnl.epochTs,
-			}))
-			.concat({
-				totalAccountValue: vaultStats.totalAccountQuoteValue.toNumber(),
-				allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
-				epochTs: NOW_TS,
-			}) ?? [];
+	const allTimeQuotePnlHistory = useMemo(
+		() =>
+			vault?.pnlHistory.dailyAllTimePnls
+				.map((pnl) => ({
+					totalAccountValue: pnl.totalAccountValue,
+					allTimeTotalPnl: pnl.allTimeTotalPnl,
+					epochTs: pnl.epochTs,
+				}))
+				.concat({
+					totalAccountValue: vaultStats.totalAccountQuoteValue.toNumber(),
+					allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
+					epochTs: NOW_TS,
+				}) ?? [],
+		[vault?.pnlHistory.dailyAllTimePnls, vaultStats]
+	);
 
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
 	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
@@ -188,6 +200,36 @@ export default function VaultPerformance() {
 	);
 
 	const loading = !vaultStats.isLoaded;
+
+	const basePnlHistory = useMemo(() => {
+		if (!vaultAccountData || vaultTotalDepositsHistory.length === 0) return [];
+
+		return getBasePnlHistoryFromVaultDeposits(
+			vaultAccountData,
+			vaultTotalDepositsHistory,
+			allTimeQuotePnlHistory,
+			assetPriceHistory
+		);
+	}, [
+		vaultAccountData,
+		vaultTotalDepositsHistory,
+		allTimeQuotePnlHistory,
+		assetPriceHistory,
+	]);
+
+	useEffect(() => {
+		if (!vaultAccountData?.user) return;
+
+		DriftHistoryServerClient.fetchUserAccountsDepositHistory(
+			vaultAccountData.user
+		).then((res) => {
+			if (!res.success) return;
+
+			const depositRecords = res.data?.records[0] ?? [];
+			depositRecords.reverse(); // we want the earliest deposit to be first
+			setVaultTotalDepositsHistory(depositRecords);
+		});
+	}, [vaultAccountData?.user?.toString()]);
 
 	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
@@ -207,6 +249,7 @@ export default function VaultPerformance() {
 		selectedTimelineOption,
 		selectedGraphOption,
 		graphView,
+		basePnlHistory,
 	]);
 
 	const getDisplayedDataForHistorical = (): DisplayedData => {
@@ -313,53 +356,80 @@ export default function VaultPerformance() {
 
 	const getDisplayedGraphForCurrent = () => {
 		const isUsdcMarket =
-			spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
+			vaultAccountData?.spotMarketIndex === USDC_MARKET.marketIndex;
 
 		if (assetPriceHistoryLoading && !isUsdcMarket) return [];
 
-		const quoteData = allTimeQuotePnlHistory
-			.map((snapshot) => ({
-				epochTs: snapshot.epochTs,
-				quoteValue: snapshot[graphView.snapshotAttribute],
-			}))
-			.filter((snapshot) => snapshot.quoteValue !== undefined)
-			.slice(-1 * selectedGraphOption.days)
-			.map((snapshot) => ({
-				epochTs: snapshot.epochTs,
-				quoteValue: BigNum.fromPrint(
-					snapshot.quoteValue.toString(),
-					QUOTE_PRECISION_EXP
-				),
-			}));
+		const startTs = selectedGraphOption.days
+			? dayjs().subtract(selectedGraphOption.days, 'day').unix()
+			: 0;
 
-		const baseAssetQuotePrice = getMarketPriceData(
-			MarketId.createSpotMarket(spotMarketConfig.marketIndex)
-		).priceData.price;
+		if (graphView.value === GraphView.VaultBalance || isUsdcMarket) {
+			const quoteData = allTimeQuotePnlHistory
+				.map((snapshot) => ({
+					epochTs: snapshot.epochTs,
+					quoteValue: snapshot[graphView.snapshotAttribute],
+				}))
+				.filter((snapshot) => snapshot.quoteValue !== undefined)
+				.filter((snapshot) => snapshot.epochTs >= startTs)
+				.map((snapshot) => ({
+					epochTs: snapshot.epochTs,
+					quoteValue: BigNum.fromPrint(
+						snapshot.quoteValue.toString(),
+						QUOTE_PRECISION_EXP
+					),
+				}));
 
-		const baseData = quoteData.map((history, index) => {
-			let priceOfAssetAtTime = isUsdcMarket
-				? 1
-				: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs).price;
+			const baseAssetQuotePrice = getMarketPriceData(
+				MarketId.createSpotMarket(spotMarketConfig.marketIndex)
+			).priceData.price;
 
-			if (index === quoteData.length - 1) {
-				// we want the last data point to be the current oracle price and not the CoinGecko price, so as to match the earnings display
-				// however for some reason, the division in useVaultStats appears to give a result slightly off the expected result, hence there
-				// will still be discrepancies between the graph and the earnings display
-				priceOfAssetAtTime = baseAssetQuotePrice;
-			}
+			const baseData = quoteData.map((history, index) => {
+				let priceOfAssetAtTime = isUsdcMarket
+					? 1
+					: getAssetPriceFromClosestTs(assetPriceHistory, history.epochTs)
+							.price;
 
-			return {
-				x: history.epochTs,
-				y: history.quoteValue
-					.div(
-						BigNum.fromPrint(priceOfAssetAtTime.toString(), PRICE_PRECISION_EXP)
-					)
-					.scale(spotMarketConfig.precision, PRICE_PRECISION)
-					.toNum(),
-			};
-		});
+				if (index === quoteData.length - 1) {
+					// we want the last data point to be the current oracle price and not the CoinGecko price, so as to match the earnings display
+					// however for some reason, the division in useVaultStats appears to give a result slightly off the expected result, hence there
+					// will still be discrepancies between the graph and the earnings display
+					priceOfAssetAtTime = baseAssetQuotePrice;
+				}
 
-		return baseData;
+				return {
+					x: history.epochTs,
+					y: history.quoteValue
+						.div(
+							BigNum.fromPrint(
+								priceOfAssetAtTime.toString(),
+								PRICE_PRECISION_EXP
+							)
+						)
+						.scale(spotMarketConfig.precision, PRICE_PRECISION)
+						.toNum(),
+				};
+			});
+
+			return baseData;
+		}
+
+		// PnL graph for non-USDC market requires special calculations
+		if (graphView.value === GraphView.PnL) {
+			return basePnlHistory
+				.slice(0, -1) // remove last element as it is the current day and we want to sync with the earnings display
+				.filter((pnl) => pnl.epochTs >= startTs)
+				.map((pnl) => ({
+					x: pnl.epochTs,
+					y: pnl.pnl,
+				}))
+				.concat({
+					x: NOW_TS,
+					y: vaultStats.allTimeTotalPnlBaseValue.toNumber(), // add current day metric
+				});
+		}
+
+		return [];
 	};
 
 	const displayAssetValue = (value: BigNum) =>

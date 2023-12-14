@@ -66,7 +66,8 @@ const getWithdrawalDetails = (
 					{withdrawalWaitingPeriod}.
 					<br />
 					<br />
-					The final amount received may differ from the amount requested.{' '}
+					The maximum amount is after fees, while the final amount received may
+					differ from the amount requested.{' '}
 					<a
 						className="inline-flex items-center gap-1 underline transition-opacity cursor-pointer hover:opacity-80"
 						href={WITHDRAW_FLUCTUATION_DOC}
