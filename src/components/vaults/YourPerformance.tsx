@@ -114,14 +114,15 @@ export default function YourPerformance() {
 		vaultStats.totalAccountBaseValue,
 		basePrecisionExp
 	);
-	const userAccountBaseBalanceProportion =
+	const userAccountBaseBalance =
 		vaultAccountBaseBalance.toNum() * userSharesProportion;
-	const userAccountBaseBalanceProportionBigNum = BigNum.fromPrint(
-		`${userAccountBaseBalanceProportion}`,
+	const userAccountBaseBalanceBigNum = BigNum.fromPrint(
+		`${userAccountBaseBalance}`,
 		basePrecisionExp
 	);
-	const userAccountQuoteBalanceProportionBigNum =
-		userAccountBaseBalanceProportionBigNum.mul(marketOraclePriceBigNum);
+	const userAccountQuoteBalanceBigNum = userAccountBaseBalanceBigNum.mul(
+		marketOraclePriceBigNum
+	);
 
 	// User's total earnings
 	const userTotalDepositsBigNum = BigNum.from(
@@ -134,7 +135,7 @@ export default function YourPerformance() {
 	);
 	let totalEarnings = userTotalWithdrawsBigNum
 		.sub(userTotalDepositsBigNum)
-		.add(userAccountBaseBalanceProportionBigNum);
+		.add(userAccountBaseBalanceBigNum);
 	// prevent $-0.00
 	if (
 		totalEarnings.ltZero() &&
@@ -185,12 +186,12 @@ export default function YourPerformance() {
 						label="Your Balance"
 						value={
 							showUserInfo
-								? displayAssetValue(userAccountBaseBalanceProportionBigNum)
+								? displayAssetValue(userAccountBaseBalanceBigNum)
 								: '--'
 						}
 						tooltip={{
 							id: 'total-user-balance-summary-tooltip',
-							content: userAccountQuoteBalanceProportionBigNum.toNotional(),
+							content: userAccountQuoteBalanceBigNum.toNotional(),
 							hide: isUsdcMarket,
 						}}
 						loading={loading}
@@ -243,14 +244,14 @@ export default function YourPerformance() {
 						label="Your Balance"
 						value={
 							showUserInfo
-								? displayAssetValue(userAccountBaseBalanceProportionBigNum)
+								? displayAssetValue(userAccountBaseBalanceBigNum)
 								: '--'
 						}
 						tooltip={{
 							id: 'total-user-balance-tooltip',
 							content: (
 								<span className={twMerge(sourceCodePro.className)}>
-									{userAccountQuoteBalanceProportionBigNum.toNotional()}
+									{userAccountQuoteBalanceBigNum.toNotional()}
 								</span>
 							),
 							hide: isUsdcMarket,

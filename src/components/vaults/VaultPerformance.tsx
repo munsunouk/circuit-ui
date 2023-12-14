@@ -360,6 +360,10 @@ export default function VaultPerformance() {
 
 		if (assetPriceHistoryLoading && !isUsdcMarket) return [];
 
+		const startTs = selectedGraphOption.days
+			? dayjs().subtract(selectedGraphOption.days, 'day').unix()
+			: 0;
+
 		if (graphView.value === GraphView.VaultBalance || isUsdcMarket) {
 			const quoteData = allTimeQuotePnlHistory
 				.map((snapshot) => ({
@@ -367,7 +371,7 @@ export default function VaultPerformance() {
 					quoteValue: snapshot[graphView.snapshotAttribute],
 				}))
 				.filter((snapshot) => snapshot.quoteValue !== undefined)
-				.slice(-1 * selectedGraphOption.days)
+				.filter((snapshot) => snapshot.epochTs >= startTs)
 				.map((snapshot) => ({
 					epochTs: snapshot.epochTs,
 					quoteValue: BigNum.fromPrint(
@@ -412,10 +416,17 @@ export default function VaultPerformance() {
 
 		// PnL graph for non-USDC market requires special calculations
 		if (graphView.value === GraphView.PnL) {
-			return basePnlHistory.map((pnl) => ({
-				x: pnl.epochTs,
-				y: pnl.pnl,
-			}));
+			return basePnlHistory
+				.slice(0, -1) // remove last element as it is the current day and we want to sync with the earnings display
+				.filter((pnl) => pnl.epochTs >= startTs)
+				.map((pnl) => ({
+					x: pnl.epochTs,
+					y: pnl.pnl,
+				}))
+				.concat({
+					x: NOW_TS,
+					y: vaultStats.allTimeTotalPnlBaseValue.toNumber(), // add current day metric
+				});
 		}
 
 		return [];
