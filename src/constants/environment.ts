@@ -39,8 +39,8 @@ const Env: EnvironmentVariables = {
 	historyServerUrl: process.env.NEXT_PUBLIC_EXCHANGE_HISTORY_SERVER_URL
 		? process.env.NEXT_PUBLIC_EXCHANGE_HISTORY_SERVER_URL
 		: process.env.NEXT_PUBLIC_DRIFT_ENV === 'mainnet-beta'
-		? EnvironmentConstants.historyServerUrl.mainnet
-		: EnvironmentConstants.historyServerUrl.dev,
+			? EnvironmentConstants.historyServerUrl.mainnet
+			: EnvironmentConstants.historyServerUrl.dev,
 };
 
 CommonConfig.spotMarketsLookup[6].symbol = 'JitoSOL';

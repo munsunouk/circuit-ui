@@ -103,7 +103,7 @@ export default function RpcSwitcherModal() {
 						label: CUSTOM_LABEL,
 						value: customRpcValue,
 						allowAdditionalConnection: false,
-				  }
+					}
 				: rpcOptions.find((rpc) => rpc.label === selectedRpcLabel);
 
 		if (!rpcToUse) {

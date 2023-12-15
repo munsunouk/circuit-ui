@@ -27,8 +27,8 @@ const columns = [
 					? 'long'
 					: 'short'
 				: matchEnum(order.direction, PositionDirection.LONG)
-				? 'buy'
-				: 'sell';
+					? 'buy'
+					: 'sell';
 
 			return (
 				<Table.MarketCell

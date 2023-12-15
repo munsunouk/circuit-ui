@@ -37,10 +37,10 @@ export const getRpcLatencyColor = (latency: number | undefined) => {
 	return !latency || latency < 0
 		? 'bg-container-border-light'
 		: latency < 250
-		? 'bg-success-green-border'
-		: latency < 500
-		? 'bg-warning-yellow-border'
-		: 'bg-error-red-border';
+			? 'bg-success-green-border'
+			: latency < 500
+				? 'bg-warning-yellow-border'
+				: 'bg-error-red-border';
 };
 
 // replace space with '-', and uri encode vault name
@@ -91,8 +91,8 @@ export function displayAssetValue(
 			toTradePrecision
 				? value.toTradePrecision()
 				: toFixed === undefined
-				? value.toNum()
-				: value.toNum().toFixed(toFixed)
+					? value.toNum()
+					: value.toNum().toFixed(toFixed)
 		} ${SPOT_MARKETS_LOOKUP[marketIndex].symbol}`;
 	}
 }

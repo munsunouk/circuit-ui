@@ -7,7 +7,7 @@
     "build": "next build",
     "clean": "rm -rf .next",
     "start": "next start",
-    "prepare": "husky install",
+    "prepare": "bunx husky install",
     "lint": "eslint './**/*.{ts,tsx}'",
     "lint:fix": "yarn lint --fix",
     "prettify": "prettier --check './**/*.{ts,tsx}'",

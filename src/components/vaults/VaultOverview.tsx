@@ -46,7 +46,7 @@ const Section = ({
 										placeholders.includes(t)
 											? placeholdersReplacements[t as Placeholders]
 											: t
-								  )
+									)
 								: paragraph.text}
 						</span>
 					</div>

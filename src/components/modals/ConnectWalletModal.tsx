@@ -38,8 +38,8 @@ const WalletOption = ({
 				{wallet.adapter.connected
 					? 'Connected'
 					: wallet.adapter.readyState === 'Installed'
-					? 'Detected'
-					: ''}
+						? 'Detected'
+						: ''}
 			</div>
 		</FadeInDiv>
 	);
@@ -70,7 +70,7 @@ export default function ConnectWalletModal() {
 								onClick={() => handleConnectWallet(wallet)}
 								index={index}
 							/>
-					  ))
+						))
 					: 'No Solana wallets found.'}
 			</div>
 		</Modal>
