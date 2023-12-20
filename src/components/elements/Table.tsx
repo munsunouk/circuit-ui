@@ -54,7 +54,7 @@ const TableHeader = <T extends RowData>({
 								: flexRender(
 										header.column.columnDef.header,
 										header.getContext()
-								  )}
+									)}
 						</th>
 					))}
 				</tr>

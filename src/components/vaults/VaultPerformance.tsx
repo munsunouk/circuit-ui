@@ -477,7 +477,7 @@ export default function VaultPerformance() {
 								? uiVaultConfig.temporaryApy
 								: (
 										(isNaN(displayedData.apy) ? 0 : displayedData.apy) * 100
-								  ).toFixed(2)
+									).toFixed(2)
 						}%`}
 						loading={loading}
 					/>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import VaultPreviewCard from '@/components/home/VaultPreviewCard';
@@ -14,6 +15,15 @@ export default function HomePage() {
 			return <VaultPreviewCard key={vault.name} vault={vault} />;
 		});
 	};
+
+	useEffect(() => {
+		// used for tracking mouse position; relevant to CSS
+		window.addEventListener('mousemove', (e) => {
+			document.body.style.setProperty('--mx', `${e.clientX}`);
+			document.body.style.setProperty('--my', `${e.clientY}`);
+		});
+	}, []);
+
 	return (
 		<div className="flex flex-col items-center gap-8 max-w-[1392px]">
 			<div className="mt-10 mb-4 md:mt-32 md:mb-16 flex flex-col text-center items-center max-w-[400px] md:max-w-[640px] overflow-hidden gap-3">

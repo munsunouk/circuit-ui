@@ -50,6 +50,6 @@ install_and_build_package "drift-common/icons" "" "true" "true"
 install_and_build_package "drift-common/react" "@drift-labs/sdk @drift/common @drift-labs/icons" "true" "true"
 install_and_build_package "drift-vaults/ts/sdk" "" "true" "true"
 
-install_and_build_package "." "@drift-labs/react @drift-labs/sdk @drift/common @drift-labs/icons @drift-labs/vaults-sdk" "" "true"
+install_and_build_package "." "@drift-labs/sdk @drift/common @drift-labs/icons @drift-labs/react @drift-labs/vaults-sdk" "" "true"
 
 

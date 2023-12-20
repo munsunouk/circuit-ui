@@ -16,7 +16,7 @@ export const TURBOCHARGER_VAULT: UiVaultConfig = {
 	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,
 	previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
-	backdropParticlesColor: '#88c9ff',
+	backdropParticlesColor: '#AB86D7',
 	historyType: 'Historical',
 	assetsOperatedOn: [WETH_DEPOSIT_ASSET, WBTC_DEPOSIT_ASSET],
 	temporaryApy: 30.1,

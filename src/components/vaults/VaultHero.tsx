@@ -134,7 +134,7 @@ export default function VaultHero() {
 											).toNotional()}
 										</span>
 									),
-							  }
+								}
 					}
 				/>
 				<div className="h-12 border-r border-container-border" />

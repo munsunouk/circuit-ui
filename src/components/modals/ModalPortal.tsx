@@ -33,7 +33,7 @@ const ModalPortal = (props: PropsWithChildren<{ id?: string }>) => {
 					{props.children}
 				</div>,
 				defaultNode.current
-		  )
+			)
 		: null;
 };
 
