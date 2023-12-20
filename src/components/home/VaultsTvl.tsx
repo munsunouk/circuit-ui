@@ -33,7 +33,7 @@ export default function VaultTvl() {
 				<span
 					className={twMerge(
 						sourceCodePro.className,
-						'text-xl md:text-4xl font-medium text-text-emphasis'
+						'text-2xl md:text-4xl font-medium text-text-emphasis'
 					)}
 				>
 					{BigNum.from(combinedTvl, QUOTE_PRECISION_EXP).toNotional()}

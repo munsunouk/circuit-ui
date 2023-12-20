@@ -181,3 +181,28 @@ body::-webkit-scrollbar {
 		height: 20vw;
 	}
 }
+
+.card-hover-border-glow {
+	position: relative;
+	background-color: var(--container-bg);
+
+	&:after {
+		content: '';
+		position: absolute;
+		inset: -2px;
+		background-image: radial-gradient(
+			circle at calc(var(--mx) * 1px) calc(var(--my) * 1px),
+			hsla(var(--hue), 61%, 80%, 1) 0%,
+			hsla(var(--hue), 61%, 50%, 1) 5%,
+			hsla(var(--hue), 61%, 50%, 0.1) 20%
+		);
+		z-index: -1;
+		background-attachment: fixed;
+		opacity: 0.3;
+	}
+	&:hover {
+		&:after {
+			opacity: 1;
+		}
+	}
+}
