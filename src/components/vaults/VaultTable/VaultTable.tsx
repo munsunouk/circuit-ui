@@ -37,8 +37,8 @@ export const VaultTable = () => {
 	};
 
 	return (
-		<div className="flex flex-col w-full">
-			<div>
+		<div className="flex flex-col w-full max-w-full">
+			<div className="max-w-full border border-container-border">
 				<ButtonTabs
 					tabs={VAULT_TABLE_TABS.map((tab) => ({
 						key: tab.label,
@@ -58,7 +58,8 @@ export const VaultTable = () => {
 						selected: selectedTab === tab.label,
 						onSelect: () => setSelectedTab(tab.label),
 					}))}
-					tabClassName="p-1"
+					tabClassName="p-1 w-auto px-3 sm:px-8"
+					className="max-w-full -m-[1px]"
 				/>
 			</div>
 			{renderTable()}

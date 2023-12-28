@@ -17,9 +17,13 @@ import YourPerformance from '@/components/vaults/YourPerformance';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 
+import SectionHeader from '../SectionHeader';
+import Button from '../elements/Button';
 import FadeInDiv from '../elements/FadeInDiv';
 import Loading from '../elements/Loading';
+import { ExternalLink } from '../icons';
 import DevFunctions from './DevFunctions';
+import { VaultTable } from './VaultTable/VaultTable';
 
 export default function VaultPage() {
 	const [selectedTab, setSelectedTab] = useState<VaultTab>(
@@ -55,7 +59,7 @@ export default function VaultPage() {
 			)}
 			<div
 				className={twMerge(
-					'flex flex-col items-center w-full px-2',
+					'flex flex-col items-center w-full sm:px-2',
 					isLoading ? 'h-0 overflow-hidden' : 'h-auto'
 				)}
 			>
@@ -72,18 +76,42 @@ export default function VaultPage() {
 				<FadeInDiv
 					delay={200}
 					className={twMerge(
-						'flex justify-between w-full gap-8 mt-8 md:mt-16 flex-col md:flex-row items-center md:items-start'
+						'flex justify-between w-full gap-8 mt-8 md:mt-16 flex-col items-center md:items-start'
 					)}
 					fadeCondition={!isLoading}
 				>
-					<div className="md:max-w-[580px] w-full [&>div]:p-1">
-						{renderLeftPanel()}
+					<div className="flex flex-col items-center w-full gap-8 md:flex-row md:items-start">
+						<div className="md:max-w-[580px] w-full [&>div]:p-1">
+							{renderLeftPanel()}
+						</div>
+						<div className="flex justify-center grow">
+							<div className="flex flex-col gap-7 max-w-[456px] min-w-[340px] items-center">
+								<DepositWithdrawForm setVaultTab={setSelectedTab} />
+								<WhiteGloveDetails />
+								{devSwitchIsOn && <DevFunctions />}
+							</div>
+						</div>
 					</div>
-					<div className="flex flex-col gap-7 max-w-[456px] min-w-[340px]">
-						<DepositWithdrawForm setVaultTab={setSelectedTab} />
-						<WhiteGloveDetails />
-						{devSwitchIsOn && <DevFunctions />}
-					</div>
+
+					{selectedTab === VaultTab.VaultPerformance && (
+						<FadeInDiv delay={200} className="w-full max-w-full">
+							<SectionHeader className="mb-4">Vault Details</SectionHeader>
+							<VaultTable />
+							<a
+								href={`https://app.drift.trade/?authority=${vaultAccountData?.pubkey.toString()}`}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Button
+									secondary
+									Icon={() => <ExternalLink className="w-4 h-4" />}
+									className="mt-4"
+								>
+									View Vault Activity on Drift
+								</Button>
+							</a>
+						</FadeInDiv>
+					)}
 				</FadeInDiv>
 			</div>
 		</div>
