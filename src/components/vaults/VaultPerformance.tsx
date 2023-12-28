@@ -42,14 +42,11 @@ import { sourceCodePro } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
 import SectionHeader from '../SectionHeader';
-import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 import Dropdown, { Option } from '../elements/Dropdown';
 import FadeInDiv from '../elements/FadeInDiv';
-import { ExternalLink } from '../icons';
 import BreakdownRow from './BreakdownRow';
 import PerformanceGraph from './PerformanceGraph';
-import { VaultTable } from './VaultTable/VaultTable';
 
 interface PerformanceGraphOption {
 	label: string;
@@ -539,31 +536,6 @@ export default function VaultPerformance() {
 						</div>
 					)}
 				</div>
-			</FadeInDiv>
-
-			<FadeInDiv delay={200}>
-				<SectionHeader className="mb-4">Vault Details</SectionHeader>
-				<VaultTable />
-			</FadeInDiv>
-
-			<FadeInDiv delay={200}>
-				<SectionHeader className="mb-4">Vault Activity</SectionHeader>
-				<div>
-					View this Vault’s activity from open positions, recent trades, to open
-					orders any time. In the Overview page, you can download the activity
-					history for your records.
-				</div>
-			</FadeInDiv>
-			<FadeInDiv delay={200}>
-				<a
-					href={`https://app.drift.trade/?authority=${vaultAccountData?.pubkey.toString()}`}
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Button secondary Icon={ExternalLink}>
-						View Vault Activity on Drift
-					</Button>
-				</a>
 			</FadeInDiv>
 		</div>
 	);

@@ -178,7 +178,7 @@ export default function YourPerformance() {
 		displayAssetValueBase(value, spotMarketConfig.marketIndex, true);
 
 	return (
-		<div className={'relative flex flex-col gap-8'}>
+		<div className={'relative flex flex-col gap-8 w-full'}>
 			<FadeInDiv>
 				<SectionHeader className="mb-9">Summary</SectionHeader>
 				<div className="flex items-center justify-center w-full gap-4">

@@ -63,7 +63,7 @@ const columns = [
 	columnHelper.accessor('liquidationPrice', {
 		header: () => 'Liq. Price',
 		cell: (info) => (
-			<Table.NumericValue className="w-[140px]">
+			<Table.NumericValue className="w-[180px]">
 				{info.getValue().eqZero() ? '-' : `$${info.getValue().prettyPrint()}`}
 			</Table.NumericValue>
 		),
