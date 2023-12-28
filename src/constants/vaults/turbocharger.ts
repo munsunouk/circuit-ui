@@ -19,7 +19,6 @@ export const TURBOCHARGER_VAULT: UiVaultConfig = {
 	backdropParticlesColor: '#AB86D7',
 	historyType: 'Historical',
 	assetsOperatedOn: [WETH_DEPOSIT_ASSET, WBTC_DEPOSIT_ASSET],
-	temporaryApy: 30.1,
 	vaultOverview: [
 		{
 			title: 'Strategy',
