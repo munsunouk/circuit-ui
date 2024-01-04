@@ -1,4 +1,4 @@
-import { DriftHistoryServerClient } from '@/api/drift-history';
+import { DriftHistoryServerClient } from '@/drift-history/client';
 import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
@@ -221,11 +221,13 @@ export default function VaultPerformance() {
 		if (!vaultAccountData?.user) return;
 
 		DriftHistoryServerClient.fetchUserAccountsDepositHistory(
+			true,
 			vaultAccountData.user
 		).then((res) => {
 			if (!res.success) return;
 
-			const depositRecords = res.data?.records[0] ?? [];
+			const depositRecords = (res.data?.records[0] ??
+				[]) as UISerializableDepositRecord[];
 			depositRecords.reverse(); // we want the earliest deposit to be first
 			setVaultTotalDepositsHistory(depositRecords);
 		});

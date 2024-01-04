@@ -1,3 +1,4 @@
+import { SerializedDepositHistory } from '@/types';
 import { PublicKey } from '@drift-labs/sdk';
 import { Serializer, UISerializableDepositRecord } from '@drift/common';
 import axios from 'axios';
@@ -24,10 +25,11 @@ export class DriftHistoryServerClient {
 	}
 
 	public static async fetchUserAccountsDepositHistory(
+		deserialize: boolean,
 		...userAccounts: PublicKey[]
 	): Promise<
 		ServerResponse<{
-			records: UISerializableDepositRecord[][];
+			records: (UISerializableDepositRecord | SerializedDepositHistory)[][];
 			totalCounts: number[];
 			maxRecordLimit: number;
 		}>
@@ -38,15 +40,17 @@ export class DriftHistoryServerClient {
 				.join(',')}&pageIndex=0&pageSize=1000`
 		);
 
-		const deserializedDeposits = result.data.records.map((records: any) =>
-			records.map((record: any) => Serializer.Deserialize.UIDeposit(record))
-		);
+		const history = deserialize
+			? (result.data.records.map((records: any) =>
+					records.map((record: any) => Serializer.Deserialize.UIDeposit(record))
+				) as UISerializableDepositRecord[][])
+			: (result.data.records as SerializedDepositHistory[][]);
 
 		return {
 			...result,
 			data: {
 				...result.data,
-				records: deserializedDeposits,
+				records: history,
 			},
 		};
 	}
