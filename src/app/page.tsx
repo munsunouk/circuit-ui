@@ -26,7 +26,7 @@ export default function HomePage() {
 
 	return (
 		<div className="flex flex-col items-center gap-8 max-w-[1392px]">
-			<div className="mt-10 mb-4 md:mt-32 md:mb-16 flex flex-col text-center items-center max-w-[400px] md:max-w-[640px] overflow-hidden gap-3">
+			<div className="flex flex-col items-center gap-3 mt-10 mb-4 overflow-hidden text-center md:mt-32 md:mb-16">
 				<span
 					className={twMerge(
 						syne.className,
@@ -35,7 +35,7 @@ export default function HomePage() {
 				>
 					Vaults
 				</span>
-				<span className="md:text-2xl">
+				<span className="md:text-2xl max-w-[400px] md:max-w-[640px]">
 					Multiply your yields with delta-neutral market making and liquidity
 					provision strategies
 				</span>
