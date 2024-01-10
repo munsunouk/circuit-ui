@@ -2,17 +2,13 @@ import {
 	SerializedDepositHistory,
 	SerializedPerformanceHistory,
 } from '@/types';
-import {
-	BigNum,
-	PERCENTAGE_PRECISION,
-	QUOTE_PRECISION_EXP,
-	ZERO,
-} from '@drift-labs/sdk';
+import { BigNum, PERCENTAGE_PRECISION, ZERO } from '@drift-labs/sdk';
 import { VaultDepositorAction, WrappedEvents } from '@drift-labs/vaults-sdk';
 import { matchEnum } from '@drift/common';
 import { PublicKey } from '@solana/web3.js';
 import dayjs from 'dayjs';
 
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
 
 import { normalizeDate } from './utils';
@@ -146,18 +142,23 @@ export const getSimpleHistoricalApy = (
 	return Math.max(apy, -1);
 };
 
+const DEFAULT_MODIFIED_DIETZ_RESULT = {
+	apy: 0,
+	returns: 0,
+};
+
 /**
  * https://en.wikipedia.org/wiki/Modified_Dietz_method
  * @param currentVaultEquity
  * @param vaultDeposits
  * @returns weighted APY calc using the Modified Dietz method
  */
-export const getModifiedDietzApy = (
+export const calcModifiedDietz = (
 	currentVaultEquity: number,
 	vaultDeposits: SerializedDepositHistory[]
-): number => {
+): { apy: number; returns: number } => {
 	if (vaultDeposits.length === 0) {
-		return 0;
+		return DEFAULT_MODIFIED_DIETZ_RESULT;
 	}
 
 	const startingMarketValue = 0;
@@ -167,21 +168,20 @@ export const getModifiedDietzApy = (
 	const nowTs = Date.now() / 1000;
 	if (nowTs < firstDepositTs) {
 		console.error('nowTs < firstDepositTs');
-		return 0;
+		return DEFAULT_MODIFIED_DIETZ_RESULT;
 	}
 	if (lastDepositTs < firstDepositTs) {
 		console.error('lastDepositTs < firstDepositTs');
-		return 0;
+		return DEFAULT_MODIFIED_DIETZ_RESULT;
 	}
 	const totalDuration = nowTs - firstDepositTs;
 
 	let totalNetFlow = 0;
 	let weightedNetFlow = 0;
+	const precisionExp =
+		SPOT_MARKETS_LOOKUP[vaultDeposits[0].marketIndex].precisionExp;
 	vaultDeposits.forEach((deposit) => {
-		let depositAmount = BigNum.from(
-			deposit.amount,
-			QUOTE_PRECISION_EXP
-		).toNum();
+		let depositAmount = BigNum.from(deposit.amount, precisionExp).toNum();
 		if (deposit.direction === 'withdraw') {
 			depositAmount *= -1;
 		}
@@ -199,13 +199,13 @@ export const getModifiedDietzApy = (
 		(endingMarkeValue - startingMarketValue - totalNetFlow) /
 		(startingMarketValue + weightedNetFlow);
 
-	if (modifiedDietzReturns < 0) return 0;
+	if (modifiedDietzReturns < 0) return DEFAULT_MODIFIED_DIETZ_RESULT;
 
 	const annualized =
 		Math.pow(1 + modifiedDietzReturns, (86400 * 365) / totalDuration) - 1;
 
 	const positiveApy = Math.max(annualized, 0);
-	return positiveApy;
+	return { apy: positiveApy, returns: modifiedDietzReturns };
 };
 
 // Calculation explanation: https://chat.openai.com/share/f6a3c630-f37b-428d-aaa2-dfeeca290da0

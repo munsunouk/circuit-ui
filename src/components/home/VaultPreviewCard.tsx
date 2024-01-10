@@ -17,7 +17,7 @@ import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
 import { encodeVaultName, hexToHue } from '@/utils/utils';
-import { getModifiedDietzApy, getUiVaultConfig } from '@/utils/vaults';
+import { calcModifiedDietz, getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
@@ -199,7 +199,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
 		100
 	);
-	const apy = getModifiedDietzApy(
+	const { apy } = calcModifiedDietz(
 		BigNum.from(
 			vaultStats.totalAccountBaseValue,
 			spotMarketConfig.precisionExp
