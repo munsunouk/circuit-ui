@@ -379,9 +379,10 @@ export default function VaultPerformance() {
 					),
 				}));
 
-			const baseAssetQuotePrice = getMarketPriceData(
-				MarketId.createSpotMarket(spotMarketConfig.marketIndex)
-			).priceData.price;
+			const baseAssetQuotePrice =
+				getMarketPriceData(
+					MarketId.createSpotMarket(spotMarketConfig.marketIndex)
+				)?.priceData.price ?? 1;
 
 			const baseData = quoteData.map((history, index) => {
 				let priceOfAssetAtTime = isUsdcMarket
