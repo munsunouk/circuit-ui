@@ -20,6 +20,10 @@ import Env from '@/constants/environment';
 import { SUPERCHARGER_VAULT_PUBKEY } from '@/constants/vaults/supercharger';
 import { TURBOCHARGER_VAULT } from '@/constants/vaults/turbocharger';
 
+/** NextJS route handler configs */
+export const revalidate = 60;
+export const dynamic = 'force-dynamic'; // defaults to auto
+
 const SUPERCHARGER_VAULT_USER = new PublicKey(
 	'BRksHqLiq2gvQw1XxsZq6DXZjD3GB5a9J63tUBgd6QS9'
 );
@@ -85,10 +89,12 @@ export async function GET() {
 
 	// calculate each vault's apy using modified dietz formula
 	const vaultsApy = VAULTS.map((v, i) => {
-		return (
-			getModifiedDietzApy(vaultsEquityNotionalValue[i], depositHistories[i]) *
-			100
-		).toFixed(2);
+		const apyBps = getModifiedDietzApy(
+			vaultsEquityNotionalValue[i],
+			depositHistories[i]
+		);
+
+		return (apyBps * 100).toFixed(2);
 	});
 
 	return Response.json({ data: vaultsApy });
