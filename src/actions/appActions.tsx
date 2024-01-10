@@ -1,3 +1,4 @@
+import { DriftHistoryServerClient } from '@/drift-history/client';
 import { AppStoreState, DEFAULT_VAULT_STATS } from '@/stores/app/useAppStore';
 import {
 	SerializedDepositHistory,
@@ -88,7 +89,11 @@ const createAppActions = (
 		]);
 
 		const vaultSnapshotsPromise = fetchVaultSnapshots(vaultAccount.user);
-		const vaultDepositsPromise = fetchAllDeposits(vaultAccount.user);
+		const vaultDepositsPromise =
+			DriftHistoryServerClient.fetchUserAccountsDepositHistory(
+				false,
+				vaultAccount.user
+			);
 
 		const [vaultSnapshots, vaultDeposits] = await Promise.all([
 			vaultSnapshotsPromise,
@@ -108,7 +113,8 @@ const createAppActions = (
 				records: [],
 				isLoaded: false,
 			},
-			vaultDeposits,
+			vaultDeposits: (vaultDeposits.data?.records[0] ??
+				[]) as SerializedDepositHistory[],
 			accountSummary: {
 				openPositions: [],
 				balances: [],
@@ -150,31 +156,6 @@ const createAppActions = (
 			return {
 				dailyAllTimePnls: [],
 			};
-		}
-	};
-
-	const fetchAllDeposits = async (userAccount: PublicKey) => {
-		try {
-			const depositsRes = await axios.get<{
-				data: {
-					records: SerializedDepositHistory[][];
-					totalCounts: number[];
-					maxRecordLimit: number;
-				};
-			}>(
-				`${
-					Env.historyServerUrl
-				}/deposits/userAccounts/?userPublicKeys=${userAccount.toString()}&pageIndex=0&pageSize=1000`
-			);
-
-			// TODO: paginate and get all deposits, will need all deposits to calculate proper APY
-			// shouldn't get 1000 deposits any time soon though, given the deposit minimums.
-
-			return depositsRes.data.data.records[0];
-		} catch (err) {
-			console.error(err);
-
-			return [];
 		}
 	};
 
