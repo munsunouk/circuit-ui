@@ -71,7 +71,7 @@ const createAppActions = (
 	};
 
 	/**
-	 * Gets on-chain data of the given vault address
+	 * Gets on-chain data of the given vault address + pnl snapshot & deposit history
 	 * @param vaultAddress The address of the vault
 	 */
 	const fetchVault = async (vaultAddress: PublicKey) => {
@@ -80,6 +80,7 @@ const createAppActions = (
 		invariant(state.connection, 'No connection');
 		invariant(state.driftClient.client, 'No drift client');
 
+		// fetch vault on-chain data first
 		const [
 			{ vaultDriftClient, vaultDriftUser, vaultDriftUserAccount },
 			{ vaultSubscriber, vaultAccount },
@@ -88,6 +89,42 @@ const createAppActions = (
 			initVaultSubscriber(vaultAddress),
 		]);
 
+		// optimistically set vault state without fetching snapshot data first
+		const currentVaultState = get().vaults[vaultAddress.toString()];
+		const newVaultState = {
+			vaultDriftClient,
+			vaultDriftUser,
+			vaultDriftUserAccount,
+			vaultAccount: vaultSubscriber,
+			vaultAccountData: vaultAccount,
+			pnlHistory: {
+				dailyAllTimePnls: [],
+			},
+			eventRecords: {
+				records: [],
+				isLoaded: false,
+			},
+			vaultDeposits: [],
+			accountSummary: {
+				openPositions: [],
+				balances: [],
+				openOrders: [],
+			},
+			vaultStats: currentVaultState?.vaultStats ?? DEFAULT_VAULT_STATS,
+		};
+
+		set((s) => {
+			if (!currentVaultState) {
+				s.vaults[vaultAddress.toString()] = newVaultState;
+			} else {
+				s.vaults[vaultAddress.toString()] = {
+					...currentVaultState,
+					...newVaultState,
+				};
+			}
+		});
+
+		// fetch pnl snapshots and deposit history
 		const vaultSnapshotsPromise = fetchVaultSnapshots(vaultAccount.user);
 		const vaultDepositsPromise =
 			DriftHistoryServerClient.fetchUserAccountsDepositHistory(
@@ -100,38 +137,10 @@ const createAppActions = (
 			vaultDepositsPromise,
 		]);
 
-		const currentVaultState = get().vaults[vaultAddress.toString()];
-
-		const updatedVaultState = {
-			vaultDriftClient,
-			vaultDriftUser,
-			vaultDriftUserAccount,
-			vaultAccount: vaultSubscriber,
-			vaultAccountData: vaultAccount,
-			pnlHistory: vaultSnapshots,
-			eventRecords: {
-				records: [],
-				isLoaded: false,
-			},
-			vaultDeposits: (vaultDeposits.data?.records[0] ??
-				[]) as SerializedDepositHistory[],
-			accountSummary: {
-				openPositions: [],
-				balances: [],
-				openOrders: [],
-			},
-			vaultStats: currentVaultState?.vaultStats ?? DEFAULT_VAULT_STATS,
-		};
-
 		set((s) => {
-			if (!currentVaultState) {
-				s.vaults[vaultAddress.toString()] = updatedVaultState;
-			} else {
-				s.vaults[vaultAddress.toString()] = {
-					...currentVaultState,
-					...updatedVaultState,
-				};
-			}
+			s.vaults[vaultAddress.toString()]!.pnlHistory = vaultSnapshots;
+			s.vaults[vaultAddress.toString()]!.vaultDeposits = (vaultDeposits.data
+				?.records[0] ?? []) as SerializedDepositHistory[];
 		});
 	};
 

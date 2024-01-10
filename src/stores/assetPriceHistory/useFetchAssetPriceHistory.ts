@@ -1,4 +1,5 @@
 import axios from 'axios';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import invariant from 'tiny-invariant';
 
@@ -76,6 +77,7 @@ const useFetchAssetPriceHistory = (
 };
 
 const DEFAULT_ASSET_PRICE_HISTORY: HistoricalPrice[] = [];
+const NOW_TS = dayjs().unix();
 
 export const useGetAssetPriceHistory = (
 	assetMarketIndex: number,
@@ -87,15 +89,14 @@ export const useGetAssetPriceHistory = (
 		(s) => s.assets[assetMarketIndex] ?? DEFAULT_ASSET_PRICE_HISTORY
 	);
 
-	const earliestFetchedTs =
-		assetPriceHistory[0]?.timestamp ?? Date.now() / 1000;
+	const earliestFetchedTs = assetPriceHistory[0]?.timestamp ?? NOW_TS;
 
 	useFetchAssetPriceHistory(assetMarketIndex, earliestTs);
 
 	useEffect(() => {
-		if (earliestFetchedTs >= earliestTs) {
+		if (earliestFetchedTs >= earliestTs && loading) {
 			setLoading(false);
-		} else {
+		} else if (!loading) {
 			setLoading(true);
 		}
 	}, [earliestFetchedTs]);

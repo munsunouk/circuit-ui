@@ -16,7 +16,7 @@ import { useAppActions } from '@/hooks/useAppActions';
 import { useVault } from '@/hooks/useVault';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
-import { encodeVaultName } from '@/utils/utils';
+import { encodeVaultName, hexToHue } from '@/utils/utils';
 import { getModifiedDietzApy, getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
@@ -63,6 +63,7 @@ interface VaultStatsProps {
 	capacity: number;
 	loading: boolean;
 	assetLabel: string;
+	isApyLoading: boolean;
 }
 
 function VaultStats({
@@ -72,6 +73,7 @@ function VaultStats({
 	loading,
 	userBalance,
 	assetLabel,
+	isApyLoading,
 }: VaultStatsProps) {
 	const [isMounted, setIsMounted] = useState(false);
 
@@ -82,7 +84,7 @@ function VaultStats({
 	return (
 		<div className="flex flex-col w-full gap-4">
 			<div className="flex justify-between w-full">
-				<VaultStat label={'APY'} value={apy} loading={loading} />
+				<VaultStat label={'APY'} value={apy} loading={isApyLoading} />
 				{!!userBalance && (
 					<VaultStat
 						label={`Your Balance${assetLabel ? ` (${assetLabel})` : ''}`}
@@ -204,6 +206,8 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		).toNum(),
 		vaultStore?.vaultDeposits ?? []
 	);
+	const isApyLoading =
+		!vaultStats.isLoaded || !vaultStore?.vaultDeposits?.length;
 
 	// TODO: abstract this logic
 	// User's vault share proportion
@@ -265,40 +269,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		}
 
 		return Math.round(Math.min((viewportWidth * width) / 100, maxHeight));
-	}
-
-	function hexToHue(hex: string) {
-		let r = parseInt(hex.slice(1, 3), 16) / 255,
-			g = parseInt(hex.slice(3, 5), 16) / 255,
-			b = parseInt(hex.slice(5, 7), 16) / 255;
-
-		let max = Math.max(r, g, b),
-			min = Math.min(r, g, b);
-		let h,
-			s,
-			l = (max + min) / 2;
-
-		if (max === min) {
-			h = s = 0; // achromatic
-		} else {
-			let d = max - min;
-			s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-			switch (max) {
-				case r:
-				default:
-					h = (g - b) / d + (g < b ? 6 : 0);
-					break;
-				case g:
-					h = (b - r) / d + 2;
-					break;
-				case b:
-					h = (r - g) / d + 4;
-					break;
-			}
-			h /= 6;
-		}
-
-		return h * 360; // Return hue in degrees
 	}
 
 	return (
@@ -409,6 +379,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									).toMillified()}
 									capacity={capacityPct}
 									loading={!vaultStats.isLoaded}
+									isApyLoading={isApyLoading}
 									userBalance={
 										userAccountBalanceProportionBigNum.eqZero()
 											? undefined
