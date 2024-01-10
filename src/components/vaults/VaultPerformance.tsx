@@ -5,7 +5,6 @@ import { useOraclePriceStore } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
-	ONE,
 	PERCENTAGE_PRECISION,
 	PRICE_PRECISION,
 	PRICE_PRECISION_EXP,
@@ -31,9 +30,9 @@ import {
 	getBasePnlHistoryFromVaultDeposits,
 } from '@/utils/utils';
 import {
+	calcModifiedDietz,
 	getMaxDailyDrawdown,
 	getMaxDailyDrawdownFromAccValue,
-	getModifiedDietzApy,
 	getSimpleHistoricalApy,
 } from '@/utils/vaults';
 
@@ -320,25 +319,11 @@ export default function VaultPerformance() {
 			.shiftTo(PRICE_PRECISION_EXP)
 			.mul(currentAssetPriceBigNum);
 
-		const totalAccountValueBigNum = BigNum.from(
-			vaultStats.totalAccountBaseValue,
-			basePrecisionExp
-		);
-		const netDepositsBigNum = BigNum.from(
-			vaultAccountData?.netDeposits,
-			basePrecisionExp
-		);
-		const cumulativeReturnsPct =
-			totalAccountValueBigNum
-				.sub(netDepositsBigNum)
-				.mul(PERCENTAGE_PRECISION)
-				.div(BN.max(netDepositsBigNum.val, ONE))
-				.toNum() * 100;
-
-		const apy = getModifiedDietzApy(
+		const { apy, returns: cumulativeReturns } = calcModifiedDietz(
 			BigNum.from(vaultStats.totalAccountBaseValue, basePrecisionExp).toNum(),
 			vault?.vaultDeposits ?? []
 		);
+		const cumulativeReturnsPct = cumulativeReturns * 100;
 
 		const maxDailyDrawdown = getMaxDailyDrawdown(
 			vault?.pnlHistory.dailyAllTimePnls ?? []

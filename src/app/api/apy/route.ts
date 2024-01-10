@@ -14,7 +14,7 @@ import { getVaultClient } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
 import { Connection } from '@solana/web3.js';
 
-import { getModifiedDietzApy } from '@/utils/vaults';
+import { calcModifiedDietz } from '@/utils/vaults';
 
 import Env from '@/constants/environment';
 import { SUPERCHARGER_VAULT_PUBKEY } from '@/constants/vaults/supercharger';
@@ -89,12 +89,12 @@ export async function GET() {
 
 	// calculate each vault's apy using modified dietz formula
 	const vaultsApy = VAULTS.map((v, i) => {
-		const apyBps = getModifiedDietzApy(
+		const { apy } = calcModifiedDietz(
 			vaultsEquityNotionalValue[i],
 			depositHistories[i]
 		);
 
-		return (apyBps * 100).toFixed(2);
+		return (apy * 100).toFixed(2);
 	});
 
 	return Response.json({ data: vaultsApy });

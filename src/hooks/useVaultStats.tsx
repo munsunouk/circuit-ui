@@ -7,6 +7,7 @@ import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { useEffect } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
 
 import useAppStore from '../stores/app/useAppStore';
@@ -116,8 +117,8 @@ function useSyncVaultsStatsImpl() {
 			vault: vaultAccountData,
 		});
 		const totalAccountBaseValueBN = totalAccountQuoteValueBN
-			.div(baseAssetPriceBN)
-			.mul(PRICE_PRECISION);
+			.mul(SPOT_MARKETS_LOOKUP[marketIndex].precision)
+			.div(baseAssetPriceBN);
 
 		// calculate all time total pnl
 		const netDepositBase = vaultAccountData?.netDeposits;
