@@ -34,12 +34,14 @@ const useSyncOpenPositions = (vaultPubKey: PublicKey | undefined) => {
 	};
 
 	const mapAndSetPositionSWithIndexPrice = () => {
-		const newPositionsWithIndexPrice = openPositions.map((position) => ({
-			...position,
-			indexPrice: getMarketPriceData(
-				MarketId.createPerpMarket(position.marketIndex)
-			).priceData.price,
-		}));
+		const newPositionsWithIndexPrice = openPositions.map((position) => {
+			return {
+				...position,
+				indexPrice:
+					getMarketPriceData(MarketId.createPerpMarket(position.marketIndex))
+						?.priceData.price ?? 1,
+			};
+		});
 
 		setOpenPositionsWithIndexPrice(newPositionsWithIndexPrice);
 	};
