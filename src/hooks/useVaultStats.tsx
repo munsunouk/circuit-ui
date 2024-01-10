@@ -95,9 +95,14 @@ function useSyncVaultsStatsImpl() {
 		vaultAccountData: Vault,
 		uiVaultConfig: UiVaultConfig
 	) {
-		const baseAssetQuotePrice = getMarketPriceData(
+		let baseAssetQuotePrice = getMarketPriceData(
 			MarketId.createSpotMarket(uiVaultConfig.market.marketIndex)
 		).priceData.price;
+
+		if (baseAssetQuotePrice === 0) {
+			console.error('market price from oracle store returned 0');
+			baseAssetQuotePrice = 1; // default to 1 if price = 0
+		}
 
 		// calculate total account value
 		const totalAccountQuoteValue = await vaultClient.calculateVaultEquity({
