@@ -1,14 +1,9 @@
 import { UiVaultConfig } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
-import {
-	BN,
-	BigNum,
-	PublicKey,
-	QUOTE_PRECISION_EXP,
-	User,
-} from '@drift-labs/sdk';
+import { BN, PRICE_PRECISION, PublicKey, User } from '@drift-labs/sdk';
 import { Vault, VaultClient } from '@drift-labs/vaults-sdk';
 import { MarketId } from '@drift/common';
+import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { useEffect } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 
@@ -95,40 +90,45 @@ function useSyncVaultsStatsImpl() {
 		vaultAccountData: Vault,
 		uiVaultConfig: UiVaultConfig
 	) {
-		let baseAssetQuotePrice = getMarketPriceData(
-			MarketId.createSpotMarket(uiVaultConfig.market.marketIndex)
-		).priceData.price;
+		const marketIndex = uiVaultConfig.market.marketIndex;
+		const isUsdcMarket = marketIndex === USDC_SPOT_MARKET_INDEX;
 
-		if (baseAssetQuotePrice === 0) {
-			console.error('market price from oracle store returned 0');
-			baseAssetQuotePrice = 1; // default to 1 if price = 0
+		let baseAssetPrice = isUsdcMarket
+			? 1
+			: getMarketPriceData(
+					MarketId.createSpotMarket(uiVaultConfig.market.marketIndex)
+				).priceData.price;
+
+		if (baseAssetPrice === 0) {
+			console.error(
+				'market price from oracle store returned 0 for market index:',
+				marketIndex
+			);
+			baseAssetPrice = 1; // default to 1 if price = 0
 		}
 
+		const baseAssetPriceBN = new BN(
+			baseAssetPrice * PRICE_PRECISION.toNumber()
+		);
+
 		// calculate total account value
-		const totalAccountQuoteValue = await vaultClient.calculateVaultEquity({
+		const totalAccountQuoteValueBN = await vaultClient.calculateVaultEquity({
 			vault: vaultAccountData,
 		});
-		const totalAccountBaseValueBN = totalAccountQuoteValue.div(
-			BigNum.from(baseAssetQuotePrice, QUOTE_PRECISION_EXP).val
-		);
-		const totalAccountBaseValueNum = BigNum.from(
-			totalAccountBaseValueBN,
-			QUOTE_PRECISION_EXP
-		).toNum();
-		const totalAccountBaseValue = BigNum.fromPrint(
-			`${totalAccountBaseValueNum}`,
-			uiVaultConfig.market.precisionExp
-		).val;
+		const totalAccountBaseValueBN = totalAccountQuoteValueBN
+			.div(baseAssetPriceBN)
+			.mul(PRICE_PRECISION);
 
 		// calculate all time total pnl
 		const netDepositBase = vaultAccountData?.netDeposits;
 
 		const allTimeTotalPnlQuoteValue = vaultDriftUser.getTotalAllTimePnl();
-		const allTimeTotalPnlBaseValue = totalAccountBaseValue.sub(netDepositBase);
+		const allTimeTotalPnlBaseValue =
+			totalAccountBaseValueBN.sub(netDepositBase);
 
 		return {
-			totalAccountQuoteValue,
-			totalAccountBaseValue,
+			totalAccountQuoteValue: totalAccountQuoteValueBN,
+			totalAccountBaseValue: totalAccountBaseValueBN,
 			allTimeTotalPnlQuoteValue,
 			allTimeTotalPnlBaseValue,
 			isLoaded: true,
