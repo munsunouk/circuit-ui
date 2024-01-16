@@ -13,12 +13,14 @@ import {
 } from '@drift-labs/react';
 import { UIMarket } from '@drift/common';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
+import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import utc from 'dayjs/plugin/utc';
 import { useEffect } from 'react';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import { SWRConfig } from 'swr';
 
 import useDepositAssetBalances from '@/hooks/useDepositAssetBalances';
 import useShowAcknowledgeModal from '@/hooks/useShowAcknowledgeModal';
@@ -86,9 +88,15 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 					},
 				}}
 			>
-				<SkeletonTheme baseColor="#88c9ff" highlightColor="#fff">
-					<AppSetup>{children}</AppSetup>
-				</SkeletonTheme>
+				<SWRConfig
+					value={{
+						fetcher: (url: string) => axios.get(url).then((res) => res.data),
+					}}
+				>
+					<SkeletonTheme baseColor="#88c9ff" highlightColor="#fff">
+						<AppSetup>{children}</AppSetup>
+					</SkeletonTheme>
+				</SWRConfig>
 			</DriftProvider>
 		</WalletProvider>
 	);
