@@ -14,10 +14,11 @@ import { twMerge } from 'tailwind-merge';
 
 import { useAppActions } from '@/hooks/useAppActions';
 import { useVault } from '@/hooks/useVault';
+import useVaultApyAndCumReturns from '@/hooks/useVaultApyAndCumReturns';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
 import { encodeVaultName, hexToHue } from '@/utils/utils';
-import { calcModifiedDietz, getUiVaultConfig } from '@/utils/vaults';
+import { getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
@@ -199,15 +200,9 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		(tvl.toNumber() / maxCapacity.toNumber()) * 100,
 		100
 	);
-	const { apy } = calcModifiedDietz(
-		BigNum.from(
-			vaultStats.totalAccountBaseValue,
-			spotMarketConfig.precisionExp
-		).toNum(),
-		vaultStore?.vaultDeposits ?? []
+	const { apy, isLoading: isApyLoading } = useVaultApyAndCumReturns(
+		vaultAccountData?.pubkey.toString()
 	);
-	const isApyLoading =
-		!vaultStats.isLoaded || !vaultStore?.vaultDeposits?.length;
 
 	// TODO: abstract this logic
 	// User's vault share proportion
@@ -371,7 +366,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									apy={`${
 										uiVaultConfig?.temporaryApy
 											? uiVaultConfig?.temporaryApy
-											: ((isNaN(apy) ? 0 : apy) * 100).toFixed(2)
+											: apy.toFixed(2)
 									}%`}
 									tvl={BigNum.from(
 										tvl,

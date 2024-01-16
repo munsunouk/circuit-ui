@@ -1,4 +1,4 @@
-import { DriftHistoryServerClient } from '@/drift-history/client';
+import { DriftHistoryServerClient } from '@/clients/drift-history-server';
 import { SerializedDepositHistory } from '@/types';
 import { BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { calcModifiedDietz } from '@drift-labs/vaults-sdk';

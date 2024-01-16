@@ -1,4 +1,4 @@
-import { DriftHistoryServerClient } from '@/drift-history/client';
+import { DriftHistoryServerClient } from '@/clients/drift-history-server';
 import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
@@ -22,6 +22,7 @@ import { twMerge } from 'tailwind-merge';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import { useCurrentVault } from '@/hooks/useVault';
+import useVaultApyAndCumReturns from '@/hooks/useVaultApyAndCumReturns';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import {
@@ -30,7 +31,6 @@ import {
 	getBasePnlHistoryFromVaultDeposits,
 } from '@/utils/utils';
 import {
-	calcModifiedDietz,
 	getMaxDailyDrawdown,
 	getMaxDailyDrawdownFromAccValue,
 	getSimpleHistoricalApy,
@@ -138,6 +138,9 @@ export default function VaultPerformance() {
 	const [vaultTotalDepositsHistory, setVaultTotalDepositsHistory] = useState<
 		UISerializableDepositRecord[]
 	>([]);
+	const apyAndCumReturn = useVaultApyAndCumReturns(
+		vaultAccountData?.pubkey.toString()
+	);
 
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
@@ -319,12 +322,7 @@ export default function VaultPerformance() {
 			.shiftTo(PRICE_PRECISION_EXP)
 			.mul(currentAssetPriceBigNum);
 
-		const { apy, returns: cumulativeReturns } = calcModifiedDietz(
-			BigNum.from(vaultStats.totalAccountBaseValue, basePrecisionExp).toNum(),
-			vault?.vaultDeposits ?? []
-		);
-		const cumulativeReturnsPct = cumulativeReturns * 100;
-
+		const { apy, cumReturns: cumulativeReturnsPct } = apyAndCumReturn;
 		const maxDailyDrawdown = getMaxDailyDrawdown(
 			vault?.pnlHistory.dailyAllTimePnls ?? []
 		);
@@ -460,9 +458,7 @@ export default function VaultPerformance() {
 						value={`${
 							uiVaultConfig?.temporaryApy
 								? uiVaultConfig.temporaryApy
-								: (
-										(isNaN(displayedData.apy) ? 0 : displayedData.apy) * 100
-									).toFixed(2)
+								: displayedData.apy.toFixed(2)
 						}%`}
 						loading={loading}
 					/>
