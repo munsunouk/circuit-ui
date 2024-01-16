@@ -3,6 +3,7 @@ import { SerializedDepositHistory } from '@/types';
 import { BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { calcModifiedDietz } from '@drift-labs/vaults-sdk';
 import { kv } from '@vercel/kv';
+import { NextRequest } from 'next/server';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
@@ -11,7 +12,6 @@ import { RedisKeyManager } from '../_redis';
 import { setupClients } from '../_utils';
 
 /** NextJS route handler configs */
-export const revalidate = 60;
 export const dynamic = 'force-dynamic'; // defaults to auto
 
 const FORMATTED_VAULTS = VAULTS.filter((vault) => !!vault.pubkeyString).map(
@@ -23,12 +23,17 @@ const FORMATTED_VAULTS = VAULTS.filter((vault) => !!vault.pubkeyString).map(
 
 const { driftClient, vaultClient } = setupClients();
 
-export async function GET() {
-	const apyReturnsKey = RedisKeyManager.getApyReturnsKey(Date.now());
+export async function GET(request: NextRequest) {
+	const authHeader = request.headers.get('authorization');
+	if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+		return new Response('Unauthorized', {
+			status: 401,
+		});
+	}
 
 	// check redis cache for apy returns first
+	const apyReturnsKey = RedisKeyManager.getApyReturnsKey();
 	const cachedApyReturns = await kv.hgetall(apyReturnsKey);
-
 	if (cachedApyReturns) {
 		return Response.json({ data: cachedApyReturns });
 	}
@@ -70,9 +75,13 @@ export async function GET() {
 		{} as Record<string, { apy: number; returns: number }>
 	);
 
-	// save into redis cache
-	await kv.hset(apyReturnsKey, vaultsApyAndReturns);
-	await kv.expire(apyReturnsKey, revalidate * 2);
+	const value = {
+		vaults: vaultsApyAndReturns,
+		ts: Date.now(),
+	};
 
-	return Response.json({ data: vaultsApyAndReturns });
+	// save into redis cache
+	await kv.hset(apyReturnsKey, value);
+
+	return Response.json({ data: value });
 }

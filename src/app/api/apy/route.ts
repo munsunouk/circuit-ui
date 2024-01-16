@@ -9,6 +9,8 @@ import { TURBOCHARGER_VAULT } from '@/constants/vaults/turbocharger';
 
 import { setupClients } from '../_utils';
 
+// TODO: to be deprecated once confirmed that no one is using this
+
 /** NextJS route handler configs */
 export const revalidate = 60;
 export const dynamic = 'force-dynamic'; // defaults to auto
