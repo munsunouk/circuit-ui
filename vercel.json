@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/apy-returns",
+      "path": "/api/apy-returns-cron",
       "schedule": "* * * * *"
     }
   ]

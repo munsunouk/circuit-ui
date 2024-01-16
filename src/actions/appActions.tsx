@@ -43,8 +43,6 @@ import Env, {
 	SPOT_MARKETS_LOOKUP,
 } from '@/constants/environment';
 
-
-
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
 	_setCommon: (x: (s: CommonDriftStore) => void) => void,
