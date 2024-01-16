@@ -3,7 +3,8 @@
 import useFetchEventRecords from '@/stores/app/useFetchEventRecords';
 import { useSyncAccountSummary } from '@/stores/app/useSyncAccountSummary';
 import { useDevSwitchIsOn } from '@drift-labs/react';
-import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import DepositWithdrawForm from '@/components/vaults/DepositWithdrawForm';
@@ -16,6 +17,8 @@ import YourPerformance from '@/components/vaults/YourPerformance';
 
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
+
+import { removeQueryParam } from '@/utils/utils';
 
 import SectionHeader from '../SectionHeader';
 import Button from '../elements/Button';
@@ -32,11 +35,32 @@ export default function VaultPage() {
 	const vaultAccountData = useCurrentVaultAccountData();
 	const currentVaultPubKey = usePathToVaultPubKey();
 	const { devSwitchIsOn } = useDevSwitchIsOn();
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const pathname = usePathname();
 
 	useFetchEventRecords(currentVaultPubKey);
 	useSyncAccountSummary(currentVaultPubKey);
 
+	const tabQueryParam = searchParams.get('tab');
+
 	const isLoading = !vaultAccountData;
+
+	useEffect(() => {
+		switch (tabQueryParam) {
+			case 'user-performance':
+				setSelectedTab(VaultTab.UserPerformance);
+				break;
+			case 'overview':
+				setSelectedTab(VaultTab.Overview);
+				break;
+			default:
+				setSelectedTab(VaultTab.VaultPerformance);
+				break;
+		}
+
+		removeQueryParam(pathname, searchParams, 'tab');
+	}, [tabQueryParam, router]);
 
 	const renderLeftPanel = () => {
 		switch (selectedTab) {

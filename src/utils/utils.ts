@@ -8,6 +8,7 @@ import {
 	USDC_SPOT_MARKET_INDEX,
 } from '@drift/common';
 import dayjs from 'dayjs';
+import { ReadonlyURLSearchParams } from 'next/navigation';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 
@@ -229,4 +230,15 @@ export function hexToHue(hex: string) {
 	}
 
 	return h * 360; // Return hue in degrees
+}
+
+export function removeQueryParam(
+	pathname: string,
+	searchParams: ReadonlyURLSearchParams,
+	key: string
+) {
+	const regex = new RegExp(`${key}=[^&]*&?`);
+	const href = pathname + '?' + searchParams.toString().replace(regex, '');
+
+	window.history.replaceState({}, '', href);
 }
