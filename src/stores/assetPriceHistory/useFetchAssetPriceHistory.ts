@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { ASSETS } from '@/constants/assets';
-import { COINGECKO_API_URL } from '@/constants/misc';
 
 import {
 	HistoricalPrice,
@@ -21,7 +20,7 @@ const getCoingeckoMarketRangeApi = (
 	toTs: number,
 	currency = 'usd'
 ) => {
-	return `${COINGECKO_API_URL}/coins/${coingeckoId}/market_chart/range?vs_currency=${currency}&from=${fromTs}&to=${toTs}`;
+	return `/api/coingecko/market-range?coinId=${coingeckoId}&fromTs=${fromTs}&toTs=${toTs}&currency=${currency}`;
 };
 
 const ONE_YEAR_AGO_TIMESTAMP = Math.floor(
@@ -52,13 +51,19 @@ const useFetchAssetPriceHistory = (
 
 	useEffect(() => {
 		// fetch prices only if there is no price history or the price history is older than 1 year
+		const toTs = Math.floor(Date.now() / 1000);
+		console.log(
+			'🚀 ~ currentAssetPriceHistory.length:',
+			currentAssetPriceHistory.length
+		);
+
 		if (
-			currentAssetPriceHistory?.length > 0 &&
-			earliestTs >= ONE_YEAR_AGO_TIMESTAMP
+			currentAssetPriceHistory?.length > 0 ||
+			earliestTs >= ONE_YEAR_AGO_TIMESTAMP ||
+			Math.round(earliestTs / 10) === Math.round(toTs / 10) // prevent fetching when time period is < 10 ms
 		)
 			return;
 
-		const toTs = Math.floor(Date.now() / 1000);
 		const apiUrl = getCoingeckoMarketRangeApi(coingeckoId, earliestTs, toTs);
 
 		axios.get<CoinGeckoMarketRangeResult>(apiUrl).then((response) => {
