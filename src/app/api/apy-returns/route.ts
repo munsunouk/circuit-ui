@@ -12,5 +12,12 @@ export const GET = async () => {
 		return Response.json({ error: 'No cached apy returns found' });
 	}
 
-	return Response.json({ data: cachedApyReturns });
+	return Response.json(
+		{ data: cachedApyReturns },
+		{
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+			},
+		}
+	);
 };
