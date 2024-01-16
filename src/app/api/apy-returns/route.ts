@@ -72,7 +72,7 @@ export async function GET() {
 
 	// save into redis cache
 	await kv.hset(apyReturnsKey, vaultsApyAndReturns);
-	await kv.expire(apyReturnsKey, revalidate);
+	await kv.expire(apyReturnsKey, revalidate * 2);
 
 	return Response.json({ data: vaultsApyAndReturns });
 }

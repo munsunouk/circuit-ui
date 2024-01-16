@@ -30,8 +30,6 @@ import {
 } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
 import axios from 'axios';
-import dayjs from 'dayjs';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { ToastContent } from 'react-toastify';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
@@ -45,7 +43,7 @@ import Env, {
 	SPOT_MARKETS_LOOKUP,
 } from '@/constants/environment';
 
-dayjs.extend(isSameOrAfter);
+
 
 const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
