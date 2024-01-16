@@ -168,6 +168,7 @@ export const JITOSOL_BASIS_VAULT: UiVaultConfig = {
 	assetColor: JITOSOL_DEPOSIT_ASSET.borderColor,
 	pastPerformanceHistory: JITOSOL_BASIS_BACKTEST_DATA,
 	historyType: 'Backtest',
+	userPubKey: 'FPMWfMBQp81PkMEBSyaVwadzesfkTkYFbegaaoGBcpPB',
 	vaultOverview: [
 		{
 			title: 'Description',
