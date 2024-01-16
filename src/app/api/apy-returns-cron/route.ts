@@ -31,13 +31,6 @@ export async function GET(request: NextRequest) {
 		});
 	}
 
-	// check redis cache for apy returns first
-	const apyReturnsKey = RedisKeyManager.getApyReturnsKey();
-	const cachedApyReturns = await kv.hgetall(apyReturnsKey);
-	if (cachedApyReturns) {
-		return Response.json({ data: cachedApyReturns });
-	}
-
 	// start of fetching and calculating apy & returns
 	await driftClient.subscribe();
 
@@ -81,6 +74,7 @@ export async function GET(request: NextRequest) {
 	};
 
 	// save into redis cache
+	const apyReturnsKey = RedisKeyManager.getApyReturnsKey();
 	await kv.hset(apyReturnsKey, value);
 
 	return Response.json({ data: value });
