@@ -52,10 +52,6 @@ const useFetchAssetPriceHistory = (
 	useEffect(() => {
 		// fetch prices only if there is no price history or the price history is older than 1 year
 		const toTs = Math.floor(Date.now() / 1000);
-		console.log(
-			'🚀 ~ currentAssetPriceHistory.length:',
-			currentAssetPriceHistory.length
-		);
 
 		if (
 			currentAssetPriceHistory?.length > 0 ||
