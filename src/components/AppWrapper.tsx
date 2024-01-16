@@ -13,6 +13,9 @@ import {
 } from '@drift-labs/react';
 import { UIMarket } from '@drift/common';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
+import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import utc from 'dayjs/plugin/utc';
 import { useEffect } from 'react';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -26,6 +29,9 @@ import Env, {
 	PERP_MARKETS_LOOKUP,
 	SPOT_MARKETS_LOOKUP,
 } from '@/constants/environment';
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(utc);
 
 initializeDriftStore(Env);
 
