@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { ASSETS } from '@/constants/assets';
-import { COINGECKO_API_URL } from '@/constants/misc';
 
 import {
 	HistoricalPrice,
@@ -21,7 +20,7 @@ const getCoingeckoMarketRangeApi = (
 	toTs: number,
 	currency = 'usd'
 ) => {
-	return `${COINGECKO_API_URL}/coins/${coingeckoId}/market_chart/range?vs_currency=${currency}&from=${fromTs}&to=${toTs}`;
+	return `/api/coingecko/market-range?coinId=${coingeckoId}&fromTs=${fromTs}&toTs=${toTs}&currency=${currency}`;
 };
 
 const ONE_YEAR_AGO_TIMESTAMP = Math.floor(
