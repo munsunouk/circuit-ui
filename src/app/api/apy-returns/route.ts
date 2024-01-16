@@ -23,7 +23,17 @@ const FORMATTED_VAULTS = VAULTS.filter((vault) => !!vault.pubkeyString).map(
 
 const { driftClient, vaultClient } = setupClients();
 
-export async function POST() {
+export async function GET() {
+	const apyReturnsKey = RedisKeyManager.getApyReturnsKey(Date.now());
+
+	// check redis cache for apy returns first
+	const cachedApyReturns = await kv.hgetall(apyReturnsKey);
+
+	if (cachedApyReturns) {
+		return Response.json({ data: cachedApyReturns });
+	}
+
+	// start of fetching and calculating apy & returns
 	await driftClient.subscribe();
 
 	// fetch deposit history for each vault
@@ -61,8 +71,8 @@ export async function POST() {
 	);
 
 	// save into redis cache
-	const apyReturnsKey = RedisKeyManager.getApyReturnsKey(Date.now());
 	await kv.hset(apyReturnsKey, vaultsApyAndReturns);
+	await kv.expire(apyReturnsKey, revalidate);
 
 	return Response.json({ data: vaultsApyAndReturns });
 }
