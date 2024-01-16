@@ -51,13 +51,19 @@ const useFetchAssetPriceHistory = (
 
 	useEffect(() => {
 		// fetch prices only if there is no price history or the price history is older than 1 year
+		const toTs = Math.floor(Date.now() / 1000);
+		console.log(
+			'🚀 ~ currentAssetPriceHistory.length:',
+			currentAssetPriceHistory.length
+		);
+
 		if (
-			currentAssetPriceHistory?.length > 0 &&
-			earliestTs >= ONE_YEAR_AGO_TIMESTAMP
+			currentAssetPriceHistory?.length > 0 ||
+			earliestTs >= ONE_YEAR_AGO_TIMESTAMP ||
+			Math.round(earliestTs / 10) === Math.round(toTs / 10) // prevent fetching when time period is < 10 ms
 		)
 			return;
 
-		const toTs = Math.floor(Date.now() / 1000);
 		const apiUrl = getCoingeckoMarketRangeApi(coingeckoId, earliestTs, toTs);
 
 		axios.get<CoinGeckoMarketRangeResult>(apiUrl).then((response) => {

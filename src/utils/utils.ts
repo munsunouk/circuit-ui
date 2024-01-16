@@ -238,7 +238,9 @@ export function removeQueryParam(
 	key: string
 ) {
 	const regex = new RegExp(`${key}=[^&]*&?`);
-	const href = pathname + '?' + searchParams.toString().replace(regex, '');
+	const updatedSearch = searchParams.toString().replace(regex, '');
+	const href =
+		pathname + `${updatedSearch.length > 0 ? '?' : ''}` + updatedSearch;
 
 	window.history.replaceState({}, '', href);
 }
