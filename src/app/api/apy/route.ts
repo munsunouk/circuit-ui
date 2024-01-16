@@ -1,24 +1,13 @@
 import { DriftHistoryServerClient } from '@/drift-history/client';
 import { SerializedDepositHistory } from '@/types';
-import {
-	BigNum,
-	BulkAccountLoader,
-	DRIFT_PROGRAM_ID,
-	DriftClient,
-	DriftClientConfig,
-	PublicKey,
-	QUOTE_PRECISION_EXP,
-	getMarketsAndOraclesForSubscription,
-} from '@drift-labs/sdk';
-import { getVaultClient } from '@drift-labs/vaults-sdk';
-import { COMMON_UI_UTILS } from '@drift/common';
-import { Connection } from '@solana/web3.js';
+import { BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { calcModifiedDietz } from '@drift-labs/vaults-sdk';
 
-import { calcModifiedDietz } from '@/utils/vaults';
-
-import Env from '@/constants/environment';
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { SUPERCHARGER_VAULT_PUBKEY } from '@/constants/vaults/supercharger';
 import { TURBOCHARGER_VAULT } from '@/constants/vaults/turbocharger';
+
+import { setupClients } from '../_utils';
 
 /** NextJS route handler configs */
 export const revalidate = 60;
@@ -42,32 +31,7 @@ const VAULTS = [
 	},
 ];
 
-const connection = new Connection(process.env.API_RPC_URL!, 'processed');
-const dummyWallet = COMMON_UI_UTILS.createThrowawayIWallet();
-
-const accountLoader = new BulkAccountLoader(connection, 'processed', 1000);
-
-const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
-	getMarketsAndOraclesForSubscription(Env.driftEnv);
-const vaultDriftClientConfig: DriftClientConfig = {
-	connection: connection,
-	wallet: dummyWallet,
-	programID: new PublicKey(DRIFT_PROGRAM_ID),
-	env: Env.driftEnv,
-	txVersion: 0,
-	userStats: true,
-	perpMarketIndexes: perpMarketIndexes,
-	spotMarketIndexes: spotMarketIndexes,
-	oracleInfos: oracleInfos,
-	accountSubscription: {
-		type: 'polling',
-		accountLoader: accountLoader,
-	},
-};
-
-const driftClient = new DriftClient(vaultDriftClientConfig);
-
-const vaultClient = getVaultClient(connection, dummyWallet, driftClient);
+const { driftClient, vaultClient } = setupClients();
 
 export async function GET() {
 	await driftClient.subscribe();
@@ -83,14 +47,15 @@ export async function GET() {
 	const vaultsEquity = await Promise.all(
 		VAULTS.map((v) => vaultClient.calculateVaultEquity({ address: v.vault }))
 	);
-	const vaultsEquityNotionalValue = vaultsEquity.map((e) =>
-		BigNum.from(e, QUOTE_PRECISION_EXP).toNum()
+	const vaultsEquityBigNum = vaultsEquity.map((e) =>
+		BigNum.from(e, QUOTE_PRECISION_EXP)
 	);
 
 	// calculate each vault's apy using modified dietz formula
 	const vaultsApy = VAULTS.map((v, i) => {
 		const { apy } = calcModifiedDietz(
-			vaultsEquityNotionalValue[i],
+			vaultsEquityBigNum[i],
+			SPOT_MARKETS_LOOKUP[depositHistories[i][0].marketIndex].precisionExp,
 			depositHistories[i]
 		);
 

@@ -28,7 +28,7 @@ export type SerializedDepositHistory = {
 	depositRecordId: string;
 	userAuthority: string;
 	user: string;
-	direction: string;
+	direction: 'deposit' | 'withdraw';
 	marketIndex: number;
 	amount: string;
 	oraclePrice: string;
@@ -73,4 +73,5 @@ export interface UiVaultConfig {
 	assetsOperatedOn?: Asset[];
 	comingSoon?: boolean;
 	temporaryApy?: number; // used at the start of a new vault to show a temporary APY
+	userPubKey: string;
 }

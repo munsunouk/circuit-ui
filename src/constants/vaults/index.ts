@@ -13,6 +13,7 @@ const WETH_BASIS_VAULT: UiVaultConfig = {
 	backdropParticlesColor: '#88c9ff',
 	market: WETH_DEPOSIT_ASSET.market,
 	assetColor: WETH_DEPOSIT_ASSET.borderColor,
+	userPubKey: 'Fi1NzNpH9gA1hW8idZmNTzuEQUnNE6VJJh6rdgSeVgTn',
 };
 
 export const VAULTS: UiVaultConfig[] = [
