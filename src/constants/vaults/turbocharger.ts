@@ -1,6 +1,7 @@
 import { UiVaultConfig } from '@/types';
 
 import {
+	SOL_DEPOSIT_ASSET,
 	USDC_DEPOSIT_ASSET,
 	WBTC_DEPOSIT_ASSET,
 	WETH_DEPOSIT_ASSET,
@@ -11,21 +12,21 @@ export const TURBOCHARGER_VAULT: UiVaultConfig = {
 	name: 'Turbocharger',
 	pubkeyString: 'F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr',
 	description:
-		'Multiply your yields with delta-neutral market making strategies focused on BTC and ETH',
+		'Multiply your yields with delta-neutral market making & innovative strategies on SOL/BTC/ETH',
 	permissioned: false,
 	market: USDC_DEPOSIT_ASSET.market,
 	assetColor: USDC_DEPOSIT_ASSET.borderColor,
 	previewBackdropUrl: '/backdrops/hedged-dlp-backdrop.svg',
 	backdropParticlesColor: '#AB86D7',
 	historyType: 'Historical',
-	assetsOperatedOn: [WETH_DEPOSIT_ASSET, WBTC_DEPOSIT_ASSET],
+	assetsOperatedOn: [SOL_DEPOSIT_ASSET, WETH_DEPOSIT_ASSET, WBTC_DEPOSIT_ASSET],
 	userPubKey: '2aMcirYcF9W8aTFem6qe8QtvfQ22SLY6KUe6yUQbqfHk',
 	vaultOverview: [
 		{
 			title: 'Strategy',
 			paragraphs: [
 				{
-					text: 'Turbocharger vault employs market making and liquidity provision strategy, primarily on Drift perpetual swaps for BTC and ETH. The strategy edge is in advanced volatility and inventory management models and a superior on-chain infrastructure setup.',
+					text: 'Turbocharger vault employs market making and liquidity provision strategy, primarily on Drift perpetual swaps for SOL, BTC and ETH. The strategy edge is in advanced volatility and inventory management models and a superior on-chain infrastructure setup.',
 				},
 				{
 					text: 'The strategy is built on a smart contract, meaning funds cannot be withdrawn by anyone but you.',
