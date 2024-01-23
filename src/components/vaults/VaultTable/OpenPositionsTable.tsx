@@ -35,26 +35,39 @@ const columns = [
 		}
 	),
 	columnHelper.accessor(
-		(row) =>
-			`${BigNum.from(
-				row.baseSize.abs(),
-				BASE_PRECISION_EXP
-			).prettyPrint()} ${COMMON_UI_UTILS.getBaseAssetSymbol(row.marketSymbol)}`,
+		(row) => (
+			<div className="flex flex-col w-[140px]">
+				<Table.NumericValue>
+					{`${BigNum.from(row.baseSize.abs(), BASE_PRECISION_EXP).prettyPrint(
+						true
+					)} ${COMMON_UI_UTILS.getBaseAssetSymbol(row.marketSymbol)}`}
+				</Table.NumericValue>
+				<Table.NumericValue className="text-[13px]">
+					{BigNum.from(row.baseSize.abs(), BASE_PRECISION_EXP)
+						.mul(
+							BigNum.fromPrint(row.indexPrice.toString(), PRICE_PRECISION_EXP)
+						)
+						.shiftTo(PRICE_PRECISION_EXP)
+						.toNotional()}
+				</Table.NumericValue>
+			</div>
+		),
 		{
 			header: 'Size',
-			cell: (info) => (
-				<Table.NumericValue className="w-[140px]">
-					{info.getValue()}
-				</Table.NumericValue>
-			),
+			cell: (info) => info.getValue(),
 		}
 	),
 	columnHelper.accessor(
 		(row) => (
 			<div className="flex flex-col">
-				<span>${BigNum.from(row.entryPrice, PRICE_PRECISION_EXP).toNum()}</span>
+				<span>
+					${BigNum.from(row.entryPrice, PRICE_PRECISION_EXP).prettyPrint()}
+				</span>
 				<span className="text-[13px] text-text-secondary">
-					${row.indexPrice}
+					{BigNum.fromPrint(
+						row.indexPrice.toString(),
+						PRICE_PRECISION_EXP
+					).toNotional()}
 				</span>
 			</div>
 		),
