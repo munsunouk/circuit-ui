@@ -1,13 +1,14 @@
-import { DriftHistoryServerClient } from '@/clients/drift-history-server';
-import { SerializedDepositHistory } from '@/types';
 import { BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { calcModifiedDietz } from '@drift-labs/vaults-sdk';
 import { kv } from '@vercel/kv';
+import { and, eq, or } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
 
+import { db } from '../../../../database/connect';
+import { vault_depositor_records } from '../../../../database/schema';
 import { setupClients } from '../../../../utils';
 import { RedisKeyManager } from '../_redis';
 
@@ -23,6 +24,33 @@ const FORMATTED_VAULTS = VAULTS.filter((vault) => !!vault.pubkeyString).map(
 
 const { driftClient, vaultClient } = setupClients();
 
+const fetchVaultDepositHistory = async (vault: PublicKey) => {
+	const history = await db
+		.select({
+			ts: vault_depositor_records.ts,
+			amount: vault_depositor_records.amount,
+			marketIndex: vault_depositor_records.spotMarketIndex,
+			direction: vault_depositor_records.action,
+		})
+		.from(vault_depositor_records)
+		.where(
+			and(
+				eq(vault_depositor_records.vault, vault.toString()),
+				or(
+					eq(vault_depositor_records.action, 'deposit'),
+					eq(vault_depositor_records.action, 'withdraw')
+				)
+			)
+		);
+
+	return history.sort((a, b) => +b.ts - +a.ts) as {
+		ts: string;
+		amount: string;
+		marketIndex: number;
+		direction: 'deposit' | 'withdraw';
+	}[];
+};
+
 export async function GET(request: NextRequest) {
 	const authHeader = request.headers.get('authorization');
 	if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -35,12 +63,9 @@ export async function GET(request: NextRequest) {
 	await driftClient.subscribe();
 
 	// fetch deposit history for each vault
-	const res = await DriftHistoryServerClient.fetchUserAccountsDepositHistory(
-		false,
-		...FORMATTED_VAULTS.map((v) => v.user)
+	const depositHistories = await Promise.all(
+		FORMATTED_VAULTS.map((v) => fetchVaultDepositHistory(v.vault))
 	);
-	if (!res.success || !res.data) return Response.json({ error: res.message });
-	const depositHistories = res.data.records as SerializedDepositHistory[][];
 
 	// get each vault's tvl base value
 	const vaultsEquity = await Promise.all(

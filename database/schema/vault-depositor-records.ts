@@ -7,8 +7,9 @@ export const vault_depositor_records = pgTable(
 	'vault_depositor_records',
 	{
 		id: serial('id').primaryKey(),
-		vault: createPubkeyField('vault'),
-		depositorAuthority: createPubkeyField('depositorAuthority'),
+		ts: createBNField('ts').notNull(),
+		vault: createPubkeyField('vault').notNull(),
+		depositorAuthority: createPubkeyField('depositorAuthority').notNull(),
 		action: varchar('action', { length: 32 }).notNull().default(''),
 		amount: createBNField('amount'),
 		spotMarketIndex: integer('spotMarketIndex').notNull(),

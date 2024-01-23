@@ -35,7 +35,7 @@ export const deposit_records = pgTable(
 		),
 		total_deposits_after: createBNField('total_deposits_after'),
 		total_withdraws_after: createBNField('total_withdraws_after'),
-		transfer_user: createPubkeyField('transfer_user', false),
+		transfer_user: createPubkeyField('transfer_user'),
 		explanation: varchar('explanation', { length: 48 }).notNull(),
 	},
 	(t) => {

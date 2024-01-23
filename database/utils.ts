@@ -1,13 +1,9 @@
 import { bigint, decimal, varchar } from 'drizzle-orm/pg-core';
 
-export const createPubkeyField = (fieldName: string, notNull = true) => {
+export const createPubkeyField = (fieldName: string) => {
 	const field = varchar(fieldName, { length: 44 });
 
-	if (notNull) {
-		return field.notNull();
-	} else {
-		return field;
-	}
+	return field;
 };
 
 export const createBigIntField = (fieldName: string) => {

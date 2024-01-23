@@ -1,5 +1,5 @@
 {
-  "id": "bbeaa76c-8b85-46da-8a9b-d844d96448d9",
+  "id": "0a9c7933-bcc2-48f6-b28e-9212af9ef02b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -18,7 +18,7 @@
           "name": "program_id",
           "type": "varchar(44)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "tx_sig": {
           "name": "tx_sig",
@@ -55,13 +55,13 @@
           "name": "user_authority",
           "type": "varchar(44)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "user": {
           "name": "user",
           "type": "varchar(44)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "direction": {
           "name": "direction",
@@ -184,6 +184,135 @@
           ]
         }
       }
+    },
+    "vault_depositor_records": {
+      "name": "vault_depositor_records",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ts": {
+          "name": "ts",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault": {
+          "name": "vault",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "depositorAuthority": {
+          "name": "depositorAuthority",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spotMarketIndex": {
+          "name": "spotMarketIndex",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vaultSharesBefore": {
+          "name": "vaultSharesBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vaultSharesAfter": {
+          "name": "vaultSharesAfter",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vaultEquityBefore": {
+          "name": "vaultEquityBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userVaultSharesBefore": {
+          "name": "userVaultSharesBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "totalVaultSharesBefore": {
+          "name": "totalVaultSharesBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userVaultSharesAfter": {
+          "name": "userVaultSharesAfter",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "totalVaultSharesAfter": {
+          "name": "totalVaultSharesAfter",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profitShare": {
+          "name": "profitShare",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "managementFee": {
+          "name": "managementFee",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "managementFeeShares": {
+          "name": "managementFeeShares",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "vault": {
+          "name": "vault",
+          "columns": [
+            "vault"
+          ],
+          "isUnique": false
+        },
+        "vaultDepositor": {
+          "name": "vaultDepositor",
+          "columns": [
+            "vault",
+            "depositorAuthority"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     }
   },
   "enums": {},
