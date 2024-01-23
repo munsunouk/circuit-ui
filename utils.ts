@@ -10,7 +10,7 @@ import { getVaultClient } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
 import { Connection } from '@solana/web3.js';
 
-import Env from '@/constants/environment';
+import Env from './src/constants/environment';
 
 /**
  * Sets up DriftClient and VaultClient for use in API routes.
@@ -46,5 +46,7 @@ export const setupClients = () => {
 	return {
 		driftClient,
 		vaultClient,
+		connection,
+		accountLoader,
 	};
 };

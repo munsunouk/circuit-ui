@@ -16,7 +16,7 @@
     "convert-icons": "npx @svgr/cli --typescript --no-prettier --icon --out-dir ./src/components/icons ./public/icons && prettier --write './src/components/icons/*.{ts,tsx}'",
     "install-vercel": "sh ./scripts/install-vercel.sh",
     "build-vercel": "sh ./scripts/build-vercel.sh",
-    "migrate-db": "bunx tsx src/database/migrate.ts"
+    "generate-migrate-db": "bun drizzle-kit generate:pg && bunx tsx database/migrate.ts"
   },
   "browser": {
     "fs": false,

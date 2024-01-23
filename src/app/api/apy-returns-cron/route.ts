@@ -8,8 +8,8 @@ import { NextRequest } from 'next/server';
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
 
+import { setupClients } from '../../../../utils';
 import { RedisKeyManager } from '../_redis';
-import { setupClients } from '../_utils';
 
 /** NextJS route handler configs */
 export const dynamic = 'force-dynamic'; // defaults to auto
