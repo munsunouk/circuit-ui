@@ -3,6 +3,10 @@
     {
       "path": "/api/apy-returns-cron",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/backfill-vault-deposits",
+      "schedule": "* * * * *"
     }
   ]
 }

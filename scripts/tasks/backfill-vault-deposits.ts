@@ -7,16 +7,17 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '../../database/connect';
 import { vault_depositor_records } from '../../database/schema/vault-depositor-records';
 import { setupClients } from '../../utils';
-import { MAX_TXNS_PER_REQUEST } from './utils';
+import { MAX_TXNS_PER_REQUEST, consoleLog } from './utils';
 
 const { vaultClient, connection } = setupClients();
-
-const VAULT_TO_BACKFILL = new PublicKey(
-	'F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr' // turbocharger
-);
-
 // @ts-ignore
 const logParser = new LogParser(vaultClient.program);
+
+const VAULTS_TO_BACKFILL = [
+	new PublicKey('ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4'), // jitosol basis vault
+	new PublicKey('GXyE3Snk3pPYX4Nz9QRVBrnBfbJRTAQYxuy5DRdnebAn'), // supercharger vault
+	new PublicKey('F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr'), // turbocharger vault
+];
 
 const recursivelyGetTransactions = async (
 	pubkeyToFetch: PublicKey,
@@ -34,7 +35,7 @@ const recursivelyGetTransactions = async (
 		);
 
 		if (!response) {
-			console.log('response is null');
+			consoleLog('fetch logs response is null');
 			return records;
 		}
 
@@ -53,10 +54,10 @@ const recursivelyGetTransactions = async (
 			response.transactionLogs.length < MAX_TXNS_PER_REQUEST ||
 			response.earliestTx === response.mostRecentTx
 		) {
-			console.log('fetch ended with num of records:', records.length);
+			consoleLog('fetch ended with num of records:', records.length);
 			return records;
 		} else {
-			console.log('response continued with num of records:', records.length);
+			consoleLog('response continued with num of records:', records.length);
 			return recursivelyGetTransactions(
 				pubkeyToFetch,
 				records,
@@ -94,6 +95,9 @@ const serializeVaultDepositorRecord = (record: WrappedEvents[0]) => {
 };
 
 const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
+	console.log('\n');
+	consoleLog('backfilling vault: ' + vaultPubKey.toString());
+
 	const latestTxSignatureResult = await db
 		.select({
 			txSig: vault_depositor_records.txSig,
@@ -105,13 +109,13 @@ const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
 		.limit(1);
 	const latestTxSignature = latestTxSignatureResult?.[0]?.txSig;
 	const latestTs = latestTxSignatureResult?.[0]?.ts;
-	console.log(
-		'latest tx signature:',
-		latestTxSignature,
+	consoleLog('latest tx signature:', latestTxSignature);
+	consoleLog(
+		'latest tx timestamp:',
 		dayjs.unix(+latestTs).format('DD/MM/YYYY HH:mm:ss')
 	);
 
-	console.log('attempting to get all vault depositor records');
+	consoleLog('attempting to get all vault depositor records');
 	const allVaultDepositorRecords = await recursivelyGetTransactions(
 		vaultPubKey,
 		[],
@@ -120,7 +124,7 @@ const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
 	);
 
 	if (!allVaultDepositorRecords || allVaultDepositorRecords.length === 0) {
-		console.log('no records to insert. exiting script');
+		consoleLog('no records to insert. exiting script');
 		return;
 	}
 
@@ -128,11 +132,15 @@ const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
 		serializeVaultDepositorRecord
 	);
 
-	console.log('attempting db insert');
+	consoleLog('attempting db insert');
 	await db
 		.insert(vault_depositor_records)
 		.values(serializedSortedVaultDepositorRecords);
-	console.log('db insert complete');
+	consoleLog('db insert complete');
 };
 
-backfillVaultDeposits(VAULT_TO_BACKFILL);
+export const backfillSupportedVaultsDeposits = async () => {
+	for (const vaultPubKey of VAULTS_TO_BACKFILL) {
+		await backfillVaultDeposits(vaultPubKey);
+	}
+};
