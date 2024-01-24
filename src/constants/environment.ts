@@ -56,4 +56,7 @@ export const JITOSOL_MARKET = SPOT_MARKETS_LOOKUP[6];
 // Perp markets
 export const PERP_MARKETS_LOOKUP = CommonConfig.perpMarketsLookup;
 
+// APIs
+export const DEFAULT_DEDUPING_INTERVAL = 2000;
+
 export default Env;

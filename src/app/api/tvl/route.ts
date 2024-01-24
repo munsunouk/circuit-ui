@@ -2,7 +2,7 @@ import { BigNum, PublicKey, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 
 import { VAULTS } from '@/constants/vaults';
 
-import { setupClients } from '../_utils';
+import { setupClients } from '../../../../utils';
 
 export const revalidate = 60;
 

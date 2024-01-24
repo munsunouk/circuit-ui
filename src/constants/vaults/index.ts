@@ -23,4 +23,15 @@ export const VAULTS: UiVaultConfig[] = [
 	// WETH_BASIS_VAULT,
 ];
 
-export const DEPOSIT_ASSET_MARKETS = VAULTS.map((v) => v.market);
+export const DEPOSIT_ASSET_MARKETS = Object.values(
+	VAULTS.map((v) => v.market).reduce(
+		(acc, curr) => {
+			if (acc[curr.marketIndex]) return acc;
+
+			acc[curr.marketIndex] = curr;
+
+			return acc;
+		},
+		{} as { [marketIndex: number]: UiVaultConfig['market'] }
+	)
+);
