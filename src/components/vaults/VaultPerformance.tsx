@@ -139,7 +139,9 @@ export default function VaultPerformance() {
 		UISerializableDepositRecord[]
 	>([]);
 	const apyAndCumReturn = useVaultApyAndCumReturns(
-		vaultAccountData?.pubkey.toString()
+		vaultAccountData?.pubkey.toString(),
+		vaultAccountData?.user?.toString(),
+		vaultAccountData?.spotMarketIndex ?? 0
 	);
 
 	const uiVaultConfig = VAULTS.find(

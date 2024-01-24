@@ -1,6 +1,19 @@
+import { DriftHistoryServerClient } from '@/clients/drift-history-server';
+import { SerializedDepositHistory } from '@/types';
+import { BigNum, PublicKey, ZERO } from '@drift-labs/sdk';
+import { calcModifiedDietz } from '@drift-labs/vaults-sdk';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-const useVaultApyAndCumReturns = (vaultPubKeyString: string | undefined) => {
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
+
+import { useVaultStats } from './useVaultStats';
+
+const useVaultApyAndCumReturns = (
+	vaultPubKeyString: string | undefined,
+	vaultUserPubKey: string | undefined,
+	marketIndex: number
+) => {
 	const { data, error, isLoading } = useSWR<{
 		data: {
 			vaults: Record<
@@ -15,21 +28,108 @@ const useVaultApyAndCumReturns = (vaultPubKeyString: string | undefined) => {
 	}>(vaultPubKeyString ? '/api/apy-returns' : null, {
 		refreshInterval: 1000 * 60,
 	});
+	const vaultStats = useVaultStats(
+		vaultPubKeyString ? new PublicKey(vaultPubKeyString) : undefined
+	);
 
-	if (error || !data || !vaultPubKeyString) {
-		error && console.error(error);
-		return {
-			apy: 0,
-			cumReturns: 0,
-			isLoading: true,
-		};
-	}
+	const [stats, setStats] = useState<{
+		apy: number;
+		cumReturns: number;
+		isLoading: boolean;
+	}>({
+		apy: 0,
+		cumReturns: 0,
+		isLoading: true,
+	});
 
-	return {
-		apy: (data.data.vaults[vaultPubKeyString]?.apy ?? 0) * 100,
-		cumReturns: (data.data.vaults[vaultPubKeyString]?.returns ?? 0) * 100,
-		isLoading,
-	};
+	useEffect(() => {
+		if (!vaultPubKeyString) return;
+
+		if (error || !data) {
+			error && console.error(error);
+			setStats({
+				apy: 0,
+				cumReturns: 0,
+				isLoading: true,
+			});
+			return;
+		}
+
+		const vaultApyAndCumReturns = data.data.vaults[vaultPubKeyString];
+
+		// Circuit unsupported vault
+		if (!vaultApyAndCumReturns) {
+			if (!vaultStats || vaultStats.totalAccountBaseValue.eq(ZERO)) {
+				// ignore if vault has no deposits
+				setStats({
+					apy: 0,
+					cumReturns: 0,
+					isLoading: false,
+				});
+				return;
+			} else {
+				if (!vaultUserPubKey) {
+					setStats({
+						apy: 0,
+						cumReturns: 0,
+						isLoading: true,
+					});
+					return;
+				} else {
+					// fallback to fetching deposit history using RPC
+					// calculate modified dietz here
+					DriftHistoryServerClient.fetchUserAccountsDepositHistory(
+						false,
+						new PublicKey(vaultUserPubKey)
+					).then((res) => {
+						const depositHistory = res.data?.records[0];
+
+						if (!depositHistory) {
+							setStats({
+								apy: 0,
+								cumReturns: 0,
+								isLoading: false,
+							});
+							return;
+						}
+
+						const { apy, returns } = calcModifiedDietz(
+							BigNum.from(
+								vaultStats.totalAccountBaseValue,
+								SPOT_MARKETS_LOOKUP[marketIndex].precisionExp
+							),
+							SPOT_MARKETS_LOOKUP[marketIndex].precisionExp,
+							depositHistory as SerializedDepositHistory[]
+						);
+
+						setStats({
+							apy: apy * 100,
+							cumReturns: returns * 100,
+							isLoading: false,
+						});
+
+						return;
+					});
+				}
+			}
+
+			return;
+		}
+
+		setStats({
+			apy: vaultApyAndCumReturns.apy * 100,
+			cumReturns: vaultApyAndCumReturns.returns * 100,
+			isLoading: false,
+		});
+	}, [
+		data,
+		error,
+		vaultStats.totalAccountBaseValue.eq(ZERO),
+		vaultPubKeyString,
+		marketIndex,
+	]);
+
+	return stats;
 };
 
 export default useVaultApyAndCumReturns;
