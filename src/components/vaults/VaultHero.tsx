@@ -1,4 +1,4 @@
-import { BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
+import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { decodeName } from '@drift-labs/vaults-sdk';
 import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { twMerge } from 'tailwind-merge';
@@ -8,6 +8,7 @@ import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 
 import { displayAssetValue } from '@/utils/utils';
 
+import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
@@ -64,15 +65,15 @@ export default function VaultHero() {
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
 	);
-	const basePrecisionExp = uiVaultConfig?.market?.precisionExp ?? ZERO;
+	const depositMarketIndex = vaultAccountData?.spotMarketIndex ?? 0;
+	const basePrecisionExp = SPOT_MARKETS_LOOKUP[depositMarketIndex].precisionExp;
 
 	const name = decodeName(vaultAccountData?.name ?? []);
 	const tvlBaseValue = vaultStats.totalAccountBaseValue;
 	const tvlQuoteValue = vaultStats.totalAccountQuoteValue;
 	const maxCapacity = vaultAccountData?.maxTokens;
 
-	const isUsdcMarket =
-		uiVaultConfig?.market?.marketIndex === USDC_SPOT_MARKET_INDEX;
+	const isUsdcMarket = depositMarketIndex === USDC_SPOT_MARKET_INDEX;
 
 	return (
 		<div
@@ -116,7 +117,7 @@ export default function VaultHero() {
 					label="Total Value Locked"
 					value={displayAssetValue(
 						BigNum.from(tvlBaseValue, basePrecisionExp),
-						uiVaultConfig?.market.marketIndex ?? 0,
+						depositMarketIndex,
 						false,
 						2
 					)}
@@ -142,7 +143,7 @@ export default function VaultHero() {
 					label="Max Capacity"
 					value={displayAssetValue(
 						BigNum.from(maxCapacity, basePrecisionExp),
-						uiVaultConfig?.market.marketIndex ?? 0,
+						depositMarketIndex,
 						false,
 						2
 					)}
