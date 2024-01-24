@@ -13,7 +13,6 @@ import { useWindowSize } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
 import { useAppActions } from '@/hooks/useAppActions';
-import { useVault } from '@/hooks/useVault';
 import useVaultApyAndCumReturns from '@/hooks/useVaultApyAndCumReturns';
 import { useVaultStats } from '@/hooks/useVaultStats';
 
@@ -182,7 +181,6 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		() => (vault.pubkeyString ? new PublicKey(vault.pubkeyString) : undefined),
 		[vault.pubkeyString]
 	);
-	const vaultStore = useVault(vaultPubkey);
 	const [vaultAccountData, vaultDepositorAccountData] = useAppStore((s) => [
 		s.getVaultAccountData(vaultPubkey),
 		s.getVaultDepositorAccountData(vaultPubkey),
@@ -201,7 +199,9 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		100
 	);
 	const { apy, isLoading: isApyLoading } = useVaultApyAndCumReturns(
-		vaultAccountData?.pubkey.toString()
+		vaultAccountData?.pubkey.toString(),
+		vaultAccountData?.user.toString(),
+		spotMarketConfig.marketIndex
 	);
 
 	// TODO: abstract this logic

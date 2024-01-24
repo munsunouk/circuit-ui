@@ -1,4 +1,4 @@
-import { BigNum, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
 import { decodeName } from '@drift-labs/vaults-sdk';
 import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { twMerge } from 'tailwind-merge';
@@ -72,6 +72,7 @@ export default function VaultHero() {
 	const tvlBaseValue = vaultStats.totalAccountBaseValue;
 	const tvlQuoteValue = vaultStats.totalAccountQuoteValue;
 	const maxCapacity = vaultAccountData?.maxTokens;
+	const hasMaxCapacity = maxCapacity !== undefined && !maxCapacity.eq(ZERO);
 
 	const isUsdcMarket = depositMarketIndex === USDC_SPOT_MARKET_INDEX;
 
@@ -141,12 +142,16 @@ export default function VaultHero() {
 				<div className="h-12 border-r border-container-border" />
 				<StatsBox
 					label="Max Capacity"
-					value={displayAssetValue(
-						BigNum.from(maxCapacity, basePrecisionExp),
-						depositMarketIndex,
-						false,
-						2
-					)}
+					value={
+						hasMaxCapacity
+							? displayAssetValue(
+									BigNum.from(maxCapacity, basePrecisionExp),
+									depositMarketIndex,
+									false,
+									2
+								)
+							: '-'
+					}
 					position="right"
 				/>
 			</div>
