@@ -1,4 +1,3 @@
-import { UiVaultConfig } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
 import { BN, PRICE_PRECISION, PublicKey, User } from '@drift-labs/sdk';
 import { Vault, VaultClient } from '@drift-labs/vaults-sdk';
@@ -8,7 +7,6 @@ import { useEffect } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
-import { VAULTS } from '@/constants/vaults';
 
 import useAppStore from '../stores/app/useAppStore';
 import usePathToVaultPubKey from './usePathToVaultName';
@@ -62,17 +60,9 @@ function useSyncVaultsStatsImpl() {
 			const vault = vaults[vaultKey];
 			const vaultDriftUser = vault?.vaultDriftUser;
 			const vaultAccountData = vault?.vaultAccountData;
-			const uiVaultConfig = VAULTS.find(
-				(vault) => vault.pubkeyString === vaultKey
-			);
 
-			if (vaultDriftUser && vaultAccountData && uiVaultConfig) {
-				fetchVaultStats(
-					vaultClient,
-					vaultDriftUser,
-					vaultAccountData,
-					uiVaultConfig
-				)
+			if (vaultDriftUser && vaultAccountData) {
+				fetchVaultStats(vaultClient, vaultDriftUser, vaultAccountData)
 					.then((newVaultStats) => {
 						setAppStore((s) => {
 							s.vaults[vaultKey]!.vaultStats = newVaultStats;
@@ -88,17 +78,15 @@ function useSyncVaultsStatsImpl() {
 	async function fetchVaultStats(
 		vaultClient: VaultClient,
 		vaultDriftUser: User,
-		vaultAccountData: Vault,
-		uiVaultConfig: UiVaultConfig
+		vaultAccountData: Vault
 	) {
-		const marketIndex = uiVaultConfig.market.marketIndex;
+		const marketIndex = vaultAccountData.spotMarketIndex;
 		const isUsdcMarket = marketIndex === USDC_SPOT_MARKET_INDEX;
 
 		let baseAssetPrice = isUsdcMarket
 			? 1
-			: getMarketPriceData(
-					MarketId.createSpotMarket(uiVaultConfig.market.marketIndex)
-				).priceData.price;
+			: getMarketPriceData(MarketId.createSpotMarket(marketIndex)).priceData
+					.price;
 
 		if (baseAssetPrice === 0) {
 			console.error(
