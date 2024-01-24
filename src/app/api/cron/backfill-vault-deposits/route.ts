@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 		});
 	}
 
-	backfillSupportedVaultsDeposits();
+	await backfillSupportedVaultsDeposits();
 
 	return new Response('ok', {
 		status: 200,
