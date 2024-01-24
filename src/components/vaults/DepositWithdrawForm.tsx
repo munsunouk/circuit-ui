@@ -294,20 +294,22 @@ const DepositForm = ({
 		+amount * spotMarketConfig.precision.toNumber() <
 			(vaultAccountData?.minDepositAmount.toNumber() ?? 0);
 
-	// Max amount that can be depositedw
-	const maxCapacity = vaultAccountData?.maxTokens;
-	const tvlWithoutHistory = vaultStats.totalAccountBaseValue;
+	// Max amount that can be deposited
+	const maxCapacity = vaultAccountData?.maxTokens ?? ZERO;
+	const hasMaxCapacity = maxCapacity.gt(ZERO); // if max capacity is 0, then there is no max capacity
 	const maxAvailableCapacity = BigNum.from(
-		maxCapacity?.sub(tvlWithoutHistory),
+		maxCapacity?.sub(vaultStats.totalAccountBaseValue),
 		spotMarketConfig.precisionExp
 	);
 	const depositBalanceBigNum = BigNum.fromPrint(
 		depositAssetBalance.toString(),
 		spotMarketConfig?.precisionExp ?? BASE_PRECISION_EXP
 	);
-	let maxDepositAmount = maxAvailableCapacity.gt(depositBalanceBigNum)
-		? depositBalanceBigNum.toNum()
-		: maxAvailableCapacity.scale(99, 100).toNum();
+	let maxDepositAmount = hasMaxCapacity
+		? maxAvailableCapacity.gt(depositBalanceBigNum)
+			? depositBalanceBigNum.toNum()
+			: maxAvailableCapacity.scale(99, 100).toNum()
+		: depositBalanceBigNum.toNum();
 	maxDepositAmount = Math.max(0, maxDepositAmount);
 
 	const isButtonDisabled =
