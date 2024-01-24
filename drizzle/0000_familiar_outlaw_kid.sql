@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS "deposit_records" (
 CREATE TABLE IF NOT EXISTS "vault_depositor_records" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"ts" numeric(40, 0) NOT NULL,
+	"tx_sig" varchar(128) NOT NULL,
+	"slot" integer NOT NULL,
 	"vault" varchar(44) NOT NULL,
 	"depositorAuthority" varchar(44) NOT NULL,
 	"action" varchar(32) DEFAULT '' NOT NULL,
@@ -39,7 +41,8 @@ CREATE TABLE IF NOT EXISTS "vault_depositor_records" (
 	"totalVaultSharesAfter" numeric(40, 0) NOT NULL,
 	"profitShare" numeric(40, 0) NOT NULL,
 	"managementFee" numeric(40, 0) NOT NULL,
-	"managementFeeShares" numeric(40, 0) NOT NULL
+	"managementFeeShares" numeric(40, 0) NOT NULL,
+	CONSTRAINT "vault_depositor_records_tx_sig_unique" UNIQUE("tx_sig")
 );
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "user_authority" ON "deposit_records" ("user_authority");--> statement-breakpoint

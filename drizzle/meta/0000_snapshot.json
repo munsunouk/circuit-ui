@@ -1,5 +1,5 @@
 {
-  "id": "0a9c7933-bcc2-48f6-b28e-9212af9ef02b",
+  "id": "70171a34-2f57-4dfc-baa2-9f5dde807528",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -201,6 +201,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "tx_sig": {
+          "name": "tx_sig",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slot": {
+          "name": "slot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "vault": {
           "name": "vault",
           "type": "varchar(44)",
@@ -312,7 +324,15 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "vault_depositor_records_tx_sig_unique": {
+          "name": "vault_depositor_records_tx_sig_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tx_sig"
+          ]
+        }
+      }
     }
   },
   "enums": {},

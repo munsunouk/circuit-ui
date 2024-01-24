@@ -1,14 +1,13 @@
 import { PublicKey, fetchLogs } from '@drift-labs/sdk';
-import {
-	LogParser,
-	VaultDepositorRecord,
-	WrappedEvents,
-} from '@drift-labs/vaults-sdk';
+import { LogParser, WrappedEvents } from '@drift-labs/vaults-sdk';
 import { ENUM_UTILS } from '@drift/common';
+import dayjs from 'dayjs';
+import { desc, eq } from 'drizzle-orm';
 
 import { db } from '../../database/connect';
 import { vault_depositor_records } from '../../database/schema/vault-depositor-records';
 import { setupClients } from '../../utils';
+import { MAX_TXNS_PER_REQUEST } from './utils';
 
 const { vaultClient, connection } = setupClients();
 
@@ -22,14 +21,16 @@ const logParser = new LogParser(vaultClient.program);
 const recursivelyGetTransactions = async (
 	pubkeyToFetch: PublicKey,
 	records: WrappedEvents = [],
-	beforeTx?: string
+	beforeTx?: string,
+	untilTx?: string
 ): Promise<WrappedEvents> => {
 	try {
 		const response = await fetchLogs(
 			connection,
 			pubkeyToFetch,
 			'confirmed',
-			beforeTx
+			beforeTx,
+			untilTx
 		);
 
 		if (!response) {
@@ -49,9 +50,10 @@ const recursivelyGetTransactions = async (
 		if (
 			!response ||
 			response.transactionLogs.length === 0 ||
+			response.transactionLogs.length < MAX_TXNS_PER_REQUEST ||
 			response.earliestTx === response.mostRecentTx
 		) {
-			console.log('response ended:', response);
+			console.log('fetch ended with num of records:', records.length);
 			return records;
 		} else {
 			console.log('response continued with num of records:', records.length);
@@ -62,15 +64,17 @@ const recursivelyGetTransactions = async (
 			);
 		}
 	} catch (err) {
-		console.log('🚀 ~ err:', err);
+		console.error(err);
 
 		return records;
 	}
 };
 
-const serializeVaultDepositorRecord = (record: VaultDepositorRecord) => {
+const serializeVaultDepositorRecord = (record: WrappedEvents[0]) => {
 	return {
 		ts: record.ts.toString(),
+		txSig: record.txSig,
+		slot: record.slot,
 		vault: record.vault.toString(),
 		action: ENUM_UTILS.toStr(record.action),
 		amount: record.amount.toString(),
@@ -89,20 +93,38 @@ const serializeVaultDepositorRecord = (record: VaultDepositorRecord) => {
 	};
 };
 
-const backfillVaultDeposits = async (vaultPubKeyString: PublicKey) => {
-	// TODO: get the latest tx signature from the db, and pass it in as untilTx
+const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
+	const latestTxSignatureResult = await db
+		.select({
+			txSig: vault_depositor_records.txSig,
+			ts: vault_depositor_records.ts,
+		})
+		.from(vault_depositor_records)
+		.where(eq(vault_depositor_records.vault, vaultPubKey.toString()))
+		.orderBy(desc(vault_depositor_records.slot))
+		.limit(1);
+	const latestTxSignature = latestTxSignatureResult?.[0]?.txSig;
+	const latestTs = latestTxSignatureResult?.[0]?.ts;
+	console.log(
+		'latest tx signature:',
+		latestTxSignature,
+		dayjs.unix(+latestTs).format('DD/MM/YYYY HH:mm:ss')
+	);
 
 	console.log('attempting to get all vault depositor records');
-	const allVaultDepositorRecords =
-		await recursivelyGetTransactions(vaultPubKeyString);
-	console.log('got all vault depositor records');
+	const allVaultDepositorRecords = await recursivelyGetTransactions(
+		vaultPubKey,
+		[],
+		undefined,
+		latestTxSignature
+	);
 
-	const sortedVaultDepositorRecords: VaultDepositorRecord[] =
-		allVaultDepositorRecords.sort((a, b) => {
-			return a.slot - b.slot;
-		});
+	if (!allVaultDepositorRecords || allVaultDepositorRecords.length === 0) {
+		console.log('no records to insert. exiting script');
+		return;
+	}
 
-	const serializedSortedVaultDepositorRecords = sortedVaultDepositorRecords.map(
+	const serializedSortedVaultDepositorRecords = allVaultDepositorRecords.map(
 		serializeVaultDepositorRecord
 	);
 
