@@ -1,4 +1,4 @@
-import { BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
+import { BN, BigNum, PublicKey, QUOTE_PRECISION_EXP } from '@drift-labs/sdk';
 import { calcModifiedDietz } from '@drift-labs/vaults-sdk';
 import { kv } from '@vercel/kv';
 import { and, eq, or } from 'drizzle-orm';
@@ -7,10 +7,11 @@ import { NextRequest } from 'next/server';
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
 
-import { db } from '../../../../database/connect';
-import { vault_depositor_records } from '../../../../database/schema';
-import { setupClients } from '../../../../utils';
-import { RedisKeyManager } from '../_redis';
+import { db } from '../../../../../database/connect';
+import { vault_depositor_records } from '../../../../../database/schema';
+import { getHistoricalPriceFromPyth } from '../../../../../scripts/tasks/utils';
+import { setupClients } from '../../../../../utils';
+import { RedisKeyManager } from '../../_redis';
 
 /** NextJS route handler configs */
 export const dynamic = 'force-dynamic'; // defaults to auto
@@ -51,6 +52,24 @@ const fetchVaultDepositHistory = async (vault: PublicKey) => {
 	}[];
 };
 
+const getVaultBaseValue = async (
+	vaultQuoteValue: BigNum,
+	marketIndex: number,
+	precisionExp: BN
+) => {
+	const oraclePrice = await getHistoricalPriceFromPyth(
+		Math.round(Date.now() / 1000) - 30, // give a 30 seconds buffer else the oracle price may not be available yet
+		marketIndex
+	);
+
+	const vaultBaseValue = vaultQuoteValue
+		.shift(oraclePrice.precision)
+		.div(oraclePrice)
+		.shiftTo(precisionExp);
+
+	return vaultBaseValue;
+};
+
 export async function GET(request: NextRequest) {
 	const authHeader = request.headers.get('authorization');
 	if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -68,20 +87,29 @@ export async function GET(request: NextRequest) {
 	);
 
 	// get each vault's tvl base value
-	const vaultsEquity = await Promise.all(
+	const vaultsEquityQuoteValue = await Promise.all(
 		FORMATTED_VAULTS.map((v) =>
 			vaultClient.calculateVaultEquity({ address: v.vault })
 		)
 	);
-	const vaultsEquityBigNum = vaultsEquity.map((e) =>
+	const vaultsQuoteValueBigNum = vaultsEquityQuoteValue.map((e) =>
 		BigNum.from(e, QUOTE_PRECISION_EXP)
+	);
+	const vaultsBaseValueBigNum = await Promise.all(
+		vaultsQuoteValueBigNum.map((v, i) =>
+			getVaultBaseValue(
+				v,
+				depositHistories[i][0].marketIndex,
+				SPOT_MARKETS_LOOKUP[depositHistories[i][0].marketIndex].precisionExp
+			)
+		)
 	);
 
 	// calculate each vault's apy using modified dietz formula
 	const vaultsApyAndReturns = FORMATTED_VAULTS.reduce(
 		(acc, v, i) => {
 			const { apy, returns } = calcModifiedDietz(
-				vaultsEquityBigNum[i],
+				vaultsBaseValueBigNum[i],
 				SPOT_MARKETS_LOOKUP[depositHistories[i][0].marketIndex].precisionExp,
 				depositHistories[i]
 			);

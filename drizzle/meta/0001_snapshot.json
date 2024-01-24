@@ -1,0 +1,357 @@
+{
+  "id": "7c43171a-d413-402a-9f73-e0dc9b7c65ae",
+  "prevId": "70171a34-2f57-4dfc-baa2-9f5dde807528",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "deposit_records": {
+      "name": "deposit_records",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tx_sig": {
+          "name": "tx_sig",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "slot": {
+          "name": "slot",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "market_index": {
+          "name": "market_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ts": {
+          "name": "ts",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deposit_record_id": {
+          "name": "deposit_record_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_authority": {
+          "name": "user_authority",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user": {
+          "name": "user",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "direction": {
+          "name": "direction",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "oracle_price": {
+          "name": "oracle_price",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "market_deposit_balance": {
+          "name": "market_deposit_balance",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "market_withdraw_balance": {
+          "name": "market_withdraw_balance",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "market_cumulative_deposit_interest": {
+          "name": "market_cumulative_deposit_interest",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "market_cumulative_borrow_interest": {
+          "name": "market_cumulative_borrow_interest",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_deposits_after": {
+          "name": "total_deposits_after",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_withdraws_after": {
+          "name": "total_withdraws_after",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transfer_user": {
+          "name": "transfer_user",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "explanation": {
+          "name": "explanation",
+          "type": "varchar(48)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "user_authority": {
+          "name": "user_authority",
+          "columns": [
+            "user_authority"
+          ],
+          "isUnique": false
+        },
+        "user": {
+          "name": "user",
+          "columns": [
+            "user"
+          ],
+          "isUnique": false
+        },
+        "user_ts": {
+          "name": "user_ts",
+          "columns": [
+            "user",
+            "ts"
+          ],
+          "isUnique": false
+        },
+        "user_id_ts": {
+          "name": "user_id_ts",
+          "columns": [
+            "user",
+            "id",
+            "ts"
+          ],
+          "isUnique": false
+        },
+        "ts": {
+          "name": "ts",
+          "columns": [
+            "ts"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "deposit_records_tx_sig_market_index_deposit_record_id_unique": {
+          "name": "deposit_records_tx_sig_market_index_deposit_record_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tx_sig",
+            "market_index",
+            "deposit_record_id"
+          ]
+        }
+      }
+    },
+    "vault_depositor_records": {
+      "name": "vault_depositor_records",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ts": {
+          "name": "ts",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_sig": {
+          "name": "tx_sig",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slot": {
+          "name": "slot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault": {
+          "name": "vault",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "depositorAuthority": {
+          "name": "depositorAuthority",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spotMarketIndex": {
+          "name": "spotMarketIndex",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vaultSharesBefore": {
+          "name": "vaultSharesBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vaultSharesAfter": {
+          "name": "vaultSharesAfter",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vaultEquityBefore": {
+          "name": "vaultEquityBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userVaultSharesBefore": {
+          "name": "userVaultSharesBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "totalVaultSharesBefore": {
+          "name": "totalVaultSharesBefore",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userVaultSharesAfter": {
+          "name": "userVaultSharesAfter",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "totalVaultSharesAfter": {
+          "name": "totalVaultSharesAfter",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profitShare": {
+          "name": "profitShare",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "managementFee": {
+          "name": "managementFee",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "managementFeeShares": {
+          "name": "managementFeeShares",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assetPrice": {
+          "name": "assetPrice",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notionalValue": {
+          "name": "notionalValue",
+          "type": "numeric(40, 0)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "vault": {
+          "name": "vault",
+          "columns": [
+            "vault"
+          ],
+          "isUnique": false
+        },
+        "vaultDepositor": {
+          "name": "vaultDepositor",
+          "columns": [
+            "vault",
+            "depositorAuthority"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "vault_depositor_records_tx_sig_unique": {
+          "name": "vault_depositor_records_tx_sig_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tx_sig"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

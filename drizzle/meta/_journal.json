@@ -8,6 +8,20 @@
       "when": 1706074100170,
       "tag": "0000_familiar_outlaw_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706084770541,
+      "tag": "0001_dazzling_sunfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1706089567054,
+      "tag": "0002_skinny_boomer",
+      "breakpoints": true
     }
   ]
 }

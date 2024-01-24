@@ -12,5 +12,5 @@ export const createBigIntField = (fieldName: string) => {
 
 // Used for storing BN values
 export const createBNField = (fieldName: string) => {
-	return decimal(fieldName, { precision: 40, scale: 0 }).notNull();
+	return decimal(fieldName, { precision: 40, scale: 0 });
 };
