@@ -32,6 +32,7 @@
     "@drift-labs/react": "file:./drift-common/react",
     "@drift-labs/vaults-sdk": "file:./drift-vaults/ts/sdk",
     "@drift/common": "file:./drift-common/common-ts",
+    "@pythnetwork/client": "^2.19.0",
     "@solana/wallet-adapter-react": "^0.15.32",
     "@solana/web3.js": "^1.78.0",
     "@tanstack/react-table": "^8.10.7",
