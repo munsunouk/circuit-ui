@@ -1,4 +1,4 @@
-import { DriftEnv, Wallet, initialize } from '@drift-labs/sdk';
+import { DriftEnv, PublicKey, Wallet, initialize } from '@drift-labs/sdk';
 import {
 	Config as CommonConfig,
 	EnvironmentConstants,
@@ -58,5 +58,15 @@ export const PERP_MARKETS_LOOKUP = CommonConfig.perpMarketsLookup;
 
 // APIs
 export const DEFAULT_DEDUPING_INTERVAL = 2000;
+
+export const PYTH_PROGRAM_ID = new PublicKey(
+	'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+);
+
+export const MARKET_INDEX_TO_PYTH_SYMBOL_MAP: {
+	[marketIndex: number]: string;
+} = {
+	6: 'Crypto.JITOSOL/USD',
+};
 
 export default Env;

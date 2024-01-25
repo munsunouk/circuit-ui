@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/backfill-vault-deposits",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/vaults-snapshot",
+      "schedule": "0 * * * *"
     }
   ]
 }
