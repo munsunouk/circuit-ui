@@ -1,9 +1,6 @@
 import { DriftHistoryServerClient } from '@/clients/drift-history-server';
 import { AppStoreState, DEFAULT_VAULT_STATS } from '@/stores/app/useAppStore';
-import {
-	SerializedDepositHistory,
-	SerializedPerformanceHistory,
-} from '@/types';
+import { SerializedDepositHistory } from '@/types';
 import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,
@@ -29,7 +26,6 @@ import {
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
-import axios from 'axios';
 import { ToastContent } from 'react-toastify';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
@@ -93,9 +89,6 @@ const createAppActions = (
 			vaultDriftUserAccount,
 			vaultAccount: vaultSubscriber,
 			vaultAccountData: vaultAccount,
-			pnlHistory: {
-				dailyAllTimePnls: [],
-			},
 			eventRecords: {
 				records: [],
 				isLoaded: false,
@@ -120,48 +113,17 @@ const createAppActions = (
 			}
 		});
 
-		// fetch pnl snapshots and deposit history
-		const vaultSnapshotsPromise = fetchVaultSnapshots(vaultAccount.user);
-		const vaultDepositsPromise =
-			DriftHistoryServerClient.fetchUserAccountsDepositHistory(
+		// fetch  deposit history
+		const vaultDeposits =
+			await DriftHistoryServerClient.fetchUserAccountsDepositHistory(
 				false,
 				vaultAccount.user
 			);
 
-		const [vaultSnapshots, vaultDeposits] = await Promise.all([
-			vaultSnapshotsPromise,
-			vaultDepositsPromise,
-		]);
-
 		set((s) => {
-			s.vaults[vaultAddress.toString()]!.pnlHistory = vaultSnapshots;
 			s.vaults[vaultAddress.toString()]!.vaultDeposits = (vaultDeposits.data
 				?.records[0] ?? []) as SerializedDepositHistory[];
 		});
-	};
-
-	const fetchVaultSnapshots = async (userAccount: PublicKey) => {
-		try {
-			const dailyAllTimePnlRes = await axios.get<{
-				data: SerializedPerformanceHistory[][];
-			}>(
-				`${
-					Env.historyServerUrl
-				}/dailyAllTimeUserSnapshots/?userPubKeys=${userAccount.toString()}`
-			);
-
-			const result = {
-				dailyAllTimePnls: dailyAllTimePnlRes.data.data[0],
-			};
-
-			return result;
-		} catch (err) {
-			console.error(err);
-
-			return {
-				dailyAllTimePnls: [],
-			};
-		}
 	};
 
 	const setupVaultDriftClient = async (vaultPubKey: PublicKey) => {
