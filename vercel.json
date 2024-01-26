@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/vaults-snapshot",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }

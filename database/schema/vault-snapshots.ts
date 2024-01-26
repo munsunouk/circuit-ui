@@ -3,6 +3,30 @@ import { index, integer, pgTable, serial } from 'drizzle-orm/pg-core';
 
 import { createBNField, createPubkeyField } from '../utils';
 
+/**
+ * This table stores snapshots of vaults on the hour.
+ *
+ * However, these snapshots started on 26th Jan 2024, whereas the vaults started way before.
+ * The Circuit UI has been dependent on the Drift snapshot data before that, hence we needed to backfill
+ * the vaults snapshots from the start of the vaults to fit into this schema. This schema differs
+ * from the Drift snapshot schema in that it stores the net deposits (base value), which allows
+ * us to calculate both vault balance and P&L at the point of snapshot (especially important for non-USDC
+ * deposit vaults).
+ *
+ * Unfortunately, not all data can be accurately backfilled. Incorrect fields include:
+ * - totalWithdrawRequested
+ *
+ * The reason for the above field is too troublesome to accurately backfill, not essential for historical snapshots.
+ *
+ * - userShares
+ * - totalShares
+ * - managerTotalProfitShare
+ * - managerTotalFee
+ *
+ * The reason for the above fields is that we don't have easy access to the changes in these fields on the blockchain,
+ * (there are no log events that account for these field changes).
+ */
+
 export const vault_snapshots = pgTable(
 	'vault_snapshots',
 	{
