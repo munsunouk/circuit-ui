@@ -1,5 +1,3 @@
-import { DriftHistoryServerClient } from '@/clients/drift-history-server';
-import { useGetAssetPriceHistory } from '@/stores/assetPriceHistory/useFetchAssetPriceHistory';
 import { SnapshotKey } from '@/types';
 import { useOraclePriceStore } from '@drift-labs/react';
 import {
@@ -10,13 +8,9 @@ import {
 	QUOTE_PRECISION_EXP,
 	ZERO,
 } from '@drift-labs/sdk';
-import {
-	HistoryResolution,
-	MarketId,
-	UISerializableDepositRecord,
-} from '@drift/common';
+import { HistoryResolution, MarketId } from '@drift/common';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { useVaultSnapshots } from '@/hooks/apis/useVaultSnapshots';
@@ -110,8 +104,6 @@ const DEFAULT_DISPLAYED_DATA = {
 	maxDailyDrawdown: 0,
 };
 
-const NOW_TS = dayjs().unix();
-
 export default function VaultPerformance() {
 	const vault = useCurrentVault();
 	const vaultPubKey = usePathToVaultPubKey();
@@ -133,15 +125,12 @@ export default function VaultPerformance() {
 			y: number;
 		}[]
 	>([]);
-	const [vaultTotalDepositsHistory, setVaultTotalDepositsHistory] = useState<
-		UISerializableDepositRecord[]
-	>([]);
 	const apyAndCumReturn = useVaultApyAndCumReturns(
 		vaultAccountData?.pubkey.toString(),
 		vaultAccountData?.user?.toString(),
 		vaultAccountData?.spotMarketIndex ?? 0
 	);
-	const { snapshots, isLoading } = useVaultSnapshots(vaultPubKey?.toString());
+	const { snapshots } = useVaultSnapshots(vaultPubKey?.toString());
 
 	const uiVaultConfig = VAULTS.find(
 		(v) => v.pubkeyString === vaultAccountData?.pubkey.toString()
@@ -162,30 +151,6 @@ export default function VaultPerformance() {
 		overallTimelineOptions[0]
 	);
 
-	const earliestTs =
-		uiVaultConfig?.pastPerformanceHistory?.[0]?.epochTs ??
-		vault?.pnlHistory.dailyAllTimePnls?.[0]?.epochTs ??
-		NOW_TS;
-
-	const { assetPriceHistory, loading: assetPriceHistoryLoading } =
-		useGetAssetPriceHistory(spotMarketConfig.marketIndex, earliestTs);
-
-	const allTimeQuotePnlHistory = useMemo(
-		() =>
-			vault?.pnlHistory.dailyAllTimePnls
-				.map((pnl) => ({
-					totalAccountValue: pnl.totalAccountValue,
-					allTimeTotalPnl: pnl.allTimeTotalPnl,
-					epochTs: pnl.epochTs,
-				}))
-				.concat({
-					totalAccountValue: vaultStats.totalAccountQuoteValue.toNumber(),
-					allTimeTotalPnl: vaultStats.allTimeTotalPnlQuoteValue.toNumber(),
-					epochTs: NOW_TS,
-				}) ?? [],
-		[vault?.pnlHistory.dailyAllTimePnls, vaultStats]
-	);
-
 	const vaultUserStats = vault?.vaultDriftClient.userStats?.getAccount();
 	const makerVol30Day = vaultUserStats?.makerVolume30D ?? ZERO;
 	const takerVol30Day = vaultUserStats?.takerVolume30D ?? ZERO;
@@ -202,22 +167,6 @@ export default function VaultPerformance() {
 	const loading = !vaultStats.isLoaded;
 
 	useEffect(() => {
-		if (!vaultAccountData?.user) return;
-
-		DriftHistoryServerClient.fetchUserAccountsDepositHistory(
-			true,
-			vaultAccountData.user
-		).then((res) => {
-			if (!res.success) return;
-
-			const depositRecords = (res.data?.records[0] ??
-				[]) as UISerializableDepositRecord[];
-			depositRecords.reverse(); // we want the earliest deposit to be first
-			setVaultTotalDepositsHistory(depositRecords);
-		});
-	}, [vaultAccountData?.user?.toString()]);
-
-	useEffect(() => {
 		if (!vault || !vaultAccountData || !vaultStats) return;
 
 		if (selectedTimelineOption.value === OverallTimeline.Historical) {
@@ -229,7 +178,6 @@ export default function VaultPerformance() {
 		}
 	}, [
 		vault,
-		vault?.pnlHistory,
 		vaultAccountData,
 		vaultStats,
 		selectedTimelineOption,
@@ -280,13 +228,7 @@ export default function VaultPerformance() {
 	};
 
 	const getDisplayedGraphForHistorical = () => {
-		const isUsdcMarket =
-			spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
-		if (
-			!uiVaultConfig?.pastPerformanceHistory ||
-			(assetPriceHistoryLoading && !isUsdcMarket)
-		)
-			return [];
+		if (!uiVaultConfig?.pastPerformanceHistory) return [];
 
 		const data = uiVaultConfig.pastPerformanceHistory.map((history) => ({
 			x: history.epochTs,

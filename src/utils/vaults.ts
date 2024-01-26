@@ -1,12 +1,11 @@
-import {
-	SerializedDepositHistory,
-	SerializedPerformanceHistory,
-} from '@/types';
+import { SerializedDepositHistory } from '@/types';
 import { BigNum, PERCENTAGE_PRECISION, ZERO } from '@drift-labs/sdk';
 import { VaultDepositorAction, WrappedEvents } from '@drift-labs/vaults-sdk';
 import { matchEnum } from '@drift/common';
 import { PublicKey } from '@solana/web3.js';
 import dayjs from 'dayjs';
+
+import { VaultSnapshotEssentials } from '@/hooks/apis/useVaultSnapshots';
 
 import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 import { VAULTS } from '@/constants/vaults';
@@ -78,7 +77,7 @@ export const getMaxDailyDrawdown = (
  * Find max daily drawdown in periods where the user has an active deposits.
  */
 export const getUserMaxDailyDrawdown = (
-	history: SerializedPerformanceHistory[],
+	history: VaultSnapshotEssentials[],
 	eventRecords: WrappedEvents
 ) => {
 	if (eventRecords.length === 0) return 0;
@@ -118,12 +117,23 @@ export const getUserMaxDailyDrawdown = (
 	periodsOfActiveDeposits.forEach((period) => {
 		const periodHistory = history.filter(
 			(historyItem) =>
-				historyItem.epochTs >= normalizeDate(period.startTs) &&
-				historyItem.epochTs <= period.endTs &&
-				historyItem.totalAccountValue !== undefined
+				+historyItem.ts >= normalizeDate(period.startTs) &&
+				+historyItem.ts <= period.endTs &&
+				historyItem.totalAccountBaseValue !== undefined
 		);
 
-		const periodMaxDrawdown = getMaxDailyDrawdown(periodHistory);
+		const mappedSnapshotsToCalcDrawdown = periodHistory
+			.map((snapshot) => ({
+				allTimeTotalPnl:
+					+snapshot.totalAccountBaseValue - +snapshot.netDeposits,
+				totalAccountValue: +snapshot.totalAccountBaseValue,
+				ts: +snapshot.ts,
+			}))
+			.sort((a, b) => a.ts - b.ts);
+
+		const periodMaxDrawdown = getMaxDailyDrawdown(
+			mappedSnapshotsToCalcDrawdown
+		);
 
 		if (periodMaxDrawdown < maxDrawdown) maxDrawdown = periodMaxDrawdown;
 	});

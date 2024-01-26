@@ -12,6 +12,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Skeleton from 'react-loading-skeleton';
 import { twMerge } from 'tailwind-merge';
 
+import { useVaultSnapshots } from '@/hooks/apis/useVaultSnapshots';
 import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 import { useCurrentVault } from '@/hooks/useVault';
@@ -81,8 +82,10 @@ export default function YourPerformance() {
 	const vaultAccountData = useCurrentVaultAccountData();
 	const vaultStats = useCurrentVaultStats();
 	const vault = useCurrentVault();
-	const uiVault = getUiVaultConfig(vault?.vaultAccountData.pubkey);
+	const { snapshots } = useVaultSnapshots(vault?.vaultAccountData.pubkey);
+
 	const getMarketPriceData = useOraclePriceStore((s) => s.getMarketPriceData);
+	const uiVault = getUiVaultConfig(vault?.vaultAccountData.pubkey);
 	const spotMarketConfig = uiVault?.market ?? USDC_MARKET;
 	const basePrecisionExp = spotMarketConfig.precisionExp;
 	const isUsdcMarket = spotMarketConfig.marketIndex === USDC_MARKET.marketIndex;
@@ -157,7 +160,7 @@ export default function YourPerformance() {
 
 	// Max daily drawdown
 	const maxDailyDrawdown = getUserMaxDailyDrawdown(
-		vault?.pnlHistory.dailyAllTimePnls ?? [],
+		snapshots,
 		vault?.eventRecords?.records ?? []
 	);
 
