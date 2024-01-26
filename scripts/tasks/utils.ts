@@ -1,5 +1,6 @@
 import { BN, BigNum, PRICE_PRECISION_EXP } from '@drift-labs/sdk';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import invariant from 'tiny-invariant';
 
 export const MAX_TXNS_PER_REQUEST = 1000;
 export const MAX_TXNS_BUFFER = 100;
@@ -25,13 +26,37 @@ export const getHistoricalPriceFromPyth = async (
 	if (!priceFeedId)
 		throw new Error('Price feed ID not found for market index ' + marketIndex);
 
-	const res = await axios.get(
-		`https://benchmarks.pyth.network/v1/updates/price/${timestamp}?${new URLSearchParams(
-			{
-				ids: priceFeedId,
-			}
-		)}`
-	);
+	const fetchPythBenchmarkPrice = async (ts: number) => {
+		return await axios.get(
+			`https://benchmarks.pyth.network/v1/updates/price/${ts}?${new URLSearchParams(
+				{
+					ids: priceFeedId,
+				}
+			)}`
+		);
+	};
+
+	let res: AxiosResponse<any, any> | undefined = undefined;
+
+	try {
+		res = await fetchPythBenchmarkPrice(timestamp);
+	} catch (err) {
+		if ((err as any).response?.status === 404) {
+			// attempt once more with a 30 second delay in timestamp provided
+			consoleLog('attempting to fetch price with 30 second timestamp delay');
+			res = await fetchPythBenchmarkPrice(timestamp + 30);
+		} else if ((err as any).response?.status === 429) {
+			consoleLog('hit Pyth rate limits');
+			const retryAfter = (err as any).response.headers['retry-after'];
+			await new Promise((resolve) =>
+				setTimeout(resolve, retryAfter * 1000 + 1000)
+			);
+
+			res = await fetchPythBenchmarkPrice(timestamp);
+		}
+	}
+
+	invariant(res, 'Failed to fetch price from Pyth');
 
 	const exponent = Math.abs(res.data.parsed[0].price.expo) as number;
 
