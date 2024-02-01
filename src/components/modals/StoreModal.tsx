@@ -244,7 +244,9 @@ export default function StoreModal() {
 							<Row
 								label="Profit Share Fee"
 								value={`${
-									(vault?.profitShare ?? 0) / PERCENTAGE_PRECISION.toNumber()
+									((vault?.profitShare ?? 0) /
+										PERCENTAGE_PRECISION.toNumber()) *
+									100
 								}%`}
 							/>
 							<Row

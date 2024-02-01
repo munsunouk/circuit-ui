@@ -74,4 +74,5 @@ export interface UiVaultConfig {
 	comingSoon?: boolean;
 	temporaryApy?: number; // used at the start of a new vault to show a temporary APY
 	userPubKey: string;
+	feesFraction: number;
 }

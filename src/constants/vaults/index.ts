@@ -14,6 +14,7 @@ const WETH_BASIS_VAULT: UiVaultConfig = {
 	market: WETH_DEPOSIT_ASSET.market,
 	assetColor: WETH_DEPOSIT_ASSET.borderColor,
 	userPubKey: 'Fi1NzNpH9gA1hW8idZmNTzuEQUnNE6VJJh6rdgSeVgTn',
+	feesFraction: 0.3,
 };
 
 export const VAULTS: UiVaultConfig[] = [

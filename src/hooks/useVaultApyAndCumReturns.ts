@@ -9,6 +9,8 @@ import { SPOT_MARKETS_LOOKUP } from '@/constants/environment';
 
 import { useVaultStats } from './useVaultStats';
 
+const REFRESH_INTERVAL = 1000 * 60 * 2;
+
 const useVaultApyAndCumReturns = (
 	vaultPubKeyString: string | undefined,
 	vaultUserPubKey: string | undefined,
@@ -26,7 +28,7 @@ const useVaultApyAndCumReturns = (
 			ts: number;
 		};
 	}>(vaultPubKeyString ? '/api/apy-returns' : null, {
-		refreshInterval: 1000 * 60,
+		refreshInterval: REFRESH_INTERVAL,
 	});
 	const vaultStats = useVaultStats(
 		vaultPubKeyString ? new PublicKey(vaultPubKeyString) : undefined
