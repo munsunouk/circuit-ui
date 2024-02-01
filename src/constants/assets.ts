@@ -2,6 +2,7 @@ import { SpotMarketConfig } from '@drift-labs/sdk';
 
 import {
 	JITOSOL_MARKET,
+	JUP_MARKET,
 	SOL_MARKET,
 	USDC_MARKET,
 	WBTC_MARKET,
@@ -38,6 +39,11 @@ export const WBTC_DEPOSIT_ASSET: Asset = {
 	market: WBTC_MARKET,
 	borderColor: '#F7931A',
 	coingeckoId: 'bitcoin',
+};
+export const JUP_DEPOSIT_ASSET: Asset = {
+	market: JUP_MARKET,
+	borderColor: '#AFE9B8',
+	coingeckoId: 'jupiter-exchange-solana',
 };
 
 export const ASSETS = [
