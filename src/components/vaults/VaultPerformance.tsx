@@ -280,21 +280,31 @@ export default function VaultPerformance() {
 		);
 
 		if (graphView.value === GraphView.VaultBalance) {
-			return snapshotsWithinPeriod.map((snapshot) => {
-				return {
-					x: +snapshot.ts,
-					y: +snapshot.totalAccountBaseValue,
-				};
-			});
+			return snapshotsWithinPeriod
+				.map((snapshot) => {
+					return {
+						x: +snapshot.ts,
+						y: +snapshot.totalAccountBaseValue,
+					};
+				})
+				.concat({
+					x: dayjs().unix(),
+					y: vaultStats.totalAccountBaseValue.toNumber(),
+				});
 		}
 
 		if (graphView.value === GraphView.PnL) {
-			return snapshotsWithinPeriod.map((snapshot) => {
-				return {
-					x: +snapshot.ts,
-					y: +snapshot.totalAccountBaseValue - +snapshot.netDeposits,
-				};
-			});
+			return snapshotsWithinPeriod
+				.map((snapshot) => {
+					return {
+						x: +snapshot.ts,
+						y: +snapshot.totalAccountBaseValue - +snapshot.netDeposits,
+					};
+				})
+				.concat({
+					x: dayjs().unix(),
+					y: vaultStats.allTimeTotalPnlBaseValue.toNumber(),
+				});
 		}
 
 		return [];
