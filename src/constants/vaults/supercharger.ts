@@ -315,6 +315,7 @@ export const SUPERCHARGER_VAULT: UiVaultConfig = {
 	historyType: 'Historical',
 	assetsOperatedOn: [SOL_DEPOSIT_ASSET],
 	userPubKey: 'BRksHqLiq2gvQw1XxsZq6DXZjD3GB5a9J63tUBgd6QS9',
+	feesFraction: 0.3,
 	vaultOverview: [
 		{
 			title: 'Strategy',

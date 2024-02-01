@@ -170,6 +170,7 @@ export const JITOSOL_BASIS_VAULT: UiVaultConfig = {
 	historyType: 'Backtest',
 	userPubKey: 'FPMWfMBQp81PkMEBSyaVwadzesfkTkYFbegaaoGBcpPB',
 	assetsOperatedOn: [JITOSOL_DEPOSIT_ASSET],
+	feesFraction: 0.3,
 	vaultOverview: [
 		{
 			title: 'Description',

@@ -114,7 +114,9 @@ export async function GET(request: NextRequest) {
 				depositHistories[i]
 			);
 
-			acc[v.vault.toString()] = { apy, returns };
+			const apyAfterFees = apy * (1 - VAULTS[i].feesFraction);
+
+			acc[v.vault.toString()] = { apy: apyAfterFees, returns };
 
 			return acc;
 		},

@@ -27,6 +27,7 @@ export const TURBOCHARGER_VAULT: UiVaultConfig = {
 		JUP_DEPOSIT_ASSET,
 	],
 	userPubKey: '2aMcirYcF9W8aTFem6qe8QtvfQ22SLY6KUe6yUQbqfHk',
+	feesFraction: 0.3,
 	vaultOverview: [
 		{
 			title: 'Strategy',
