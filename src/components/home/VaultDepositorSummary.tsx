@@ -31,20 +31,20 @@ const ValueBox = ({
 	loading?: boolean;
 }) => {
 	return (
-		<div className="flex flex-col items-center gap-1 px-10 text-center first:pl-0 last:pr-0">
+		<div className="flex flex-col items-center flex-1 gap-1 py-4 text-center sm:px-10 first:pl-0 first:pt-0 last:pb-0 last:pr-0 sm:py-0">
 			{loading ? (
 				<Skeleton className="w-[60px] h-[28px]" />
 			) : (
 				<span
 					className={twMerge(
 						sourceCodePro.className,
-						'text-2xl text-text-emphasis'
+						'text-lg md:text-2xl text-text-emphasis'
 					)}
 				>
 					{value}
 				</span>
 			)}
-			<span className="text-base">{label}</span>
+			<span className="text-sm md:text-base">{label}</span>
 		</div>
 	);
 };
@@ -95,7 +95,7 @@ export default function VaultDepositorSummary() {
 
 	function calcUserTotalStats() {
 		const calculatedUserTotalStats = VAULTS.filter(
-			(v) => !!v.pubkeyString
+			(v) => !!v.pubkeyString && !v.comingSoon
 		).reduce(
 			(acc, vault) => {
 				if (!acc.isLoaded) return acc;
@@ -138,7 +138,7 @@ export default function VaultDepositorSummary() {
 	if (!walletConnected) return null;
 
 	return (
-		<div className="flex p-6 mt-5 border divide-x border-container-border divide-container-border">
+		<div className="flex flex-col p-6 mt-5 border divide-y sm:divide-x sm:divide-y-0 border-container-border divide-container-border sm:flex-row sm:w-[460px]">
 			<ValueBox
 				label="My Total Net Balance"
 				value={userTotalStats.totalNetBalanceQuote.toNotional()}
