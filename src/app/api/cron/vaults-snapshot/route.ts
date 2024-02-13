@@ -31,76 +31,92 @@ const { driftClient, vaultClient, accountLoader, connection } = setupClients();
 
 const getVaultDataForSnapshot = async (
 	vaultPubKey: PublicKey,
-	pythClient: PythHttpClient
+	pythClient: PythHttpClient,
+	numOfAttempts = 0
 ): Promise<Omit<SerializedVaultSnapshot, 'id'>> => {
-	const vault = new VaultAccount(
-		vaultClient.program,
-		vaultPubKey,
-		accountLoader,
-		'polling'
-	);
-
-	await vault.subscribe();
-
-	const vaultAccountData = vault.getData();
-	const slot = vault.accountSubscriber.getAccountAndSlot().slot;
-	const vaultTotalQuoteValue = await vaultClient.calculateVaultEquity({
-		address: vaultPubKey,
-	});
-
-	let oraclePrice: BN;
-
-	if (vaultAccountData.spotMarketIndex === USDC_SPOT_MARKET_INDEX) {
-		oraclePrice = PRICE_PRECISION; // $1
-	} else {
-		const pythData = await pythClient.getData();
-		const symbol =
-			MARKET_INDEX_TO_PYTH_SYMBOL_MAP[vaultAccountData.spotMarketIndex];
-		invariant(
-			symbol,
-			'Pyth symbol not found for market index ' +
-				vaultAccountData.spotMarketIndex
+	try {
+		const vault = new VaultAccount(
+			vaultClient.program,
+			vaultPubKey,
+			accountLoader,
+			'polling'
 		);
-		const priceData = pythData.productPrice.get(symbol);
-		invariant(priceData, 'Pyth price data not found for symbol ' + symbol);
-		oraclePrice = BigNum.fromPrint(
-			priceData.price?.toString() ?? '',
-			PRICE_PRECISION_EXP
-		).val;
+
+		await vault.subscribe();
+
+		const vaultAccountData = vault.getData();
+		const slot = vault.accountSubscriber.getAccountAndSlot().slot;
+		const vaultTotalQuoteValue = await vaultClient.calculateVaultEquity({
+			address: vaultPubKey,
+		});
+
+		let oraclePrice: BN;
+
+		if (vaultAccountData.spotMarketIndex === USDC_SPOT_MARKET_INDEX) {
+			oraclePrice = PRICE_PRECISION; // $1
+		} else {
+			const pythData = await pythClient.getData();
+			const symbol =
+				MARKET_INDEX_TO_PYTH_SYMBOL_MAP[vaultAccountData.spotMarketIndex];
+			invariant(
+				symbol,
+				'Pyth symbol not found for market index ' +
+					vaultAccountData.spotMarketIndex
+			);
+			const priceData = pythData.productPrice.get(symbol);
+			invariant(priceData, 'Pyth price data not found for symbol ' + symbol);
+			oraclePrice = BigNum.fromPrint(
+				priceData.price?.toString() ?? '',
+				PRICE_PRECISION_EXP
+			).val;
+		}
+
+		const vaultTotalBaseValue = BigNum.from(
+			vaultTotalQuoteValue,
+			QUOTE_PRECISION_EXP
+		)
+			.shift(PRICE_PRECISION_EXP)
+			.div(BigNum.from(oraclePrice, PRICE_PRECISION_EXP))
+			.shiftTo(
+				SPOT_MARKETS_LOOKUP[vaultAccountData.spotMarketIndex].precisionExp
+			);
+
+		const serializedData = {
+			ts: dayjs().unix().toString(),
+			slot,
+			oraclePrice: oraclePrice.toString(),
+			totalAccountQuoteValue: vaultTotalQuoteValue.toString(),
+			totalAccountBaseValue: vaultTotalBaseValue.toString(),
+			vault: vaultPubKey.toString(),
+			userShares: vaultAccountData.userShares.toString(),
+			totalShares: vaultAccountData.totalShares.toString(),
+			netDeposits: vaultAccountData.netDeposits.toString(),
+			totalDeposits: vaultAccountData.totalDeposits.toString(),
+			totalWithdraws: vaultAccountData.totalWithdraws.toString(),
+			totalWithdrawRequested:
+				vaultAccountData.totalWithdrawRequested.toString(),
+			managerNetDeposits: vaultAccountData.managerNetDeposits.toString(),
+			managerTotalDeposits: vaultAccountData.managerTotalDeposits.toString(),
+			managerTotalWithdraws: vaultAccountData.managerTotalWithdraws.toString(),
+			managerTotalProfitShare:
+				vaultAccountData.managerTotalProfitShare.toString(),
+			managerTotalFee: vaultAccountData.managerTotalFee.toString(),
+		};
+
+		return serializedData;
+	} catch (err) {
+		console.error('Error fetching vault data for snapshot', err);
+
+		if (numOfAttempts >= 2) {
+			console.log('Max attempts reached, skipping vault');
+			throw err;
+		}
+
+		console.log('Retrying getVaultDataForSnapshot in 5 seconds');
+
+		await new Promise((resolve) => setTimeout(resolve, 5000));
+		return getVaultDataForSnapshot(vaultPubKey, pythClient, ++numOfAttempts);
 	}
-
-	const vaultTotalBaseValue = BigNum.from(
-		vaultTotalQuoteValue,
-		QUOTE_PRECISION_EXP
-	)
-		.shift(PRICE_PRECISION_EXP)
-		.div(BigNum.from(oraclePrice, PRICE_PRECISION_EXP))
-		.shiftTo(
-			SPOT_MARKETS_LOOKUP[vaultAccountData.spotMarketIndex].precisionExp
-		);
-
-	const serializedData = {
-		ts: dayjs().unix().toString(),
-		slot,
-		oraclePrice: oraclePrice.toString(),
-		totalAccountQuoteValue: vaultTotalQuoteValue.toString(),
-		totalAccountBaseValue: vaultTotalBaseValue.toString(),
-		vault: vaultPubKey.toString(),
-		userShares: vaultAccountData.userShares.toString(),
-		totalShares: vaultAccountData.totalShares.toString(),
-		netDeposits: vaultAccountData.netDeposits.toString(),
-		totalDeposits: vaultAccountData.totalDeposits.toString(),
-		totalWithdraws: vaultAccountData.totalWithdraws.toString(),
-		totalWithdrawRequested: vaultAccountData.totalWithdrawRequested.toString(),
-		managerNetDeposits: vaultAccountData.managerNetDeposits.toString(),
-		managerTotalDeposits: vaultAccountData.managerTotalDeposits.toString(),
-		managerTotalWithdraws: vaultAccountData.managerTotalWithdraws.toString(),
-		managerTotalProfitShare:
-			vaultAccountData.managerTotalProfitShare.toString(),
-		managerTotalFee: vaultAccountData.managerTotalFee.toString(),
-	};
-
-	return serializedData;
 };
 
 export async function GET(request: NextRequest) {
@@ -115,11 +131,19 @@ export async function GET(request: NextRequest) {
 
 	const pythClient = new PythHttpClient(connection, PYTH_PROGRAM_ID);
 
-	const vaultsSnapshotsData = await Promise.all(
+	const vaultsSnapshotsResults = await Promise.allSettled(
 		VAULTS.filter((vault) => !!vault.pubkeyString).map((vault) =>
 			getVaultDataForSnapshot(new PublicKey(vault.pubkeyString!), pythClient)
 		)
 	);
+
+	const vaultsSnapshotsData = vaultsSnapshotsResults
+		.filter((result) => result.status === 'fulfilled')
+		.map(
+			(result) =>
+				(result as PromiseFulfilledResult<Omit<SerializedVaultSnapshot, 'id'>>)
+					.value
+		);
 
 	await db.insert(vault_snapshots).values(vaultsSnapshotsData);
 
