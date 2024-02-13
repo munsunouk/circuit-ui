@@ -115,7 +115,7 @@ const getVaultDataForSnapshot = async (
 		console.log('Retrying getVaultDataForSnapshot in 5 seconds');
 
 		await new Promise((resolve) => setTimeout(resolve, 5000));
-		return getVaultDataForSnapshot(vaultPubKey, pythClient, numOfAttempts++);
+		return getVaultDataForSnapshot(vaultPubKey, pythClient, ++numOfAttempts);
 	}
 };
 
