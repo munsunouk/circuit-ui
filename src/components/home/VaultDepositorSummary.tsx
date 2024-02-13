@@ -31,7 +31,7 @@ const ValueBox = ({
 	loading?: boolean;
 }) => {
 	return (
-		<div className="flex flex-col items-center flex-1 gap-1 py-4 text-center sm:px-10 first:pl-0 first:pt-0 last:pb-0 last:pr-0 sm:py-0">
+		<div className="flex flex-col items-center flex-1 gap-1 py-4 text-center sm:px-6 first:pl-0 first:pt-0 last:pb-0 last:pr-0 sm:py-0">
 			{loading ? (
 				<Skeleton className="w-[60px] h-[28px]" />
 			) : (
