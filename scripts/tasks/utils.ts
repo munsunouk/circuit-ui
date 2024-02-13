@@ -1,6 +1,9 @@
 import { BN, BigNum, PRICE_PRECISION_EXP } from '@drift-labs/sdk';
 import axios, { AxiosResponse } from 'axios';
+import dotenv from 'dotenv';
 import invariant from 'tiny-invariant';
+
+dotenv.config();
 
 export const MAX_TXNS_PER_REQUEST = 1000;
 export const MAX_TXNS_BUFFER = 100;
@@ -12,7 +15,9 @@ export const MARKET_INDEX_TO_PRICE_FEED_ID: { [marketIndex: number]: string } =
 	};
 
 export const consoleLog = (...messages: (string | number)[]) => {
-	console.log('\x1b[33m%s\x1b[0m', '[-]', ...messages);
+	process.env.NODE_ENV === 'development'
+		? console.log('\x1b[33m%s\x1b[0m', '[-]', ...messages)
+		: console.log('[-]', ...messages);
 };
 
 export const getHistoricalPriceFromPyth = async (

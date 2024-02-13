@@ -10,6 +10,9 @@ import {
 
 import { createBNField, createBigIntField, createPubkeyField } from '../utils';
 
+/**
+ * Not in use, consider to remove.
+ */
 export const deposit_records = pgTable(
 	'deposit_records',
 	{
