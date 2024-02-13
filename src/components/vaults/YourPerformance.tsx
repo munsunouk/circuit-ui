@@ -113,6 +113,8 @@ export default function YourPerformance() {
 	const netQuoteDepositsBigNum = netBaseDepositsBigNum.mul(
 		marketOraclePriceBigNum
 	);
+
+	// User's current balance
 	const vaultAccountBaseBalance = BigNum.from(
 		vaultStats.totalAccountBaseValue,
 		basePrecisionExp

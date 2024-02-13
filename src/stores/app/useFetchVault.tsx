@@ -25,6 +25,7 @@ export default function useFetchVault() {
 	const currentVault = useAppStore(
 		(s) => s.vaults[vaultPubKey?.toString() ?? '']
 	);
+	const setAppStore = useAppStore((s) => s.set);
 
 	useEffect(() => {
 		if (driftClientIsReady) {
@@ -44,6 +45,16 @@ export default function useFetchVault() {
 	useEffect(() => {
 		if (vaultPubKey && authority && vaultAccountData) {
 			appActions.initVaultDepositorSubscriber(vaultPubKey, authority);
+		}
+
+		if (!authority) {
+			setAppStore((s) => {
+				Object.keys(s.vaults).forEach((vaultPubKey) => {
+					s.vaults[vaultPubKey]!.isVaultDepositorDataLoaded = false;
+					s.vaults[vaultPubKey]!.vaultDepositorAccount = undefined;
+					s.vaults[vaultPubKey]!.vaultDepositorAccountData = undefined;
+				});
+			});
 		}
 	}, [vaultPubKey, authority, !!vaultAccountData]);
 

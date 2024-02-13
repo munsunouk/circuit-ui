@@ -190,5 +190,7 @@ export const JITOSOL_BASIS_VAULT: UiVaultConfig = {
 			],
 		},
 	],
-	comingSoon: !dayjs().isAfter(dayjs(1707926400000)), // 15th Feb, 10pm EST
+	comingSoon: !dayjs().isAfter(
+		dayjs(process.env.NEXT_PUBLIC_OVERRIDE_JITOSOL_VAULT_TS ?? 1707926400000)
+	), // 15th Feb, 10pm EST
 };

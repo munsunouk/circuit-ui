@@ -89,6 +89,7 @@ const createAppActions = (
 			vaultDriftUserAccount,
 			vaultAccount: vaultSubscriber,
 			vaultAccountData: vaultAccount,
+			isVaultDepositorDataLoaded: false,
 			eventRecords: {
 				records: [],
 				isLoaded: false,
@@ -263,10 +264,12 @@ const createAppActions = (
 			accountLoader
 		);
 		await vaultDepositorAccount.subscribe();
-		const vaultDepositorAccountData = vaultDepositorAccount.getData();
 
-		if (!vaultDepositorAccountData) {
-			console.log('User is not a vault depositor');
+		let vaultDepositorAccountData: VaultDepositor;
+		try {
+			vaultDepositorAccountData = vaultDepositorAccount.getData();
+		} catch (e) {
+			// an error is thrown only if user is not a vault depositor
 			await vaultDepositorAccount.unsubscribe();
 			set((s) => {
 				s.vaults[vaultAddress.toString()]!.eventRecords.isLoaded = true;
@@ -274,6 +277,7 @@ const createAppActions = (
 				s.vaults[vaultAddress.toString()]!.vaultDepositorAccount = undefined;
 				s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
 					undefined;
+				s.vaults[vaultAddress.toString()]!.isVaultDepositorDataLoaded = true;
 			});
 			return;
 		}
@@ -300,6 +304,7 @@ const createAppActions = (
 				vaultDepositorAccount;
 			s.vaults[vaultAddress.toString()]!.vaultDepositorAccountData =
 				vaultDepositorAccountData;
+			s.vaults[vaultAddress.toString()]!.isVaultDepositorDataLoaded = true;
 		});
 	};
 
