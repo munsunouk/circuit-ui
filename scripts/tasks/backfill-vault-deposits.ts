@@ -17,8 +17,8 @@ import {
 import { ENUM_UTILS } from '@drift/common';
 import dayjs from 'dayjs';
 import { desc, eq } from 'drizzle-orm';
-import invariant from 'tiny-invariant';
 
+// import invariant from 'tiny-invariant';
 import { db } from '../../database/connect';
 import {
 	SerializedVaultDepositorRecord,
@@ -32,6 +32,43 @@ import {
 	getHistoricalPriceFromPyth,
 } from './utils';
 
+/***************************************************/
+/** Manual Configurations */
+
+const VAULTS_TO_BACKFILL = [
+	{
+		// jitosol basis vault
+		pubkey: new PublicKey('ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4'),
+		manager: 'GT3RSBy5nS2ACpT3LCkycHWm9CVJCSuqErAgf4sE33Qu',
+	},
+	{
+		// supercharger vault
+		pubkey: new PublicKey('GXyE3Snk3pPYX4Nz9QRVBrnBfbJRTAQYxuy5DRdnebAn'),
+		manager: 'GT3RSBy5nS2ACpT3LCkycHWm9CVJCSuqErAgf4sE33Qu',
+	},
+	{
+		// turbocharger vault
+		pubkey: new PublicKey('F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr'),
+		manager: 'GT3RSBy5nS2ACpT3LCkycHWm9CVJCSuqErAgf4sE33Qu',
+	},
+];
+
+/**
+ * If true, the script will backfill all vault depositor records from the start of the vault's existence.
+ */
+const BACKFILL_TO_START_OF_VAULT = false;
+
+/** End of Manual Configurations */
+/***************************************************/
+
+/**
+ * This script provides the functions to backfill the vault depositor records in the database.
+ *
+ * To run the script, run the following function at the bottom of the code file:
+ *
+ * backfillSupportedVaultsDeposits();
+ */
+
 type VaultDepositorRecordWithPrices = WrappedEvent<'VaultDepositorRecord'> & {
 	assetPrice: BN;
 	notionalValue: BN;
@@ -41,12 +78,6 @@ const { driftClient, vaultClient, connection } = setupClients();
 // @ts-ignore
 const vaultsLogParser = new VaultsLogParser(vaultClient.program);
 const driftLogParser = new DriftLogParser(driftClient.program);
-
-const VAULTS_TO_BACKFILL = [
-	new PublicKey('ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4'), // jitosol basis vault
-	new PublicKey('GXyE3Snk3pPYX4Nz9QRVBrnBfbJRTAQYxuy5DRdnebAn'), // supercharger vault
-	new PublicKey('F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr'), // turbocharger vault
-];
 
 const getSpotMarketConfig = (spotMarketIndex: number) => {
 	const spotMarket = SpotMarkets['mainnet-beta'].find(
@@ -61,6 +92,11 @@ const getSpotMarketConfig = (spotMarketIndex: number) => {
 	return spotMarket;
 };
 
+/**
+ * There is a need to get the amount and the oracle price from the Drift DepositRecord event,
+ * because the amount is 0 for the VaultDepositorRecord event when the vault manager deposits.
+ * Hence, the amount from the DepositRecord event is the source of truth.
+ */
 const reconcileVaultAndDriftEvents = (
 	vaultDepositorRecordEvent: WrappedEvent<'VaultDepositorRecord'>,
 	depositRecordEvent: DepositRecord
@@ -75,7 +111,7 @@ const reconcileVaultAndDriftEvents = (
 
 	const recordWithPrices = {
 		...vaultDepositorRecordEvent,
-		amount, // amount from DepositRecord is the source of truth, because amount is 0 for VaultDepositorRecord when the vault manager deposits
+		amount,
 		assetPrice: oraclePrice,
 		notionalValue,
 	};
@@ -83,29 +119,36 @@ const reconcileVaultAndDriftEvents = (
 	return recordWithPrices;
 };
 
-const handleReconciliationOnOracleStaleError = async (
-	vaultDepositorRecordEvent: WrappedEvent<'VaultDepositorRecord'>,
-	logs: string[]
+/**
+ * Sometimes the oracle price is stale, and the transaction logs is unable to be parsed.
+ * Or we are unable to parse the Drift DepositRecord event, and therefore cannot obtain the logged oracle price.
+ * We can then fetch the oracle price from the Pyth API and calculate the notional value.
+ */
+const handleNoLoggedOraclePrice = async (
+	vaultDepositorRecordEvent: WrappedEvent<'VaultDepositorRecord'>
+	// logs: string[]
 ) => {
-	const regex = /\buser_withdraw_amount:\s*(\d+)/g;
-	const logContainingAmount = logs.find((log) => regex.test(log));
-	invariant(
-		logContainingAmount,
-		'Cannot find amount in logs for tx: ' + vaultDepositorRecordEvent.txSig
-	);
+	// const regex = /\buser_withdraw_amount:\s*(\d+)/g;
+	// const logContainingAmount = logs.find((log) => regex.test(log));
+	// invariant(
+	// 	logContainingAmount,
+	// 	'Cannot find amount in logs for tx: ' + vaultDepositorRecordEvent.txSig
+	// );
 
-	const amount = logContainingAmount.split('user_withdraw_amount: ')[1];
-	invariant(
-		amount !== null,
-		'Cannot find amount in logs for tx: ' + vaultDepositorRecordEvent.txSig
-	);
-	invariant(
-		/^\d+$/.test(amount),
-		'Extracted amount is not a number: ' +
-			amount +
-			' tx: ' +
-			vaultDepositorRecordEvent.txSig
-	);
+	// const amount = logContainingAmount.split('user_withdraw_amount: ')[1];
+	// invariant(
+	// 	amount !== null,
+	// 	'Cannot find amount in logs for tx: ' + vaultDepositorRecordEvent.txSig
+	// );
+	// invariant(
+	// 	/^\d+$/.test(amount),
+	// 	'Extracted amount is not a number: ' +
+	// 		amount +
+	// 		' tx: ' +
+	// 		vaultDepositorRecordEvent.txSig
+	// );
+
+	const amount = vaultDepositorRecordEvent.amount;
 
 	const spotMarketConfig = getSpotMarketConfig(
 		vaultDepositorRecordEvent.spotMarketIndex
@@ -134,6 +177,7 @@ const handleReconciliationOnOracleStaleError = async (
 
 const recursivelyGetTransactions = async (
 	pubkeyToFetch: PublicKey,
+	vaultManager: string,
 	records: VaultDepositorRecordWithPrices[] = [],
 	beforeTx?: string,
 	untilTx?: string
@@ -176,11 +220,10 @@ const recursivelyGetTransactions = async (
 							);
 
 							if (isOracleStaleError) {
-								const recordWithPrices =
-									await handleReconciliationOnOracleStaleError(
-										vaultsEvent,
-										rawLogs
-									);
+								const recordWithPrices = await handleNoLoggedOraclePrice(
+									vaultsEvent
+									// rawLogs
+								);
 
 								records.push(recordWithPrices);
 								continue;
@@ -192,11 +235,28 @@ const recursivelyGetTransactions = async (
 							(event) => event.eventType === 'DepositRecord'
 						);
 
-						if (!driftDepositEvent)
-							throw new Error(
-								"Cannot find Drift 'DepositRecord' event for tx: " +
-									vaultsEvent.txSig
+						if (!driftDepositEvent) {
+							// check if event is a non-vault manager deposit, if so, can use the amount from the VaultDepositorRecord event
+							const isVaultManagerDeposit =
+								vaultsEvent.depositorAuthority.toString() === vaultManager;
+							if (isVaultManagerDeposit) {
+								throw new Error(
+									"Cannot find Drift 'DepositRecord' event for vault manager tx: " +
+										vaultsEvent.txSig
+								);
+							}
+
+							consoleLog(
+								'no drift deposit event found for tx:',
+								vaultsEvent.txSig,
+								'using Pyth API to fetch oracle price and calculate notional value.'
 							);
+							const recordWithPrices =
+								await handleNoLoggedOraclePrice(vaultsEvent);
+
+							records.push(recordWithPrices);
+							continue;
+						}
 
 						const recordWithPrices = reconcileVaultAndDriftEvents(
 							vaultsEvent,
@@ -228,6 +288,7 @@ const recursivelyGetTransactions = async (
 			consoleLog('response continued with num of records:', records.length);
 			return recursivelyGetTransactions(
 				pubkeyToFetch,
+				vaultManager,
 				records,
 				response.earliestTx
 			);
@@ -272,7 +333,10 @@ const serializeVaultDepositorRecord = (
  * retrieves all vault depositor records after the latest transaction,
  * and then inserts these records into the database.
  */
-const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
+const backfillVaultDeposits = async (
+	vaultPubKey: PublicKey,
+	vaultManager: string
+) => {
 	console.log('\n');
 	consoleLog('backfilling vault: ' + vaultPubKey.toString());
 
@@ -296,9 +360,10 @@ const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
 	consoleLog('attempting to get all vault depositor records');
 	const allVaultDepositorRecords = await recursivelyGetTransactions(
 		vaultPubKey,
+		vaultManager,
 		[],
 		undefined,
-		latestTxSignature
+		BACKFILL_TO_START_OF_VAULT ? undefined : latestTxSignature
 	);
 
 	if (!allVaultDepositorRecords || allVaultDepositorRecords.length === 0) {
@@ -310,15 +375,29 @@ const backfillVaultDeposits = async (vaultPubKey: PublicKey) => {
 		serializeVaultDepositorRecord
 	);
 
-	consoleLog('attempting db insert');
-	await db
-		.insert(vault_depositor_records)
-		.values(serializedSortedVaultDepositorRecords);
+	let newRecords = serializedSortedVaultDepositorRecords;
+	if (BACKFILL_TO_START_OF_VAULT) {
+		const allTxSigs = await db
+			.select({ txSig: vault_depositor_records.txSig })
+			.from(vault_depositor_records)
+			.where(eq(vault_depositor_records.vault, vaultPubKey.toString()));
+
+		// filter out records that already exist in the database
+		newRecords = serializedSortedVaultDepositorRecords.filter(
+			(record) => !allTxSigs.some((txSig) => txSig.txSig === record.txSig)
+		);
+	}
+
+	consoleLog('attempting db insert of', newRecords.length, 'records');
+
+	await db.insert(vault_depositor_records).values(newRecords);
 	consoleLog('db insert complete');
 };
 
 export const backfillSupportedVaultsDeposits = async () => {
-	for (const vaultPubKey of VAULTS_TO_BACKFILL) {
-		await backfillVaultDeposits(vaultPubKey);
+	for (const vault of VAULTS_TO_BACKFILL) {
+		await backfillVaultDeposits(vault.pubkey, vault.manager);
 	}
 };
+
+backfillSupportedVaultsDeposits();
