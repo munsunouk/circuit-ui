@@ -1,7 +1,7 @@
 import { useOraclePriceStore } from '@drift-labs/react';
 import { BN, PRICE_PRECISION, PublicKey, User } from '@drift-labs/sdk';
 import { Vault, VaultClient } from '@drift-labs/vaults-sdk';
-import { MarketId } from '@drift/common';
+import { MarketId, sleep } from '@drift/common';
 import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { useEffect } from 'react';
 import { singletonHook } from 'react-singleton-hook';
@@ -78,21 +78,36 @@ function useSyncVaultsStatsImpl() {
 	async function fetchVaultStats(
 		vaultClient: VaultClient,
 		vaultDriftUser: User,
-		vaultAccountData: Vault
+		vaultAccountData: Vault,
+		numOfAttempts = 0
 	) {
 		const marketIndex = vaultAccountData.spotMarketIndex;
 		const isUsdcMarket = marketIndex === USDC_SPOT_MARKET_INDEX;
 
 		let baseAssetPrice = isUsdcMarket
 			? 1
-			: getMarketPriceData(MarketId.createSpotMarket(marketIndex)).priceData
+			: getMarketPriceData(MarketId.createSpotMarket(marketIndex))?.priceData
 					.price;
 
-		if (baseAssetPrice === 0) {
+		if (!baseAssetPrice) {
 			console.error(
-				'market price from oracle store returned 0 for market index:',
-				marketIndex
+				'market price from oracle store returned 0 or undefined for market index:',
+				marketIndex,
+				'| baseAssetPrice:',
+				baseAssetPrice
 			);
+			// first fallback is to try getting the oracle price again
+			if (numOfAttempts === 0) {
+				await sleep(1000);
+				return await fetchVaultStats(
+					vaultClient,
+					vaultDriftUser,
+					vaultAccountData,
+					numOfAttempts + 1
+				);
+			}
+
+			// second fallback is to default to 1
 			baseAssetPrice = 1; // default to 1 if price = 0
 		}
 
