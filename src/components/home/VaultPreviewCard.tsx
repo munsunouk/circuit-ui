@@ -181,14 +181,16 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		() => (vault.pubkeyString ? new PublicKey(vault.pubkeyString) : undefined),
 		[vault.pubkeyString]
 	);
-	const [vaultAccountData, vaultDepositorAccountData] = useAppStore((s) => [
-		s.getVaultAccountData(vaultPubkey),
-		s.getVaultDepositorAccountData(vaultPubkey),
-	]);
+	const vaultDepositorStats = useAppStore((s) =>
+		s.getVaultDepositorStats(vaultPubkey)
+	);
+	const vaultAccountData = useAppStore((s) =>
+		s.getVaultAccountData(vaultPubkey)
+	);
+	const vaultStats = useVaultStats(vaultPubkey);
+
 	const uiVaultConfig = getUiVaultConfig(vaultPubkey);
 	const spotMarketConfig = uiVaultConfig?.market ?? USDC_MARKET;
-
-	const vaultStats = useVaultStats(vaultPubkey);
 
 	const [isHover, setIsHover] = useState(false);
 
@@ -204,23 +206,9 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		spotMarketConfig.marketIndex
 	);
 
-	// TODO: abstract this logic
-	// User's vault share proportion
-	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
-	const userVaultShares =
-		vaultDepositorAccountData?.vaultShares.toNumber() ?? 0;
-	const userSharesProportion = userVaultShares / (totalVaultShares ?? 1) || 0;
+	const { balanceBase } = vaultDepositorStats;
 
-	// User's net deposits
-	const vaultAccountBaseBalance = vaultStats.totalAccountBaseValue.toNumber();
-	const userAccountBalanceProportion =
-		vaultAccountBaseBalance * userSharesProportion;
-	const userAccountBalanceProportionBigNum = BigNum.from(
-		userAccountBalanceProportion,
-		spotMarketConfig.precisionExp
-	);
-	const userAccountValueString =
-		userAccountBalanceProportionBigNum.toMillified();
+	const balanceBaseString = balanceBase.toMillified();
 
 	// UI variables
 	const assetLabel =
@@ -376,9 +364,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									loading={!vaultStats.isLoaded}
 									isApyLoading={isApyLoading}
 									userBalance={
-										userAccountBalanceProportionBigNum.eqZero()
-											? undefined
-											: userAccountValueString
+										balanceBase.eqZero() ? undefined : balanceBaseString
 									}
 									assetLabel={assetLabel}
 								/>
