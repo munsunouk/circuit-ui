@@ -31,7 +31,7 @@ const ValueBox = ({
 	loading?: boolean;
 }) => {
 	return (
-		<div className="flex flex-col items-center flex-1 gap-1 py-4 text-center sm:px-6 first:pl-0 first:pt-0 last:pb-0 last:pr-0 sm:py-0">
+		<div className="flex flex-col items-center flex-1 gap-1 text-center sm:px-6 first:pl-0 last:pr-0">
 			{loading ? (
 				<Skeleton className="w-[60px] h-[28px]" />
 			) : (
@@ -59,6 +59,9 @@ export default function VaultDepositorSummary() {
 	const areVaultDepositorsAccountDataLoaded = useAppStore((s) =>
 		s.getAreVaultDepositorsAccountDataLoaded()
 	);
+	const allVaultsStats = useAppStore((s) =>
+		Object.values(s.vaults).map((v) => v?.vaultStats)
+	);
 	const numOfVaultsInStore = useAppStore((s) => Object.keys(s.vaults).length);
 	const walletContext = useWallet();
 	const authority = useCommonDriftStore((s) => s.authority);
@@ -68,6 +71,9 @@ export default function VaultDepositorSummary() {
 	);
 
 	const walletConnected = !!walletContext?.connected;
+	const hasNoDeposits =
+		areVaultDepositorsAccountDataLoaded &&
+		userTotalStats.totalNetBalanceQuote.eqZero();
 
 	useEffect(() => {
 		if (!walletConnected || numOfVaultsInStore === 0 || !authority) {
@@ -91,6 +97,7 @@ export default function VaultDepositorSummary() {
 		areVaultDepositorsAccountDataLoaded,
 		walletConnected,
 		authority,
+		allVaultsStats,
 	]);
 
 	function calcUserTotalStats() {
@@ -135,10 +142,11 @@ export default function VaultDepositorSummary() {
 		return calculatedUserTotalStats;
 	}
 
-	if (!walletConnected) return null;
+	if (!walletConnected || !userTotalStats.isLoaded || hasNoDeposits)
+		return null;
 
 	return (
-		<div className="flex flex-col p-6 mt-5 border divide-y sm:divide-x sm:divide-y-0 border-container-border divide-container-border sm:flex-row sm:w-[460px]">
+		<div className="flex px-2 sm:px-6 p-6 mt-5 border w-full divide-x border-container-border divide-container-border sm:w-[460px]">
 			<ValueBox
 				label="My Total Net Balance"
 				value={userTotalStats.totalNetBalanceQuote.toNotional()}
