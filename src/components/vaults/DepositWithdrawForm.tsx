@@ -1,5 +1,4 @@
 import useAppStore from '@/stores/app/useAppStore';
-import { Info } from '@drift-labs/icons';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import {
 	BASE_PRECISION_EXP,
@@ -37,6 +36,7 @@ import Input from '../elements/Input';
 import MarketIcon from '../elements/MarketIcon';
 import { Tooltip } from '../elements/Tooltip';
 import { ExternalLink } from '../icons';
+import Info from '../icons/Info';
 import { VaultTab } from './VaultTabs';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
@@ -194,8 +194,7 @@ const Form = ({
 								</div>
 							</Tooltip>
 							<Info
-								className="mr-1"
-								color="var(--warning-yellow-border)"
+								className="mr-1 [&>path]:stroke-[var(--warning-yellow-border)] w-4 h-4 cursor-help"
 								data-tooltip-id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}
 							/>
 						</>
