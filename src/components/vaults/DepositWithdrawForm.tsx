@@ -1,4 +1,5 @@
 import useAppStore from '@/stores/app/useAppStore';
+import { Info } from '@drift-labs/icons';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import {
 	BASE_PRECISION_EXP,
@@ -34,6 +35,7 @@ import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
 import Input from '../elements/Input';
 import MarketIcon from '../elements/MarketIcon';
+import { Tooltip } from '../elements/Tooltip';
 import { ExternalLink } from '../icons';
 import { VaultTab } from './VaultTabs';
 
@@ -147,6 +149,8 @@ const FormTab = ({
 	);
 };
 
+const MAX_DEPOSIT_WARNING_TOOLTIP_ID = 'max_deposit_reached_warning';
+
 const Form = ({
 	tab,
 	amount,
@@ -154,6 +158,7 @@ const Form = ({
 	maxAmountString,
 	setAmount,
 	spotMarketConfig,
+	showMaxDepositWarning,
 }: {
 	tab: Tab;
 	amount: string;
@@ -161,6 +166,7 @@ const Form = ({
 	maxAmountString: string;
 	setAmount: (amount: string) => void;
 	spotMarketConfig: SpotMarketConfig;
+	showMaxDepositWarning?: boolean;
 }) => {
 	const [isFocused, setIsFocused] = useState(false);
 
@@ -178,8 +184,24 @@ const Form = ({
 				<span className="text-lg text-text-emphasis">
 					{tab === Tab.Deposit ? 'Deposit' : 'Withdraw'} Amount
 				</span>
-				<span>
-					Max:{' '}
+
+				<span className="flex items-center">
+					{showMaxDepositWarning && (
+						<>
+							<Tooltip id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}>
+								<div className="max-w-[300px]">
+									Max amount is reduced due to the vault being at near capacity.
+								</div>
+							</Tooltip>
+							<Info
+								className="mr-1"
+								color="var(--warning-yellow-border)"
+								data-tooltip-id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}
+							/>
+						</>
+					)}
+
+					<span className="mr-1">Max:</span>
 					<span
 						className="underline cursor-pointer"
 						onClick={() => setAmount(maxAmount.toString())}
@@ -308,7 +330,7 @@ const DepositForm = ({
 	let maxDepositAmount = hasMaxCapacity
 		? maxAvailableCapacity.gt(depositBalanceBigNum)
 			? depositBalanceBigNum.toNum()
-			: maxAvailableCapacity.scale(99, 100).toNum()
+			: maxAvailableCapacity.scale(99, 100).toNum() // reduce fluctuations for max available capacity
 		: depositBalanceBigNum.toNum();
 	maxDepositAmount = Math.max(0, maxDepositAmount);
 
@@ -382,6 +404,7 @@ const DepositForm = ({
 				setAmount={handleOnValueChange}
 				amount={amount}
 				spotMarketConfig={spotMarketConfig}
+				showMaxDepositWarning={maxAvailableCapacity.lt(depositBalanceBigNum)}
 			/>
 
 			{connected ? (
