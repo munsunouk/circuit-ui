@@ -15,13 +15,15 @@ export type VaultSnapshotEssentials = Pick<
 	| 'netDeposits'
 >;
 
+const DEFAULT_SNAPSHOT: VaultSnapshotEssentials[] = [];
+
 export const useVaultSnapshots = (vault?: PublicKey | string) => {
 	const { data, error, isLoading } = useSWR<VaultSnapshotEssentials[]>(
 		vault
 			? `${API_ROUTES.GET_VAULT_SNAPSHOTS}?vault=${vault.toString()}`
 			: null,
 		{
-			fallbackData: [],
+			fallbackData: DEFAULT_SNAPSHOT,
 		}
 	);
 
@@ -29,13 +31,13 @@ export const useVaultSnapshots = (vault?: PublicKey | string) => {
 		console.error(error);
 
 		return {
-			snapshots: [],
+			snapshots: DEFAULT_SNAPSHOT,
 			isLoading: false,
 		};
 	}
 
 	return {
-		snapshots: data ?? [],
+		snapshots: data ?? DEFAULT_SNAPSHOT,
 		isLoading,
 	};
 };
