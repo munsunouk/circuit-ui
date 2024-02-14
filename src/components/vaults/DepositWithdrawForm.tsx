@@ -1,5 +1,5 @@
 import useAppStore from '@/stores/app/useAppStore';
-// import { Info } from '@drift-labs/icons';
+import { Info } from '@drift-labs/icons';
 import { useDevSwitchIsOn } from '@drift-labs/react';
 import {
 	BASE_PRECISION_EXP,
@@ -35,7 +35,7 @@ import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
 import Input from '../elements/Input';
 import MarketIcon from '../elements/MarketIcon';
-// import { Tooltip } from '../elements/Tooltip';
+import { Tooltip } from '../elements/Tooltip';
 import { ExternalLink } from '../icons';
 import { VaultTab } from './VaultTabs';
 
@@ -186,7 +186,7 @@ const Form = ({
 				</span>
 
 				<span className="flex items-center">
-					{/* {showMaxDepositWarning && (
+					{showMaxDepositWarning && (
 						<>
 							<Tooltip id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}>
 								<div className="max-w-[300px]">
@@ -199,7 +199,7 @@ const Form = ({
 								data-tooltip-id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}
 							/>
 						</>
-					)} */}
+					)}
 
 					<span className="mr-1">Max:</span>
 					<span
