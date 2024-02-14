@@ -38,7 +38,7 @@ function VaultStat({
 	loading: boolean;
 }) {
 	return (
-		<div className="flex flex-col text-center">
+		<div className="flex justify-between w-full text-center lg:flex-col lg:w-auto lg:justify-center">
 			<span>{label}</span>
 			{loading ? (
 				<Skeleton />
@@ -46,7 +46,7 @@ function VaultStat({
 				<span
 					className={twMerge(
 						sourceCodePro.className,
-						'transition-all  md:text-2xl group-hover:md:text-2xl text-xl group-hover:text-lg'
+						'md:transition-all lg:text-2xl group-hover:lg:text-2xl text-base'
 					)}
 				>
 					{value}
@@ -83,7 +83,7 @@ function VaultStats({
 
 	return (
 		<div className="flex flex-col w-full gap-4">
-			<div className="flex justify-between w-full">
+			<div className="flex flex-col justify-between w-full lg:flex-row">
 				<VaultStat label={'APY'} value={apy} loading={isApyLoading} />
 				{!!userBalance && (
 					<VaultStat
@@ -109,7 +109,7 @@ function VaultStats({
 						width: isMounted && capacity > 0 ? `${capacity}%` : '0%',
 					}}
 					className={twMerge(
-						'h-full blue-white-gradient-background transition-[width] duration-1000',
+						'h-full blue-white-gradient-background md:duration-1000',
 						capacity !== 100 && 'border-r'
 					)}
 				/>
@@ -133,14 +133,17 @@ const CardContainer = ({
 	vaultName: string;
 	hue: number;
 }) => {
+	const isBelowLarge = useWindowSize().width < 1024;
+
 	if (comingSoon) {
 		return (
 			<div
-				className={
-					'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group card-hover-border-glow'
-				}
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
+				className={twMerge(
+					'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group',
+					isBelowLarge && ' card-hover-border-glow'
+				)}
+				onMouseEnter={isBelowLarge ? undefined : handleMouseEnter}
+				onMouseLeave={isBelowLarge ? undefined : handleMouseLeave}
 				// @ts-ignore
 				style={{ '--hue': hue }}
 			>
@@ -152,11 +155,12 @@ const CardContainer = ({
 	return (
 		<Link
 			href={`/vault/${encodeVaultName(vaultName)}`}
-			className={
-				'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group card-hover-border-glow'
-			}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
+			className={twMerge(
+				'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group',
+				isBelowLarge && ' card-hover-border-glow'
+			)}
+			onMouseEnter={isBelowLarge ? undefined : handleMouseEnter}
+			onMouseLeave={isBelowLarge ? undefined : handleMouseLeave}
 			// @ts-ignore
 			style={{ '--hue': hue }}
 		>
@@ -176,6 +180,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		s.authority,
 	]);
 	const appActions = useAppActions();
+	const isBelowLarge = useWindowSize().width < 1024;
 
 	const vaultPubkey = useMemo(
 		() => (vault.pubkeyString ? new PublicKey(vault.pubkeyString) : undefined),
@@ -264,7 +269,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		>
 			{/** Background image (separated to allow isolation of the brightness feature) */}
 			<div
-				className="absolute inset-0 z-10 transition-all group-hover:brightness-125"
+				className="absolute inset-0 z-10 md:transition-all group-hover:brightness-125"
 				style={{
 					backgroundImage: `url(${vault.previewBackdropUrl})`,
 					backgroundSize: 'cover',
@@ -278,11 +283,13 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 						height: `${topSectionHeight}px`,
 					}}
 				>
-					{isHover && <Particles color={vault.backdropParticlesColor} />}
+					{isHover && !isBelowLarge && (
+						<Particles color={vault.backdropParticlesColor} />
+					)}
 				</div>
 			</div>
 			{/** Radial background on hover */}
-			<div className="absolute inset-x-0 top-0 transition-all bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0" />
+			<div className="absolute inset-x-0 top-0 md:transition-all bottom-40 blue-radial-gradient-background group-hover:brightness-200 brightness-0" />
 
 			{/** Main Content */}
 			<div
@@ -291,14 +298,12 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 			>
 				{/** Background blur + grayscale (separated to allow isolation of inner content from grayscale ) */}
 				<div className="absolute inset-0 backdrop-blur" />
-				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center md:px-8 md:pb-10 md:pt-8 isolate grow">
+				<div className="flex flex-col items-center gap-4 px-4 py-4 text-center lg:px-8 lg:pb-10 lg:pt-8 isolate grow">
 					<div className="flex flex-col items-center w-full gap-2">
 						<span className={twMerge(syne.className, 'text-4xl font-bold')}>
 							{vault.name}
 						</span>
 						<div className="flex flex-col items-center w-full gap-2">
-							{/* <span>{vault.description}</span> */}
-
 							<div className="flex items-center">
 								<span>Deposit: </span>
 								<span>
@@ -338,12 +343,12 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 							)}
 						</div>
 					</div>
-					<div className="w-full grow flex flex-col items-center justify-end h-[136px]">
+					<div className="w-full grow flex flex-col items-center justify-end lg:h-[136px]">
 						{comingSoon ? (
 							<span
 								className={twMerge(
 									sourceCodePro.className,
-									'text-3xl radial-gradient-text'
+									'text-3xl radial-gradient-text pb-4 lg:pb-0'
 								)}
 							>
 								Coming Soon
@@ -368,7 +373,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 									}
 									assetLabel={assetLabel}
 								/>
-								<div className="overflow-hidden transition-all group-hover:mt-5 w-full group-hover:h-[32px] h-0">
+								<div className="overflow-hidden lg:transition-all lg:group-hover:mt-5 w-full lg:group-hover:h-[32px] lg:h-0 mt-2">
 									<Button className={twMerge('py-1 w-full')}>Open Vault</Button>
 								</div>
 							</div>
