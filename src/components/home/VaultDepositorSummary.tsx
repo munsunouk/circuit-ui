@@ -97,7 +97,7 @@ export default function VaultDepositorSummary() {
 		areVaultDepositorsAccountDataLoaded,
 		walletConnected,
 		authority,
-		allVaultsStats,
+		// allVaultsStats,
 	]);
 
 	function calcUserTotalStats() {

@@ -133,17 +133,17 @@ const CardContainer = ({
 	vaultName: string;
 	hue: number;
 }) => {
-	const isBelowLarge = useWindowSize().width < 1024;
+	const isLargeAndAbove = useWindowSize().width >= 1024;
 
 	if (comingSoon) {
 		return (
 			<div
 				className={twMerge(
 					'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group',
-					isBelowLarge && ' card-hover-border-glow'
+					isLargeAndAbove && ' card-hover-border-glow'
 				)}
-				onMouseEnter={isBelowLarge ? undefined : handleMouseEnter}
-				onMouseLeave={isBelowLarge ? undefined : handleMouseLeave}
+				onMouseEnter={isLargeAndAbove ? handleMouseEnter : undefined}
+				onMouseLeave={isLargeAndAbove ? handleMouseLeave : undefined}
 				// @ts-ignore
 				style={{ '--hue': hue }}
 			>
@@ -157,10 +157,10 @@ const CardContainer = ({
 			href={`/vault/${encodeVaultName(vaultName)}`}
 			className={twMerge(
 				'relative flex flex-col flex-1 w-full border cursor-pointer border-container-border group',
-				isBelowLarge && ' card-hover-border-glow'
+				isLargeAndAbove && ' card-hover-border-glow'
 			)}
-			onMouseEnter={isBelowLarge ? undefined : handleMouseEnter}
-			onMouseLeave={isBelowLarge ? undefined : handleMouseLeave}
+			onMouseEnter={isLargeAndAbove ? handleMouseEnter : undefined}
+			onMouseLeave={isLargeAndAbove ? handleMouseLeave : undefined}
 			// @ts-ignore
 			style={{ '--hue': hue }}
 		>
