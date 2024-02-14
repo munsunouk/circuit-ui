@@ -35,8 +35,9 @@ import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
 import Input from '../elements/Input';
 import MarketIcon from '../elements/MarketIcon';
-// import { Tooltip } from '../elements/Tooltip';
+import { Tooltip } from '../elements/Tooltip';
 import { ExternalLink } from '../icons';
+import Info from '../icons/Info';
 import { VaultTab } from './VaultTabs';
 
 const PERCENTAGE_SELECTOR_OPTIONS = [
@@ -186,7 +187,7 @@ const Form = ({
 				</span>
 
 				<span className="flex items-center">
-					{/* {showMaxDepositWarning && (
+					{showMaxDepositWarning && (
 						<>
 							<Tooltip id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}>
 								<div className="max-w-[300px]">
@@ -194,12 +195,11 @@ const Form = ({
 								</div>
 							</Tooltip>
 							<Info
-								className="mr-1"
-								color="var(--warning-yellow-border)"
+								className="mr-1 [&>path]:stroke-[var(--warning-yellow-border)] w-4 h-4 cursor-help"
 								data-tooltip-id={MAX_DEPOSIT_WARNING_TOOLTIP_ID}
 							/>
 						</>
-					)} */}
+					)}
 
 					<span className="mr-1">Max:</span>
 					<span
