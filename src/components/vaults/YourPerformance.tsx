@@ -4,6 +4,7 @@ import {
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
+	PERCENTAGE_PRECISION_EXP,
 	PRICE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 } from '@drift-labs/sdk';
@@ -152,6 +153,7 @@ export default function YourPerformance() {
 			.div(
 				BigNum.max(userTotalDepositsBigNum, BigNum.from(ONE, basePrecisionExp))
 			)
+			.shiftTo(PERCENTAGE_PRECISION_EXP)
 			.toNum() /
 			PERCENTAGE_PRECISION.toNumber()) *
 		100;
