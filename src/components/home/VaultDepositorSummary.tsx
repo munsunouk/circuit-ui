@@ -59,6 +59,9 @@ export default function VaultDepositorSummary() {
 	const areVaultDepositorsAccountDataLoaded = useAppStore((s) =>
 		s.getAreVaultDepositorsAccountDataLoaded()
 	);
+	const allVaultsStats = useAppStore((s) =>
+		Object.values(s.vaults).map((v) => v?.vaultStats)
+	);
 	const numOfVaultsInStore = useAppStore((s) => Object.keys(s.vaults).length);
 	const walletContext = useWallet();
 	const authority = useCommonDriftStore((s) => s.authority);
@@ -94,6 +97,7 @@ export default function VaultDepositorSummary() {
 		areVaultDepositorsAccountDataLoaded,
 		walletConnected,
 		authority,
+		allVaultsStats,
 	]);
 
 	function calcUserTotalStats() {
