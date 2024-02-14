@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import VaultDepositorSummary from '@/components/home/VaultDepositorSummary';
 import VaultPreviewCard from '@/components/home/VaultPreviewCard';
 import VaultTvl from '@/components/home/VaultsTvl';
 
@@ -26,7 +27,7 @@ export default function HomePage() {
 
 	return (
 		<div className="flex flex-col items-center gap-8 max-w-[1392px]">
-			<div className="flex flex-col items-center gap-3 mt-10 mb-4 overflow-hidden text-center md:mt-32 md:mb-16">
+			<div className="flex flex-col items-center gap-3 mt-10 mb-2 overflow-hidden text-center md:mt-32 md:mb-2">
 				<span
 					className={twMerge(
 						syne.className,
@@ -40,6 +41,8 @@ export default function HomePage() {
 					provision strategies
 				</span>
 				<VaultTvl />
+
+				<VaultDepositorSummary />
 			</div>
 
 			<div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 md:gap-6">

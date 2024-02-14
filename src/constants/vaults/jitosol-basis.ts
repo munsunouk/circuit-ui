@@ -1,11 +1,14 @@
 import { PerformanceGraphData, UiVaultConfig } from '@/types';
 import { BigNum } from '@drift-labs/sdk';
 import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 import { normalizeDate } from '@/utils/utils';
 
 import { JITOSOL_DEPOSIT_ASSET } from '../assets';
 import { JITOSOL_MARKET } from '../environment';
+
+dayjs.extend(isSameOrAfter);
 
 const JITOSOL_BASIS_BACKTEST_RAW_DATA = [
 	{
@@ -187,5 +190,7 @@ export const JITOSOL_BASIS_VAULT: UiVaultConfig = {
 			],
 		},
 	],
-	comingSoon: true,
+	comingSoon: !dayjs().isAfter(
+		dayjs(process.env.NEXT_PUBLIC_OVERRIDE_JITOSOL_VAULT_TS ?? 1707926400000)
+	), // 15th Feb, 10pm EST
 };

@@ -93,6 +93,7 @@ const TopBar = () => {
 			Object.keys(s.vaults).forEach((vaultAddress) => {
 				s.vaults[vaultAddress]!.vaultDepositorAccount = undefined;
 				s.vaults[vaultAddress]!.vaultDepositorAccountData = undefined;
+				s.vaults[vaultAddress]!.isVaultDepositorDataLoaded = false;
 			});
 
 			s.balances = {

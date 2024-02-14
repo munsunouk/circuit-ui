@@ -1,8 +1,10 @@
+import useAppStore from '@/stores/app/useAppStore';
 import { useCommonDriftStore, useOraclePriceStore } from '@drift-labs/react';
 import {
 	BigNum,
 	ONE,
 	PERCENTAGE_PRECISION,
+	PERCENTAGE_PRECISION_EXP,
 	PRICE_PRECISION_EXP,
 	QUOTE_PRECISION_EXP,
 } from '@drift-labs/sdk';
@@ -83,6 +85,9 @@ export default function YourPerformance() {
 	const vaultStats = useCurrentVaultStats();
 	const vault = useCurrentVault();
 	const { snapshots } = useVaultSnapshots(vault?.vaultAccountData.pubkey);
+	const vaultDepositorStats = useAppStore((s) =>
+		s.getVaultDepositorStats(vault?.vaultAccountData.pubkey)
+	);
 
 	const getMarketPriceData = useOraclePriceStore((s) => s.getMarketPriceData);
 	const uiVault = getUiVaultConfig(vault?.vaultAccountData.pubkey);
@@ -102,6 +107,12 @@ export default function YourPerformance() {
 
 	const loading = !vaultStats.isLoaded;
 
+	const {
+		balanceBase: userBalanceBase,
+		totalEarningsBase,
+		isLoaded,
+	} = vaultDepositorStats;
+
 	// User's vault share proportion
 	const totalVaultShares = vaultAccountData?.totalShares.toNumber() ?? 0;
 	const userVaultShares = vaultDepositorAccData?.vaultShares.toNumber() ?? 0;
@@ -113,19 +124,9 @@ export default function YourPerformance() {
 	const netQuoteDepositsBigNum = netBaseDepositsBigNum.mul(
 		marketOraclePriceBigNum
 	);
-	const vaultAccountBaseBalance = BigNum.from(
-		vaultStats.totalAccountBaseValue,
-		basePrecisionExp
-	);
-	const userAccountBaseBalance =
-		vaultAccountBaseBalance.toNum() * userSharesProportion;
-	const userAccountBaseBalanceBigNum = BigNum.fromPrint(
-		`${userAccountBaseBalance}`,
-		basePrecisionExp
-	);
-	const userAccountQuoteBalanceBigNum = userAccountBaseBalanceBigNum.mul(
-		marketOraclePriceBigNum
-	);
+
+	// User's current balance
+	const userBalanceQuoteBigNum = userBalanceBase.mul(marketOraclePriceBigNum);
 
 	// User's total earnings
 	const userTotalDepositsBigNum = BigNum.from(
@@ -136,9 +137,7 @@ export default function YourPerformance() {
 		vaultDepositorAccData?.totalWithdraws,
 		basePrecisionExp
 	);
-	let totalEarnings = userTotalWithdrawsBigNum
-		.sub(userTotalDepositsBigNum)
-		.add(userAccountBaseBalanceBigNum);
+	let totalEarnings = totalEarningsBase;
 	// prevent $-0.00
 	if (
 		totalEarnings.ltZero() &&
@@ -154,6 +153,7 @@ export default function YourPerformance() {
 			.div(
 				BigNum.max(userTotalDepositsBigNum, BigNum.from(ONE, basePrecisionExp))
 			)
+			.shiftTo(PERCENTAGE_PRECISION_EXP)
 			.toNum() /
 			PERCENTAGE_PRECISION.toNumber()) *
 		100;
@@ -187,14 +187,10 @@ export default function YourPerformance() {
 				<div className="flex items-center justify-center w-full gap-4">
 					<StatsBox
 						label="Your Balance"
-						value={
-							showUserInfo
-								? displayAssetValue(userAccountBaseBalanceBigNum)
-								: '--'
-						}
+						value={showUserInfo ? displayAssetValue(userBalanceBase) : '--'}
 						tooltip={{
 							id: 'total-user-balance-summary-tooltip',
-							content: userAccountQuoteBalanceBigNum.toNotional(),
+							content: userBalanceQuoteBigNum.toNotional(),
 							hide: isUsdcMarket,
 						}}
 						loading={loading}
@@ -245,16 +241,12 @@ export default function YourPerformance() {
 					/>
 					<BreakdownRow
 						label="Your Balance"
-						value={
-							showUserInfo
-								? displayAssetValue(userAccountBaseBalanceBigNum)
-								: '--'
-						}
+						value={showUserInfo ? displayAssetValue(userBalanceBase) : '--'}
 						tooltip={{
 							id: 'total-user-balance-tooltip',
 							content: (
 								<span className={twMerge(sourceCodePro.className)}>
-									{userAccountQuoteBalanceBigNum.toNotional()}
+									{userBalanceQuoteBigNum.toNotional()}
 								</span>
 							),
 							hide: isUsdcMarket,

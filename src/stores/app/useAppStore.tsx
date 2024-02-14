@@ -1,5 +1,12 @@
 import { SerializedDepositHistory, UserBalance } from '@/types';
-import { BN, DriftClient, PublicKey, User, UserAccount } from '@drift-labs/sdk';
+import {
+	BN,
+	BigNum,
+	DriftClient,
+	PublicKey,
+	User,
+	UserAccount,
+} from '@drift-labs/sdk';
 import {
 	EventType,
 	Vault,
@@ -15,6 +22,8 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 
 import { UISerializableOrderWithOraclePrice } from '@/hooks/table-data/useVaultOpenOrders';
+
+import { getUiVaultConfig } from '@/utils/vaults';
 
 import { JITOSOL_MARKET, USDC_MARKET } from '@/constants/environment';
 
@@ -42,6 +51,7 @@ export type UIVault = {
 	vaultAccountData: Vault; // we store the actual account data so we know when it updates
 	vaultDepositorAccount?: VaultDepositorAccount;
 	vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
+	isVaultDepositorDataLoaded: boolean; // used to determine if user is a vault depositor; if vault depositor data is loaded and vaultDepositorAccount is not undefined, then user is a vault depositor
 	eventRecords: { records: WrappedEvents; isLoaded: boolean };
 	vaultDeposits: SerializedDepositHistory[];
 	accountSummary: {
@@ -91,6 +101,15 @@ export interface AppStoreState {
 	getVaultStats: (
 		vaultAddress: PublicKey | undefined
 	) => VaultStats | undefined;
+	getVaultDepositorStats: (vaultAddress: PublicKey | undefined) => {
+		balanceBase: BigNum;
+		totalEarningsBase: BigNum;
+		isLoaded: boolean;
+	};
+
+	getAreVaultsAccountDataLoaded: () => boolean;
+	getAreVaultDepositorsAccountDataLoaded: () => boolean;
+	getAreVaultsStatsLoaded: () => boolean;
 }
 
 const DEFAULT_APP_STORE_STATE = {
@@ -157,6 +176,90 @@ const useAppStore = create<AppStoreState>((set, get) => {
 		},
 		getVaultStats: (vaultAddress: PublicKey | undefined) => {
 			return vaultPropGetter(get, vaultAddress, 'vaultStats') as VaultStats;
+		},
+		getVaultDepositorStats: (vaultAddress: PublicKey | undefined) => {
+			if (!vaultAddress)
+				return {
+					balanceBase: BigNum.zero(),
+					totalEarningsBase: BigNum.zero(),
+					isLoaded: false,
+				};
+
+			const vault = get().vaults[vaultAddress.toString()];
+			const vaultStats = vault?.vaultStats;
+			const vaultAccountData = vault?.vaultAccountData;
+			const vaultDepositorAccountData = vault?.vaultDepositorAccountData;
+
+			if (!vaultStats || !vaultAccountData || !vaultDepositorAccountData) {
+				return {
+					balanceBase: BigNum.zero(),
+					totalEarningsBase: BigNum.zero(),
+					isLoaded:
+						!!vaultStats &&
+						!!vaultAccountData &&
+						!!vault?.isVaultDepositorDataLoaded,
+				};
+			}
+
+			const marketPrecisionExp =
+				getUiVaultConfig(vaultAddress)?.market.precisionExp ??
+				USDC_MARKET.precisionExp;
+
+			// User's vault share proportion
+			const totalVaultShares = vaultAccountData.totalShares.toNumber();
+			const userVaultShares = vaultDepositorAccountData.vaultShares.toNumber();
+			const userSharesProportion =
+				userVaultShares / (totalVaultShares ?? 1) || 0;
+
+			// User's current balance
+			const vaultAccountBaseBalance =
+				vaultStats.totalAccountBaseValue.toNumber();
+			const userBalance = vaultAccountBaseBalance * userSharesProportion;
+			const userBalanceBigNum = BigNum.from(userBalance, marketPrecisionExp);
+
+			// User's total earnings
+			const userTotalDepositsBigNum = BigNum.from(
+				vaultDepositorAccountData.totalDeposits,
+				marketPrecisionExp
+			);
+			const userTotalWithdrawsBigNum = BigNum.from(
+				vaultDepositorAccountData.totalWithdraws,
+				marketPrecisionExp
+			);
+			const totalEarnings = userTotalWithdrawsBigNum
+				.sub(userTotalDepositsBigNum)
+				.add(userBalanceBigNum);
+
+			return {
+				balanceBase: userBalanceBigNum,
+				totalEarningsBase: totalEarnings,
+				isLoaded: true,
+			};
+		},
+
+		getAreVaultsAccountDataLoaded: () => {
+			const vaults = get().vaults;
+			const vaultsKeys = Object.keys(vaults);
+			return vaultsKeys.every((vaultKey) => {
+				const vault = vaults[vaultKey];
+				return !!vault?.vaultAccountData;
+			});
+		},
+		getAreVaultDepositorsAccountDataLoaded: () => {
+			const vaults = get().vaults;
+			const vaultsKeys = Object.keys(vaults);
+			return vaultsKeys.every((vaultKey) => {
+				const vault = vaults[vaultKey];
+				return !!vault?.isVaultDepositorDataLoaded;
+			});
+		},
+		getAreVaultsStatsLoaded: () => {
+			const vaults = get().vaults;
+			const vaultsKeys = Object.keys(vaults);
+			return vaultsKeys.every((vaultKey) => {
+				const vault = vaults[vaultKey];
+				return !!vault?.vaultStats.isLoaded;
+			});
 		},
 	};
 });
