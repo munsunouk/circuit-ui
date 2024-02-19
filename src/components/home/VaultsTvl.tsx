@@ -17,18 +17,12 @@ import Info from '../icons/Info';
 const TOTAL_PNL_INFO_TOOLTIP_ID = 'total-pnl-info-tooltip';
 
 /**
- * We only count USDC vaults for USD TVL.
+ * We count all vaults for TVL, but only count USDC vaults for USD PNL.
  */
 export default function VaultTvl() {
 	const allVaults = useAppStore((s) => s.vaults);
-	const numOfUsdcVaults = VAULTS.reduce(
-		(sum, vault) =>
-			sum +
-			(vault.pubkeyString &&
-			!vault.comingSoon &&
-			vault.market.marketIndex === USDC_SPOT_MARKET_INDEX
-				? 1
-				: 0),
+	const numOfVaults = VAULTS.reduce(
+		(sum, vault) => sum + (vault.pubkeyString && !vault.comingSoon ? 1 : 0),
 		0
 	);
 
@@ -36,14 +30,11 @@ export default function VaultTvl() {
 		.filter((vaultPubKey) => {
 			const uiVault = getUiVaultConfig(vaultPubKey);
 
-			const isUsdcVault =
-				uiVault?.market.marketIndex === USDC_SPOT_MARKET_INDEX;
-
-			return uiVault && !uiVault.comingSoon && isUsdcVault;
+			return uiVault && !uiVault.comingSoon;
 		})
 		.map((vaultPubKey) => allVaults[vaultPubKey]);
 
-	const isLoading = numOfUsdcVaults !== fetchedLiveVaults.length;
+	const isLoading = numOfVaults !== fetchedLiveVaults.length;
 
 	const combinedTvl = fetchedLiveVaults.reduce((sum, vault) => {
 		const collateral = vault?.vaultDriftUser.getNetSpotMarketValue() ?? ZERO;
@@ -53,10 +44,15 @@ export default function VaultTvl() {
 		return sum.add(netUsdValue);
 	}, new BN(0));
 
-	const combinedPnl = fetchedLiveVaults.reduce((sum, vault) => {
-		const unrealizedPNL = vault?.vaultDriftUser.getTotalAllTimePnl() ?? ZERO;
-		return sum.add(unrealizedPNL);
-	}, new BN(0));
+	const combinedPnl = fetchedLiveVaults
+		.filter(
+			(vault) =>
+				vault?.vaultAccountData.spotMarketIndex === USDC_SPOT_MARKET_INDEX // Only count USDC vaults for USD PNL
+		)
+		.reduce((sum, vault) => {
+			const unrealizedPNL = vault?.vaultDriftUser.getTotalAllTimePnl() ?? ZERO;
+			return sum.add(unrealizedPNL);
+		}, new BN(0));
 
 	return (
 		<div className="flex flex-col justify-center w-full gap-4 mt-10 sm:gap-12 sm:flex-row">
