@@ -324,7 +324,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 											return (
 												<MarketIcon
 													key={asset.market.symbol}
-													marketName={asset.market.symbol}
+													marketName={asset.market?.symbol}
 													className="ml-1"
 												/>
 											);
