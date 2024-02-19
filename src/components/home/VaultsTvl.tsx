@@ -2,6 +2,7 @@
 
 import useAppStore from '@/stores/app/useAppStore';
 import { BN, BigNum, QUOTE_PRECISION_EXP, ZERO } from '@drift-labs/sdk';
+import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import Skeleton from 'react-loading-skeleton';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,20 +11,39 @@ import { getUiVaultConfig } from '@/utils/vaults';
 import { sourceCodePro } from '@/constants/fonts';
 import { VAULTS } from '@/constants/vaults';
 
+import { Tooltip } from '../elements/Tooltip';
+import Info from '../icons/Info';
+
+const TOTAL_PNL_INFO_TOOLTIP_ID = 'total-pnl-info-tooltip';
+
+/**
+ * We only count USDC vaults for USD TVL.
+ */
 export default function VaultTvl() {
 	const allVaults = useAppStore((s) => s.vaults);
-	const numOfUiVaults = VAULTS.reduce(
-		(sum, vault) => sum + (vault.pubkeyString && !vault.comingSoon ? 1 : 0),
+	const numOfUsdcVaults = VAULTS.reduce(
+		(sum, vault) =>
+			sum +
+			(vault.pubkeyString &&
+			!vault.comingSoon &&
+			vault.market.marketIndex === USDC_SPOT_MARKET_INDEX
+				? 1
+				: 0),
 		0
 	);
+
 	const fetchedLiveVaults = Object.keys(allVaults)
 		.filter((vaultPubKey) => {
 			const uiVault = getUiVaultConfig(vaultPubKey);
-			return uiVault && !uiVault.comingSoon;
+
+			const isUsdcVault =
+				uiVault?.market.marketIndex === USDC_SPOT_MARKET_INDEX;
+
+			return uiVault && !uiVault.comingSoon && isUsdcVault;
 		})
 		.map((vaultPubKey) => allVaults[vaultPubKey]);
 
-	const isLoading = numOfUiVaults !== fetchedLiveVaults.length;
+	const isLoading = numOfUsdcVaults !== fetchedLiveVaults.length;
 
 	const combinedTvl = fetchedLiveVaults.reduce((sum, vault) => {
 		const collateral = vault?.vaultDriftUser.getNetSpotMarketValue() ?? ZERO;
@@ -68,7 +88,18 @@ export default function VaultTvl() {
 						{BigNum.from(combinedPnl, QUOTE_PRECISION_EXP).toNotional()}
 					</span>
 				)}
-				<span className="text-sm md:text-lg">Total P&amp;L</span>
+				<span className="flex items-center justify-center w-full text-sm text-center md:text-lg">
+					<span>Total P&amp;L</span>
+					<Info
+						data-tooltip-id={TOTAL_PNL_INFO_TOOLTIP_ID}
+						className="ml-1 [&>path]:stroke-white w-4 h-4 cursor-help"
+					/>
+					<Tooltip id={TOTAL_PNL_INFO_TOOLTIP_ID}>
+						<div className="max-w-[300px]">
+							Total P&amp;L only includes vaults whose deposits are USDC-based.
+						</div>
+					</Tooltip>
+				</span>
 			</div>
 		</div>
 	);
