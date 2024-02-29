@@ -5,7 +5,7 @@ import {
 	Initialize as InitializeCommon,
 	USDC_SPOT_MARKET_INDEX,
 } from '@drift/common';
-import { Keypair } from '@solana/web3.js';
+import { Commitment, Keypair } from '@solana/web3.js';
 
 export const ARBITRARY_WALLET = new Wallet(new Keypair());
 
@@ -24,6 +24,7 @@ type EnvironmentVariables = {
 	basePollingRateMs: number;
 	rpcOverride: string | undefined;
 	historyServerUrl: string;
+	commitment: Commitment;
 };
 
 const Env: EnvironmentVariables = {
@@ -41,6 +42,7 @@ const Env: EnvironmentVariables = {
 		: process.env.NEXT_PUBLIC_DRIFT_ENV === 'mainnet-beta'
 			? EnvironmentConstants.historyServerUrl.mainnet
 			: EnvironmentConstants.historyServerUrl.dev,
+	commitment: (process.env.COMMITMENT ?? 'confirmed') as Commitment,
 };
 
 CommonConfig.spotMarketsLookup[6].symbol = 'JitoSOL';

@@ -16,10 +16,10 @@ import Env from './src/constants/environment';
  * Sets up DriftClient and VaultClient for use in API routes.
  */
 export const setupClients = () => {
-	const connection = new Connection(process.env.API_RPC_URL!, 'processed');
+	const connection = new Connection(process.env.API_RPC_URL!, Env.commitment);
 	const dummyWallet = COMMON_UI_UTILS.createThrowawayIWallet();
 
-	const accountLoader = new BulkAccountLoader(connection, 'processed', 0); // we don't want to poll for updates
+	const accountLoader = new BulkAccountLoader(connection, Env.commitment, 0); // we don't want to poll for updates
 
 	const { oracleInfos, perpMarketIndexes, spotMarketIndexes } =
 		getMarketsAndOraclesForSubscription(Env.driftEnv);
