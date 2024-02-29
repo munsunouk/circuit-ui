@@ -479,7 +479,10 @@ const createAppActions = (
 		}
 	};
 
-	const executeVaultWithdrawal = async (vaultAddress: PublicKey) => {
+	const executeVaultWithdrawal = async (
+		vaultAddress: PublicKey,
+		simulateTransaction: boolean
+	) => {
 		try {
 			const vaultClient = get().vaultClient;
 			const vaultDepositor = get().getVaultDepositorAccountData(vaultAddress);
@@ -487,7 +490,9 @@ const createAppActions = (
 			invariant(vaultClient, 'No vault client');
 			invariant(vaultDepositor, 'No vault depositor');
 
-			const tx = await vaultClient.withdraw(vaultDepositor.pubkey);
+			const tx = await vaultClient.withdraw(vaultDepositor.pubkey, {
+				simulateTransaction,
+			});
 
 			await handleSentTxn(tx, 'You have successfully withdrew your funds.');
 
@@ -506,7 +511,7 @@ const createAppActions = (
 
 		const tx = await vaultClient
 			.liquidate(vaultDepositor.pubkey)
-			.catch((err) => TransactionErrorHandler.handle(err));
+			.catch((err: Error) => TransactionErrorHandler.handle(err));
 
 		return tx;
 	};

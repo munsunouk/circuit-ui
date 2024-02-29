@@ -12,6 +12,7 @@
     "lint:fix": "yarn lint --fix",
     "prettify": "prettier --check './**/*.{ts,tsx}'",
     "prettify:write": "prettier --write './**/*.{ts,tsx}'",
+    "prettify:fix": "yarn prettify:write",
     "build-vaults": "cd drift-vaults/ts/sdk && yarn build",
     "convert-icons": "npx @svgr/cli --typescript --no-prettier --icon --out-dir ./src/components/icons ./public/icons && prettier --write './src/components/icons/*.{ts,tsx}'",
     "install-vercel": "sh ./scripts/install-vercel.sh",
