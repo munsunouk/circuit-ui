@@ -1,5 +1,5 @@
 import useAppStore from '@/stores/app/useAppStore';
-import { useDevSwitchIsOn } from '@drift-labs/react';
+import { useCommonDriftStore, useDevSwitchIsOn } from '@drift-labs/react';
 import {
 	BASE_PRECISION_EXP,
 	BN,
@@ -441,6 +441,7 @@ const WithdrawForm = ({
 	setUserPerformanceTab: () => void;
 }) => {
 	const { connected } = useWallet();
+	const emulationMode = useCommonDriftStore((s) => s.emulationMode);
 	const vaultPubkey = usePathToVaultPubKey();
 	const vaultDepositorAccountData = useCurrentVaultDepositorAccData();
 	const vaultAccountData = useCurrentVaultAccountData();
@@ -572,7 +573,7 @@ const WithdrawForm = ({
 			} else if (withdrawalState === WithdrawalState.Requested) {
 				await appActions.cancelRequestWithdraw(vaultPubkey);
 			} else {
-				await appActions.executeVaultWithdrawal(vaultPubkey);
+				await appActions.executeVaultWithdrawal(vaultPubkey, emulationMode);
 				hasCalcMaxSharesOnce.current = false;
 				setUserPerformanceTab();
 			}
@@ -638,7 +639,7 @@ const WithdrawForm = ({
 				/>
 			)}
 
-			{connected ? (
+			{connected || emulationMode ? (
 				<div className="flex flex-col items-center gap-4 text-center">
 					<div className="flex flex-col w-full">
 						{(withdrawalState === WithdrawalState.Requested ||

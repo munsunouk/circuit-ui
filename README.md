@@ -16,7 +16,7 @@ If you need to update any submodules, change directory to the submodule, pull th
 
 ## Env File
 
-add a .env.local file to be able to run the project locally. You can see example config in `.env.example`
+add a `.env.local` file to be able to run the project locally. You can see example config in `.env.example`
 
 ## Development
 
