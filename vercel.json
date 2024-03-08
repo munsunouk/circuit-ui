@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/apy-returns",
-      "schedule": "* * * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/backfill-vault-deposits",
