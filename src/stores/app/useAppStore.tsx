@@ -53,7 +53,6 @@ export type UIVault = {
 	vaultDepositorAccountData?: VaultDepositor; // we store the actual account data so we know when it updates
 	isVaultDepositorDataLoaded: boolean; // used to determine if user is a vault depositor; if vault depositor data is loaded and vaultDepositorAccount is not undefined, then user is a vault depositor
 	eventRecords: { records: WrappedEvents; isLoaded: boolean };
-	vaultDeposits: SerializedDepositHistory[];
 	accountSummary: {
 		openPositions: (OpenPosition & { indexPrice: number })[];
 		balances: UserBalance[];

@@ -94,7 +94,6 @@ const createAppActions = (
 				records: [],
 				isLoaded: false,
 			},
-			vaultDeposits: [],
 			accountSummary: {
 				openPositions: [],
 				balances: [],
@@ -112,18 +111,6 @@ const createAppActions = (
 					...newVaultState,
 				};
 			}
-		});
-
-		// fetch  deposit history
-		const vaultDeposits =
-			await DriftHistoryServerClient.fetchUserAccountsDepositHistory(
-				false,
-				vaultAccount.user
-			);
-
-		set((s) => {
-			s.vaults[vaultAddress.toString()]!.vaultDeposits = (vaultDeposits.data
-				?.records[0] ?? []) as SerializedDepositHistory[];
 		});
 	};
 
