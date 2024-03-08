@@ -1,6 +1,4 @@
-import { DriftHistoryServerClient } from '@/clients/drift-history-server';
 import { AppStoreState, DEFAULT_VAULT_STATS } from '@/stores/app/useAppStore';
-import { SerializedDepositHistory } from '@/types';
 import { CommonDriftStore } from '@drift-labs/react';
 import {
 	BN,

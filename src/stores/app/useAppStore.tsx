@@ -1,4 +1,4 @@
-import { SerializedDepositHistory, UserBalance } from '@/types';
+import { UserBalance } from '@/types';
 import {
 	BN,
 	BigNum,
