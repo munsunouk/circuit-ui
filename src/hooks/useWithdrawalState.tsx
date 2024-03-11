@@ -25,7 +25,8 @@ export const useWithdrawalState = (
 	const isFullWithdrawal = lastRequestedShares.eq(
 		vaultDepositorAccountData?.vaultShares ?? new BN(0)
 	);
-  const isWithdrawalInProgress = withdrawalState !== WithdrawalState.UnRequested;
+	const isWithdrawalInProgress =
+		withdrawalState !== WithdrawalState.UnRequested;
 
 	// update withdrawal state
 	useEffect(() => {
@@ -45,5 +46,5 @@ export const useWithdrawalState = (
 		}
 	}, [withdrawalAvailableTs, lastRequestedShares.toNumber()]);
 
-	return {withdrawalState, isFullWithdrawal, isWithdrawalInProgress};
+	return { withdrawalState, isFullWithdrawal, isWithdrawalInProgress };
 };

@@ -66,7 +66,7 @@ const getVaultDataForSnapshot = async (
 			const priceData = pythData.productPrice.get(symbol);
 			invariant(priceData, 'Pyth price data not found for symbol ' + symbol);
 			oraclePrice = BigNum.fromPrint(
-				priceData.price?.toString() ?? '',
+				priceData.aggregate.price?.toString() ?? '',
 				PRICE_PRECISION_EXP
 			).val;
 		}
