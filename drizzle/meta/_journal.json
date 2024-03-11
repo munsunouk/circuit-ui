@@ -29,6 +29,13 @@
       "when": 1706159205537,
       "tag": "0003_ambiguous_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1710194430984,
+      "tag": "0004_furry_strong_guy",
+      "breakpoints": true
     }
   ]
 }

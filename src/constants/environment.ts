@@ -69,7 +69,19 @@ export const PYTH_PROGRAM_ID = new PublicKey(
 export const MARKET_INDEX_TO_PYTH_SYMBOL_MAP: {
 	[marketIndex: number]: string;
 } = {
+	0: 'Crypto.USDC/USD',
+	1: 'Crypto.SOL/USD',
+	2: 'Crypto.MSOL/USD',
+	3: 'Crypto.BTC/USD',
+	4: 'Crypto.ETH/USD',
+	5: 'Crypto.USDT/USD',
 	6: 'Crypto.JITOSOL/USD',
+	7: 'Crypto.PYTH/USD',
+	8: 'Crypto.BSOL/USD',
+	9: 'Crypto.JTO/USD',
+	10: 'Crypto.WIF/USD',
+	11: 'Crypto.JUP/USD',
+	12: 'Crypto.RNDR/USD',
 };
 
 export default Env;

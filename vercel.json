@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/vaults-snapshot",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/vault-depositors-snapshot",
+      "schedule": "0 1 * * *"
     }
   ]
 }
