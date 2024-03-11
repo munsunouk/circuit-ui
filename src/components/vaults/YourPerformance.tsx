@@ -19,6 +19,7 @@ import useCurrentVaultAccountData from '@/hooks/useCurrentVaultAccountData';
 import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAccData';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
+import { useWithdrawalState } from '@/hooks/useWithdrawalState';
 
 import { displayAssetValue as displayAssetValueBase } from '@/utils/utils';
 import { getUiVaultConfig, getUserMaxDailyDrawdown } from '@/utils/vaults';
@@ -87,6 +88,10 @@ export default function YourPerformance() {
 	const { snapshots } = useVaultSnapshots(vault?.vaultAccountData.pubkey);
 	const vaultDepositorStats = useAppStore((s) =>
 		s.getVaultDepositorStats(vault?.vaultAccountData.pubkey)
+	);
+	const { isWithdrawalInProgress, isFullWithdrawal } = useWithdrawalState(
+		vaultDepositorAccData,
+		vaultAccountData
 	);
 
 	const getMarketPriceData = useOraclePriceStore((s) => s.getMarketPriceData);
@@ -252,6 +257,17 @@ export default function YourPerformance() {
 							hide: isUsdcMarket,
 						}}
 						loading={loading}
+						labelInfoTooltip={{
+							id: 'total-user-balance-label-info-tooltip',
+							content: (
+								<div className={twMerge('text-sm max-w-[320px]')}>
+									Your balance will be capped at the last full withdrawal
+									requested value. You will not accrue any profit during the
+									redemption period, whereas losses can still be incurred.
+								</div>
+							),
+							hide: !(isWithdrawalInProgress && isFullWithdrawal),
+						}}
 					/>
 					<BreakdownRow
 						label="ROI"

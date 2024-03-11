@@ -16,7 +16,7 @@ const useVaultApyAndCumReturns = (
 	vaultUserPubKey: string | undefined,
 	marketIndex: number
 ) => {
-	const { data, error, isLoading } = useSWR<{
+	const { data, error } = useSWR<{
 		data: {
 			vaults: Record<
 				string,

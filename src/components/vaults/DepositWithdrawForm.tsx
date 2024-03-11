@@ -23,6 +23,7 @@ import useCurrentVaultDepositorAccData from '@/hooks/useCurrentVaultDepositorAcc
 import usePathToVaultPubKey from '@/hooks/usePathToVaultName';
 import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
+import { useWithdrawalState } from '@/hooks/useWithdrawalState';
 
 import { redeemPeriodToString } from '@/utils/utils';
 import { getUiVaultConfig } from '@/utils/vaults';
@@ -462,8 +463,9 @@ const WithdrawForm = ({
 	const [maxSharesBaseValue, setMaxSharesBaseValue] = useState(new BN(0));
 	const [amount, setAmount] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [withdrawalState, setWithdrawalState] = useState<WithdrawalState>(
-		WithdrawalState.Requested
+	const { withdrawalState, isWithdrawalInProgress } = useWithdrawalState(
+		vaultDepositorAccountData,
+		vaultAccountData
 	);
 
 	const hasCalcMaxSharesOnce = useRef(false);
@@ -533,24 +535,6 @@ const WithdrawForm = ({
 			hasCalcMaxSharesOnce.current = true;
 		}
 	}, [vaultDepositorAccount, vaultAccountData, tvlBaseValue]);
-
-	// update withdrawal state
-	useEffect(() => {
-		const hasRequestedWithdrawal = lastRequestedShares.toNumber() > 0;
-		const isBeforeWithdrawalAvailableDate = dayjs().isBefore(
-			dayjs.unix(withdrawalAvailableTs)
-		);
-
-		if (hasRequestedWithdrawal) {
-			if (isBeforeWithdrawalAvailableDate) {
-				setWithdrawalState(WithdrawalState.Requested);
-			} else {
-				setWithdrawalState(WithdrawalState.AvailableForWithdrawal);
-			}
-		} else {
-			setWithdrawalState(WithdrawalState.UnRequested);
-		}
-	}, [withdrawalAvailableTs, lastRequestedShares.toNumber()]);
 
 	const handleOnValueChange = handleOnValueChangeCurried(
 		setAmount,
@@ -642,8 +626,7 @@ const WithdrawForm = ({
 			{connected || emulationMode ? (
 				<div className="flex flex-col items-center gap-4 text-center">
 					<div className="flex flex-col w-full">
-						{(withdrawalState === WithdrawalState.Requested ||
-							withdrawalState === WithdrawalState.AvailableForWithdrawal) && (
+						{isWithdrawalInProgress && (
 							<>
 								{/** Start of debugging */}
 								{devSwitchIsOn && (

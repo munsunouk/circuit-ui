@@ -184,6 +184,7 @@ export default function VaultPerformance() {
 		selectedGraphOption,
 		graphView,
 		snapshots,
+		apyAndCumReturn,
 	]);
 
 	const getDisplayedDataForHistorical = (): DisplayedData => {

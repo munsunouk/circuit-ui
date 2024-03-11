@@ -200,6 +200,13 @@ const useAppStore = create<AppStoreState>((set, get) => {
 				};
 			}
 
+			const lastRequestedShares =
+				vaultDepositorAccountData?.lastWithdrawRequest.shares ?? new BN(0);
+			const isFullWithdrawalInProgress = lastRequestedShares.eq(
+				// we capped the UI display of user's balance only for full withdrawals for now, since partial withdrawal requires some calculation
+				vaultDepositorAccountData.vaultShares
+			);
+
 			const marketPrecisionExp =
 				getUiVaultConfig(vaultAddress)?.market.precisionExp ??
 				USDC_MARKET.precisionExp;
@@ -214,7 +221,16 @@ const useAppStore = create<AppStoreState>((set, get) => {
 			const vaultAccountBaseBalance =
 				vaultStats.totalAccountBaseValue.toNumber();
 			const userBalance = vaultAccountBaseBalance * userSharesProportion;
-			const userBalanceBigNum = BigNum.from(userBalance, marketPrecisionExp);
+			const userBalanceBigNum = BigNum.from(
+				isFullWithdrawalInProgress // user can only withdraw a maximum of their last withdrawal requested value - they do not accrue value during the redemption period, whereas losses will continue to accrue if it happens
+					? Math.min(
+							vaultDepositorAccountData?.lastWithdrawRequest.value.toNumber() ??
+								Infinity,
+							userBalance
+						)
+					: userBalance,
+				marketPrecisionExp
+			);
 
 			// User's total earnings
 			const userTotalDepositsBigNum = BigNum.from(
