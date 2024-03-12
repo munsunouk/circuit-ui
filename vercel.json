@@ -13,7 +13,15 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/vault-depositors-snapshot",
+      "path": "/api/cron/vault-depositors-snapshot/GXyE3Snk3pPYX4Nz9QRVBrnBfbJRTAQYxuy5DRdnebAn",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/vault-depositors-snapshot/F3no8aqNZRSkxvMEARC4feHJfvvrST2ZrHzr2NBVyJUr",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/vault-depositors-snapshot/ACmnVY5gf1z9UGhzBgnr2bf3h2ZwXW2EDW1w8RC9cQk4",
       "schedule": "0 1 * * *"
     }
   ]

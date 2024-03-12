@@ -29,7 +29,7 @@ export const setupClients = () => {
 		programID: new PublicKey(DRIFT_PROGRAM_ID),
 		env: Env.driftEnv,
 		txVersion: 0,
-		userStats: true,
+		userStats: false,
 		perpMarketIndexes: perpMarketIndexes,
 		spotMarketIndexes: spotMarketIndexes,
 		oracleInfos: oracleInfos,
