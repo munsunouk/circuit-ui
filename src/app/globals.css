@@ -12,6 +12,7 @@
 	/* Font Colors */
 	--text-default: #ccc;
 	--text-secondary: #cdcdcd;
+	--text-tertiary: #555C6A;
 	--text-semi-emphasis: #fafafa;
 	--text-emphasis: #fff;
 	--text-selected: var(--main-blue);

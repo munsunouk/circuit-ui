@@ -10,6 +10,7 @@ const SEMANTIC_CLASSES = {
 	// Font Colors
 	'text-default': 'var(--text-default)',
 	'text-secondary': 'var(--text-secondary)',
+	'text-tertiary': 'var(--text-tertiary)',
 	'text-emphasis': 'var(--text-emphasis)',
 	'text-semi-emphasis': 'var(--text-semi-emphasis)',
 	'text-selected': 'var(--text-selected)',

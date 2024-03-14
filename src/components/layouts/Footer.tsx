@@ -1,7 +1,12 @@
 'use client';
 
 import useAppStore from '@/stores/app/useAppStore';
-import { useCurrentRpc, useCurrentRpcLatency } from '@drift-labs/react';
+import {
+	FeeType,
+	useCurrentRpc,
+	useCurrentRpcLatency,
+	usePriorityFeeUserSettings,
+} from '@drift-labs/react';
 import Link from 'next/link';
 
 import { useIsMobileSize } from '@/hooks/useIsMobileSize';
@@ -10,17 +15,38 @@ import { getRpcLatencyColor } from '@/utils/utils';
 
 import { Disclaimers, Medium, PriorityFee, Terms } from '../icons';
 
+function getFeeTypeLabel(feeType: FeeType) {
+	switch (feeType) {
+		case 'dynamic':
+		default:
+			return 'Dynamic';
+		case 'boosted':
+			return 'Boosted 5x';
+		case 'turbo':
+			return 'Boosted 10x';
+		case 'custom':
+			return 'Custom';
+	}
+}
+
 export default function Footer() {
 	const setAppStore = useAppStore((s) => s.set);
 	const [currentRpc] = useCurrentRpc();
 	const currentRpcLatency = useCurrentRpcLatency();
 	const isMobile = useIsMobileSize();
+	const { priorityFeeSettings } = usePriorityFeeUserSettings();
 
 	const rpcLatencyColor = getRpcLatencyColor(currentRpcLatency?.avg);
 
 	const openRpcSwitcherModal = () => {
 		setAppStore((s) => {
 			s.modals.showRpcSwitcherModal = true;
+		});
+	};
+
+	const openPriorityFeesSettingModal = () => {
+		setAppStore((s) => {
+			s.modals.showPriorityFeesSettingModal = true;
 		});
 	};
 
@@ -38,13 +64,16 @@ export default function Footer() {
 						</div>
 					</div>
 
-					<div className="flex items-center justify-center flex-1 md:flex-none">
+					<div
+						className="flex items-center justify-center flex-1 cursor-pointer md:flex-none"
+						onClick={openPriorityFeesSettingModal}
+					>
 						{isMobile ? (
 							<PriorityFee fontSize={16} className="mr-1" />
 						) : (
 							'Priority Fees:'
 						)}{' '}
-						Dynamic
+						{getFeeTypeLabel(priorityFeeSettings.userPriorityFeeType)}
 					</div>
 				</div>
 				<div className="flex items-center justify-end flex-1 gap-4 md:gap-2 md:flex-none">

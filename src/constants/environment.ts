@@ -26,6 +26,10 @@ interface EnvironmentVariables extends AppSetupProps {
 	rpcOverride: string | undefined;
 	historyServerUrl: string;
 	commitment: Commitment;
+	priorityFee: {
+		targetPercentile: number;
+		maxFeeInSol: number;
+	};
 }
 
 const Env: EnvironmentVariables = {
@@ -45,6 +49,10 @@ const Env: EnvironmentVariables = {
 			: EnvironmentConstants.historyServerUrl.dev,
 	commitment: (process.env.COMMITMENT ?? 'confirmed') as Commitment,
 	priorityFeePollingMultiplier: 5,
+	priorityFee: {
+		targetPercentile: 0.5,
+		maxFeeInSol: 1,
+	},
 };
 
 CommonConfig.spotMarketsLookup[6].symbol = 'JitoSOL';
@@ -85,5 +93,12 @@ export const MARKET_INDEX_TO_PYTH_SYMBOL_MAP: {
 	11: 'Crypto.JUP/USD',
 	12: 'Crypto.RNDR/USD',
 };
+
+export const CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE = 750_000;
+
+export const RPC_LIST =
+	driftEnv === 'mainnet-beta'
+		? EnvironmentConstants.rpcs.mainnet
+		: EnvironmentConstants.rpcs.dev;
 
 export default Env;

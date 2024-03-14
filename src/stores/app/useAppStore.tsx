@@ -73,6 +73,7 @@ export interface AppStoreState {
 			  }
 			| { show: false };
 		showAcknowledgeTermsModal: boolean;
+		showPriorityFeesSettingModal: boolean;
 	};
 	vaultClient: VaultClient | undefined;
 	vaults: {
@@ -120,6 +121,7 @@ const DEFAULT_APP_STORE_STATE = {
 			show: false as false,
 		},
 		showAcknowledgeTermsModal: false,
+		showPriorityFeesSettingModal: false,
 	},
 	vaultClient: undefined,
 	vaults: {},

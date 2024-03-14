@@ -6,6 +6,7 @@ import React from 'react';
 import AcknowledgeTermsModal from './AcknowledgeTermsModal';
 import ActionRecordModal from './ActionRecordModal';
 import ConnectWalletModal from './ConnectWalletModal';
+import PriorityFeesSettingModal from './PriorityFeesSettingModal';
 import RpcSwitcherModal from './RpcSwitcherModal';
 import StoreModal from './StoreModal';
 
@@ -16,6 +17,7 @@ function FloatingUi() {
 		showStoreModal,
 		showActionRecordModal,
 		showAcknowledgeTermsModal,
+		showPriorityFeesSettingModal,
 	} = useAppStore((s) => s.modals);
 
 	return (
@@ -30,6 +32,8 @@ function FloatingUi() {
 				<ActionRecordModal actionRecord={showActionRecordModal.actionRecord} />
 			) : showAcknowledgeTermsModal ? (
 				<AcknowledgeTermsModal />
+			) : showPriorityFeesSettingModal ? (
+				<PriorityFeesSettingModal />
 			) : (
 				<></>
 			)}

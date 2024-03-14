@@ -25,7 +25,10 @@ import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 import { useWithdrawalState } from '@/hooks/useWithdrawalState';
 
-import { redeemPeriodToString } from '@/utils/utils';
+import {
+	handleOnValueChangeCurried,
+	redeemPeriodToString,
+} from '@/utils/utils';
 import { getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
@@ -33,8 +36,7 @@ import { USDC_MARKET } from '@/constants/environment';
 import Button from '../elements/Button';
 import ButtonTabs from '../elements/ButtonTabs';
 import FadeInDiv from '../elements/FadeInDiv';
-import Input from '../elements/Input';
-import MarketIcon from '../elements/MarketIcon';
+import { CollateralInput } from '../elements/Input';
 import { Tooltip } from '../elements/Tooltip';
 import { ExternalLink } from '../icons';
 import Info from '../icons/Info';
@@ -169,16 +171,6 @@ const Form = ({
 	spotMarketConfig: SpotMarketConfig;
 	showMaxDepositWarning?: boolean;
 }) => {
-	const [isFocused, setIsFocused] = useState(false);
-
-	const handleFocus = () => {
-		setIsFocused(true);
-	};
-
-	const handleBlur = () => {
-		setIsFocused(false);
-	};
-
 	return (
 		<div className="flex flex-col gap-2">
 			<div className="flex items-center justify-between">
@@ -210,30 +202,12 @@ const Form = ({
 					</span>
 				</span>
 			</div>
-			<div
-				className={twMerge(
-					'flex items-center border border-container-border-light',
-					isFocused && 'border-container-border-selected'
-				)}
-			>
-				<Input
-					// type="number"
-					className="border-0"
-					value={amount}
-					onChange={(e) => setAmount(e.target.value)}
-					onFocus={handleFocus}
-					onBlur={handleBlur}
-				/>
-				<div
-					className={twMerge(
-						'flex items-center justify-center flex-1 h-12 font-medium border-l border-container-border-light px-7',
-						isFocused && 'border-container-border-selected'
-					)}
-				>
-					<MarketIcon marketName={spotMarketConfig.symbol} className="mr-1" />
-					{spotMarketConfig.symbol}
-				</div>
-			</div>
+
+			<CollateralInput
+				amount={amount}
+				setAmount={setAmount}
+				marketSymbol={spotMarketConfig.symbol}
+			/>
 
 			<ButtonTabs
 				tabs={PERCENTAGE_SELECTOR_OPTIONS.map((option) => ({
@@ -250,41 +224,6 @@ const Form = ({
 		</div>
 	);
 };
-
-const handleOnValueChangeCurried =
-	(setAmount: (amount: string) => void, spotMarketConfig: SpotMarketConfig) =>
-	(newAmount: string) => {
-		if (isNaN(+newAmount)) return;
-
-		if (newAmount === '') {
-			setAmount('');
-			return;
-		}
-
-		const lastChar = newAmount[newAmount.length - 1];
-
-		// if last char of string is a decimal point, don't format
-		if (lastChar === '.') {
-			setAmount(newAmount);
-			return;
-		}
-
-		if (lastChar === '0') {
-			// if last char of string is a zero in the decimal places, cut it off if it exceeds precision
-			const numOfDigitsAfterDecimal = newAmount.split('.')[1]?.length ?? 0;
-			if (numOfDigitsAfterDecimal > spotMarketConfig.precisionExp.toNumber()) {
-				setAmount(newAmount.slice(0, -1));
-			} else {
-				setAmount(newAmount);
-			}
-			return;
-		}
-
-		const formattedAmount = Number(
-			(+newAmount).toFixed(spotMarketConfig.precisionExp.toNumber())
-		);
-		setAmount(formattedAmount.toString());
-	};
 
 const DepositForm = ({
 	setUserPerformanceTab,

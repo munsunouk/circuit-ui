@@ -9,7 +9,9 @@ import {
 	useAllRpcLatencies,
 	useCommonDriftStore,
 	useEmulation,
+	usePriorityFeeUserSettings,
 	useSyncOraclePriceStore,
+	useSyncPriorityFeeStore,
 } from '@drift-labs/react';
 import { UIMarket } from '@drift/common';
 import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
@@ -29,6 +31,7 @@ import { useSyncVaultStats } from '@/hooks/useVaultStats';
 
 import Env, {
 	PERP_MARKETS_LOOKUP,
+	RPC_LIST,
 	SPOT_MARKETS_LOOKUP,
 } from '@/constants/environment';
 
@@ -52,6 +55,12 @@ SPOT_MARKETS_LOOKUP.forEach((market) => {
 });
 
 const AppSetup = ({ children }: { children: React.ReactNode }) => {
+	// variables for useSyncPriorityFeeStore
+	const heliusRpcUrl =
+		RPC_LIST.find((rpc) => rpc.value.includes('helius'))?.value ?? '';
+	const targetFeePercentile = Env.priorityFee.targetPercentile;
+	const { priorityFeeSettings } = usePriorityFeeUserSettings();
+
 	useSyncWalletToStore();
 	useFetchVault();
 	useDepositAssetBalances();
@@ -60,6 +69,14 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useShowAcknowledgeModal();
 	useSyncOraclePriceStore(marketsAndAccounts);
 	useSyncVaultStats();
+	useSyncPriorityFeeStore({
+		heliusRpcUrl,
+		targetFeePercentile,
+		userPriorityFeeType: priorityFeeSettings.userPriorityFeeType,
+		userCustomMaxPriorityFeeCap:
+			priorityFeeSettings.userCustomMaxPriorityFeeCap,
+		userCustomPriorityFee: priorityFeeSettings.userCustomPriorityFee,
+	});
 
 	return <>{children}</>;
 };

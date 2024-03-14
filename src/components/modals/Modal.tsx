@@ -143,7 +143,7 @@ export const Modal = ({
 						ref={contentRef}
 						className={twMerge('bg-container-bg', className)}
 					>
-						<div className="flex items-center justify-between w-full gap-2 py-4 px-7">
+						<div className="flex items-center justify-between w-full gap-2 px-6 pt-6">
 							<span className="text-xl">{header}</span>
 							<button
 								onClick={onClose}
@@ -152,7 +152,7 @@ export const Modal = ({
 								<Close className="w-6 h-6" />
 							</button>
 						</div>
-						<div className="p-7">{children}</div>
+						<div className="p-6">{children}</div>
 					</FadeInDiv>
 				</GradientBorderBox>
 			</ModalBackground>

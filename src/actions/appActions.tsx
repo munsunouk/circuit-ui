@@ -1,5 +1,5 @@
 import { AppStoreState, DEFAULT_VAULT_STATS } from '@/stores/app/useAppStore';
-import { CommonDriftStore } from '@drift-labs/react';
+import { CommonDriftStore, PriorityFeeStore } from '@drift-labs/react';
 import {
 	BN,
 	BigNum,
@@ -12,6 +12,7 @@ import {
 } from '@drift-labs/sdk';
 import {
 	LogParser,
+	TxParams,
 	VAULT_PROGRAM_ID,
 	Vault,
 	VaultAccount,
@@ -24,6 +25,7 @@ import {
 	getVaultDepositorAddressSync,
 } from '@drift-labs/vaults-sdk';
 import { COMMON_UI_UTILS } from '@drift/common';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { ToastContent } from 'react-toastify';
 import invariant from 'tiny-invariant';
 import { StoreApi } from 'zustand';
@@ -34,6 +36,7 @@ import { redeemPeriodToString } from '@/utils/utils';
 
 import Env, {
 	ARBITRARY_WALLET,
+	CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE,
 	SPOT_MARKETS_LOOKUP,
 } from '@/constants/environment';
 
@@ -41,8 +44,26 @@ const createAppActions = (
 	getCommon: StoreApi<CommonDriftStore>['getState'],
 	_setCommon: (x: (s: CommonDriftStore) => void) => void,
 	get: StoreApi<AppStoreState>['getState'],
-	set: (x: (s: AppStoreState) => void) => void
+	set: (x: (s: AppStoreState) => void) => void,
+	getPriorityFeeToUse: PriorityFeeStore['getPriorityFeeToUse']
 ) => {
+	const getTxParams = (
+		computeUnits = CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE
+	): TxParams => {
+		const { computeUnitsPrice } = getPriorityFeeToUse(computeUnits);
+
+		console.log(
+			`Using compute unit price ${computeUnitsPrice} for tx with ${computeUnits} compute units. Estimated priority fee = ${
+				(computeUnitsPrice * computeUnits) / 10 ** 6 / LAMPORTS_PER_SOL
+			} SOL`
+		);
+
+		return {
+			cuPriceMicroLamports: computeUnitsPrice,
+			cuLimit: computeUnits,
+		};
+	};
+
 	const setupVaultClient = () => {
 		const state = getCommon();
 
@@ -384,15 +405,25 @@ const createAppActions = (
 					vaultAddress,
 					authority
 				);
-				tx = await vaultClient.deposit(vaultDepositorPubkey, amount, {
-					authority,
-					vault: vaultAddress,
-				});
+				tx = await vaultClient.deposit(
+					vaultDepositorPubkey,
+					amount,
+					{
+						authority,
+						vault: vaultAddress,
+					},
+					getTxParams()
+				);
 
 				await connection.confirmTransaction(tx, 'finalized');
 				await initVaultDepositorSubscriber(vaultAddress, authority);
 			} else {
-				tx = await vaultClient.deposit(vaultDepositor.pubkey, amount);
+				tx = await vaultClient.deposit(
+					vaultDepositor.pubkey,
+					amount,
+					undefined,
+					getTxParams()
+				);
 			}
 
 			await handleSentTxn(
@@ -424,7 +455,8 @@ const createAppActions = (
 			const tx = await vaultClient.requestWithdraw(
 				vaultDepositor.pubkey,
 				percentage,
-				WithdrawUnit.SHARES_PERCENT
+				WithdrawUnit.SHARES_PERCENT,
+				getTxParams()
 			);
 
 			await handleSentTxn(
@@ -451,7 +483,10 @@ const createAppActions = (
 			invariant(vaultClient, 'No vault client');
 			invariant(vaultDepositor, 'No vault depositor');
 
-			const tx = await vaultClient.cancelRequestWithdraw(vaultDepositor.pubkey);
+			const tx = await vaultClient.cancelRequestWithdraw(
+				vaultDepositor.pubkey,
+				getTxParams()
+			);
 
 			await handleSentTxn(
 				tx,
@@ -477,6 +512,7 @@ const createAppActions = (
 
 			const tx = await vaultClient.withdraw(vaultDepositor.pubkey, {
 				simulateTransaction,
+				...getTxParams(),
 			});
 
 			await handleSentTxn(tx, 'You have successfully withdrew your funds.');
@@ -495,129 +531,11 @@ const createAppActions = (
 		invariant(vaultDepositor, 'No vault depositor');
 
 		const tx = await vaultClient
-			.liquidate(vaultDepositor.pubkey)
+			.liquidate(vaultDepositor.pubkey, getTxParams())
 			.catch((err: Error) => TransactionErrorHandler.handle(err));
 
 		return tx;
 	};
-
-	// const combineVaultHistories = (
-	// 	vaultAddress: string,
-	// 	snapshot: {
-	// 		dailyAllTimePnls: SerializedPerformanceHistory[];
-	// 	},
-	// 	combineTotalAccountValue = true,
-	// 	combineAllTimeTotalPnl = true
-	// ) => {
-	// 	const uiVaultConfig = VAULTS.find(
-	// 		(vault) => vault.pubkeyString === vaultAddress
-	// 	);
-	// 	const pastVaultHistory = uiVaultConfig?.pastPerformanceHistory ?? [];
-	// 	const formattedPastHistory = pastVaultHistory.map((history) => ({
-	// 		...history,
-	// 		totalAccountValue: history.totalAccountValue.toNum(),
-	// 		allTimeTotalPnl: history.allTimeTotalPnl.toNum(),
-	// 		allTimeTotalPnlPct: 0,
-	// 	}));
-
-	// 	const formattedSnapshotHistory = {
-	// 		dailyAllTimePnls: combineVaultHistoriesForResolution(
-	// 			formattedPastHistory,
-	// 			snapshot.dailyAllTimePnls,
-	// 			HistoryResolution.ALL,
-	// 			dayjs.unix(0),
-	// 			combineTotalAccountValue,
-	// 			combineAllTimeTotalPnl
-	// 		),
-	// 	};
-
-	// 	return formattedSnapshotHistory;
-	// };
-
-	// Combines a vault's past history with snapshot history.
-	// If there is overlap in data, e.g. both histories have a snapshot on 2021-08-01,
-	// it will sum the values of both histories (on the assumption that funds is being
-	// flowed from an old vault to a new vault)
-	// const combineVaultHistoriesForResolution = (
-	// 	pastHistory: SerializedPerformanceHistory[],
-	// 	snapshotHistory: SerializedPerformanceHistory[],
-	// 	resolution: HistoryResolution,
-	// 	firstDate: dayjs.Dayjs,
-	// 	combineTotalAccountValue: boolean,
-	// 	combineAllTimeTotalPnl: boolean
-	// ): OptionalSerializedPerformanceHistory[] => {
-	// 	const lastPointInPastHistory = pastHistory[pastHistory.length - 1] ?? {
-	// 		totalAccountValue: 0,
-	// 		allTimeTotalPnl: 0,
-	// 		epochTs: 0,
-	// 	};
-	// 	let firstOverlappingPointIndex = -1;
-
-	// 	const formattedSnapshotHistory = snapshotHistory
-	// 		// if data overlap, add point in past history that corresponds to the date of data point
-	// 		// if data don't overlap, add last point in past history to data point
-	// 		.map((snapshot) => {
-	// 			const currentDate = normalizeDate(snapshot.epochTs);
-	// 			const overlappingPastHistoryDataPointIndex = pastHistory.findIndex(
-	// 				(history) => history.epochTs === currentDate
-	// 			);
-
-	// 			if (overlappingPastHistoryDataPointIndex >= 0) {
-	// 				const overlappingPastHistoryDataPoint =
-	// 					pastHistory[overlappingPastHistoryDataPointIndex];
-	// 				if (firstOverlappingPointIndex === -1) {
-	// 					firstOverlappingPointIndex = overlappingPastHistoryDataPointIndex;
-	// 				}
-
-	// 				return {
-	// 					epochTs: normalizeDate(snapshot.epochTs, resolution),
-	// 					totalAccountValue:
-	// 						snapshot.totalAccountValue +
-	// 						(combineTotalAccountValue
-	// 							? overlappingPastHistoryDataPoint.totalAccountValue
-	// 							: 0),
-	// 					allTimeTotalPnl:
-	// 						overlappingPastHistoryDataPoint.allTimeTotalPnl +
-	// 						(combineAllTimeTotalPnl ? snapshot.allTimeTotalPnl : 0),
-	// 					allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
-	// 				};
-	// 			} else {
-	// 				return {
-	// 					epochTs: normalizeDate(snapshot.epochTs, resolution),
-	// 					// allow for data continuation from past history
-	// 					totalAccountValue:
-	// 						snapshot.totalAccountValue +
-	// 						(combineTotalAccountValue
-	// 							? lastPointInPastHistory.totalAccountValue
-	// 							: 0),
-	// 					allTimeTotalPnl:
-	// 						snapshot.allTimeTotalPnl +
-	// 						(combineAllTimeTotalPnl
-	// 							? lastPointInPastHistory.allTimeTotalPnl
-	// 							: 0),
-	// 					allTimeTotalPnlPct: snapshot.allTimeTotalPnlPct,
-	// 				};
-	// 			}
-	// 		});
-
-	// 	const combinedHistory = pastHistory
-	// 		.slice(0, firstOverlappingPointIndex)
-	// 		.map((pastHistoryData) => ({
-	// 			...pastHistoryData,
-	// 			totalAccountValue: combineTotalAccountValue
-	// 				? pastHistoryData.totalAccountValue
-	// 				: undefined,
-	// 			allTimeTotalPnl: combineAllTimeTotalPnl
-	// 				? pastHistoryData.allTimeTotalPnl
-	// 				: undefined,
-	// 		}))
-	// 		.concat(formattedSnapshotHistory);
-	// 	const withinResolutionHistory = combinedHistory.filter((point) =>
-	// 		dayjs.unix(point.epochTs).isSameOrAfter(firstDate)
-	// 	);
-
-	// 	return withinResolutionHistory;
-	// };
 
 	/**
 	 * Checks if the given tx is confirmed, and if so, shows a success toast.
