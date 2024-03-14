@@ -2,7 +2,7 @@ import { DetailedHTMLProps, HTMLAttributes } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type GradientBorderBoxProps = {
-	// color: string;
+	borderClassName?: string;
 	children: React.ReactNode;
 	borderWidth?: number;
 } & DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
@@ -12,11 +12,12 @@ export default function GradientBorderBox({
 	children,
 	className,
 	borderWidth = 1,
+	borderClassName,
 	...rest
 }: GradientBorderBoxProps) {
 	return (
 		<div
-			className={`gradient-container-${color}`}
+			className={twMerge(`gradient-container-${color}`, borderClassName)}
 			style={{
 				padding: borderWidth,
 			}}

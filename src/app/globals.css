@@ -124,6 +124,19 @@ body::-webkit-scrollbar {
 	);
 }
 
+.gradient-container-teal {
+	background: linear-gradient(
+		45deg,
+		#35e9e9 5%,
+		#61c9da 10%,
+		#000b31 22%,
+		#636464 50%,
+		#000b31 78%,
+		#61c9da 90%,
+		#35e9e9 95%
+	);
+}
+
 .loading span {
 	animation-name: dots;
 	animation-duration: 1s;

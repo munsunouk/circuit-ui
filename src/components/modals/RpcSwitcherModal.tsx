@@ -17,7 +17,6 @@ import Env from '@/constants/environment';
 
 import FadeInDiv from '../elements/FadeInDiv';
 import Input from '../elements/Input';
-import { Checkmark } from '../icons';
 import { Modal } from './Modal';
 
 const CUSTOM_LABEL = 'Custom';
@@ -43,8 +42,10 @@ const RpcOption = ({
 			className="flex items-center gap-3 cursor-pointer hover:opacity-60"
 			delay={(index + 1) * 100}
 		>
-			<div className="flex items-center justify-center w-4 h-4">
-				{selected && <Checkmark className="w-4 h-4" />}
+			<div className="flex items-center justify-center w-5 h-5 border-2 rounded-full border-main-blue">
+				{selected && (
+					<div className="w-[10px] h-[10px] rounded-full bg-main-blue" />
+				)}
 			</div>
 			<div className="grow">{label}</div>
 			<div className="flex items-center gap-2 min-w-[80px]">
@@ -126,7 +127,7 @@ export default function RpcSwitcherModal() {
 
 	return (
 		<Modal onClose={handleOnClose} header="Switch RPCs">
-			<div className="flex flex-col gap-6 min-w-[300px]">
+			<div className="flex flex-col gap-6 min-w-[300px] md:min-w-[480px]">
 				{rpcOptions.map((rpc, index) => {
 					return (
 						<RpcOption

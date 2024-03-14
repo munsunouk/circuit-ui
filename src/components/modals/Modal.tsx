@@ -11,6 +11,7 @@ import type { MouseEvent as ReactMouseEvent } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import FadeInDiv from '../elements/FadeInDiv';
+import GradientBorderBox from '../elements/GradientBorderBox';
 import { Close } from '../icons';
 import ModalPortal from './ModalPortal';
 
@@ -97,9 +98,9 @@ export const ModalBackground = (
 			onMouseDown={closingModalFromBackground}
 			ref={backgroundRef}
 		>
-			<div className="min-h-screen px-4 pb-20 sm:block sm:p-0">
+			<div className="block p-0 px-4 md:pb-20 md:min-h-screen">
 				<div
-					className={`fixed inset-0 flex items-center justify-center`}
+					className={`fixed inset-0 flex items-end md:items-center justify-center`}
 					aria-hidden="true"
 					onMouseUp={handleClose}
 				>
@@ -136,22 +137,24 @@ export const Modal = ({
 	return (
 		<ModalPortal id={id}>
 			<ModalBackground onClose={onClose} contentRef={contentRef}>
-				<FadeInDiv
-					delay={TRANSITION_DELAY}
-					ref={contentRef}
-					className={twMerge('border bg-container-bg border-white', className)}
-				>
-					<div className="flex items-center justify-between w-full gap-2 py-4 border-b border-white px-7">
-						<span className="text-xl">{header}</span>
-						<button
-							onClick={onClose}
-							className="flex items-center justify-around transition-opacity hover:opacity-80"
-						>
-							<Close className="w-6 h-6" />
-						</button>
-					</div>
-					<div className="p-7">{children}</div>
-				</FadeInDiv>
+				<GradientBorderBox color="teal" borderClassName="w-full md:w-auto">
+					<FadeInDiv
+						delay={TRANSITION_DELAY}
+						ref={contentRef}
+						className={twMerge('bg-container-bg', className)}
+					>
+						<div className="flex items-center justify-between w-full gap-2 py-4 px-7">
+							<span className="text-xl">{header}</span>
+							<button
+								onClick={onClose}
+								className="flex items-center justify-around transition-opacity hover:opacity-80"
+							>
+								<Close className="w-6 h-6" />
+							</button>
+						</div>
+						<div className="p-7">{children}</div>
+					</FadeInDiv>
+				</GradientBorderBox>
 			</ModalBackground>
 		</ModalPortal>
 	);
