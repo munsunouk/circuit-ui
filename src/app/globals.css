@@ -24,6 +24,7 @@
 	--container-bg: #000;
 	--container-bg-hover: var(--main-blue);
 	--container-bg-selected: var(--secondary-blue);
+	--container-bg-secondary: var(--secondary-blue);
 	--container-border: #333333;
 	--container-border-light: #cdcdcd;
 	--container-border-selected: var(--main-blue);

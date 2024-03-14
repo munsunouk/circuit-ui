@@ -10,7 +10,7 @@ const SvgEmail = (props: SVGProps<SVGSVGElement>) => (
 		viewBox="0 0 24 24"
 		{...props}
 	>
-		<path stroke="#fff" strokeWidth={0.5} d="M3 19V5h18v14H3Z" />
+		<path stroke="#fff" strokeWidth={0.5} d="M3 19V5h18v14z" />
 		<path stroke="#fff" strokeWidth={0.5} d="m3 7 9 4.5L21 7" />
 	</svg>
 );

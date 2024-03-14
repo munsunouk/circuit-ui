@@ -22,6 +22,7 @@ const SEMANTIC_CLASSES = {
 	'container-bg': 'var(--container-bg)',
 	'container-bg-hover': 'var(--container-bg-hover)',
 	'container-bg-selected': 'var(--container-bg-selected)',
+	'container-bg-secondary': 'var(--container-bg-secondary)',
 	'container-border': 'var(--container-border)',
 	'container-border-light': 'var(--container-border-light)',
 	'container-border-selected': 'var(--container-border-selected)',

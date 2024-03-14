@@ -19,6 +19,7 @@ import { useVaultStats } from '@/hooks/useVaultStats';
 import { encodeVaultName, hexToHue } from '@/utils/utils';
 import { getUiVaultConfig } from '@/utils/vaults';
 
+import { BREAKPOINTS } from '@/constants/breakpoints';
 import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
 
@@ -250,7 +251,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		const maxHeight = 120;
 		let viewportWidth;
 
-		if (width < 768) {
+		if (width < BREAKPOINTS.md) {
 			viewportWidth = 20;
 		} else {
 			viewportWidth = 10;

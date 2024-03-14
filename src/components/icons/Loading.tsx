@@ -12,12 +12,12 @@ const SvgLoading = (props: SVGProps<SVGSVGElement>) => (
 	>
 		<circle cx={10} cy={10} r={9.5} stroke="#000" />
 		<mask id="loading_svg__a" fill="#fff">
-			<path d="M20 10a10 10 0 0 1-6.61 9.408l-.338-.938A9.004 9.004 0 0 0 19.003 10H20Z" />
+			<path d="M20 10a10 10 0 0 1-6.61 9.408l-.338-.938A9 9 0 0 0 19.003 10z" />
 		</mask>
 		<path
 			stroke="#CDCDCD"
 			strokeWidth={2}
-			d="M20 10a10 10 0 0 1-6.61 9.408l-.338-.938A9.004 9.004 0 0 0 19.003 10H20Z"
+			d="M20 10a10 10 0 0 1-6.61 9.408l-.338-.938A9 9 0 0 0 19.003 10z"
 			mask="url(#loading_svg__a)"
 		/>
 	</svg>

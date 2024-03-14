@@ -20,7 +20,7 @@ const SvgLock = (props: SVGProps<SVGSVGElement>) => (
 			stroke="#000"
 			strokeLinejoin="round"
 			strokeWidth={0.667}
-			d="M3.333 6.667h9.333v6A1.333 1.333 0 0 1 11.333 14H4.666a1.333 1.333 0 0 1-1.333-1.334v-6Z"
+			d="M3.333 6.667h9.333v6A1.333 1.333 0 0 1 11.333 14H4.666a1.333 1.333 0 0 1-1.333-1.334z"
 		/>
 	</svg>
 );
