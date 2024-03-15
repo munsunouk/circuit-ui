@@ -399,5 +399,3 @@ export const backfillSupportedVaultsDeposits = async () => {
 		await backfillVaultDeposits(vault.pubkey, vault.manager);
 	}
 };
-
-backfillSupportedVaultsDeposits();
