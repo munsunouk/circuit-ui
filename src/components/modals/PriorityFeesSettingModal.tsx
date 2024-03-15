@@ -19,6 +19,7 @@ import Env, {
 
 import Button from '../elements/Button';
 import { CollateralInput } from '../elements/Input';
+import MarketIcon from '../elements/MarketIcon';
 import { Modal } from './Modal';
 
 const PRIORITY_FEES_OPTIONS: {
@@ -174,7 +175,10 @@ export default function PriorityFeesSettingModal() {
 							label={option.label}
 							subValue={
 								option.value === 'dynamic' ? (
-									<span>{baselineDynamicFee}</span>
+									<span className="flex items-center gap-1">
+										<span>{baselineDynamicFee}</span>
+										<MarketIcon marketName={SOL_MARKET.symbol} />
+									</span>
 								) : (
 									option.subValue
 								)
