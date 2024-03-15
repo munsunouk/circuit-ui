@@ -1,3 +1,4 @@
+import { AppSetupProps } from '@drift-labs/react';
 import { DriftEnv, PublicKey, Wallet, initialize } from '@drift-labs/sdk';
 import {
 	Config as CommonConfig,
@@ -17,7 +18,7 @@ const driftEnv =
 initialize({ env: driftEnv });
 InitializeCommon(driftEnv);
 
-type EnvironmentVariables = {
+interface EnvironmentVariables extends AppSetupProps {
 	driftEnv: DriftEnv;
 	nextEnv: string | undefined;
 	isDev: boolean | undefined;
@@ -25,7 +26,7 @@ type EnvironmentVariables = {
 	rpcOverride: string | undefined;
 	historyServerUrl: string;
 	commitment: Commitment;
-};
+}
 
 const Env: EnvironmentVariables = {
 	driftEnv,
@@ -43,6 +44,7 @@ const Env: EnvironmentVariables = {
 			? EnvironmentConstants.historyServerUrl.mainnet
 			: EnvironmentConstants.historyServerUrl.dev,
 	commitment: (process.env.COMMITMENT ?? 'confirmed') as Commitment,
+	priorityFeePollingMultiplier: 5,
 };
 
 CommonConfig.spotMarketsLookup[6].symbol = 'JitoSOL';
