@@ -63,7 +63,7 @@ const PriorityFeeOption = ({
 	return (
 		<div
 			className={twMerge(
-				'bg-container-bg-secondary flex flex-col gap-1 grow p-2 cursor-pointer border border-transparent h-[70px]',
+				'bg-container-bg-secondary flex flex-col flex-1 gap-1 grow p-2 cursor-pointer border border-transparent h-[70px]',
 				selected && 'border-container-border-selected'
 			)}
 			onClick={onClick}
