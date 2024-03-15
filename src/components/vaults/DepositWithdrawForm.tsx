@@ -68,7 +68,8 @@ const getWithdrawalDetails = (
 			return (
 				<span>
 					Withdrawals can be requested at any time and will be available after{' '}
-					{withdrawalWaitingPeriod}.
+					{withdrawalWaitingPeriod}. Profits will not be accrued during the
+					redemption period, while losses can still be incurred.
 					<br />
 					<br />
 					The maximum amount is after fees, while the final amount received may
