@@ -2,15 +2,14 @@ import useAppStore from '@/stores/app/useAppStore';
 import {
 	FeeType,
 	useImmediateInterval,
+	useIsMobileScreenSize,
 	useOraclePriceStore,
 	usePriorityFeeStore,
 	usePriorityFeeUserSettings,
 } from '@drift-labs/react';
-import { MarketId } from '@drift/common';
+import { COMMON_UI_UTILS, MarketId } from '@drift/common';
 import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-
-import { handleOnValueChangeCurried } from '@/utils/utils';
 
 import Env, {
 	CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE,
@@ -83,6 +82,7 @@ export default function PriorityFeesSettingModal() {
 	const { priorityFeeSettings, setPriorityFeeSettings } =
 		usePriorityFeeUserSettings();
 	const getMarketPriceData = useOraclePriceStore((s) => s.getMarketPriceData);
+	const isMobile = useIsMobileScreenSize();
 
 	const [selectedPriorityFeeOption, setSelectedPriorityFeeOption] = useState(
 		priorityFeeSettings.userPriorityFeeType
@@ -103,12 +103,21 @@ export default function PriorityFeesSettingModal() {
 			(priorityFeeSettings.userCustomPriorityFee?.toString() ?? '');
 
 	useImmediateInterval(() => {
-		setBaselineDynamicFee(
-			getPriorityFeeToUse(
-				CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE,
-				'dynamic'
-			).priorityFeeInSol.toString()
-		);
+		const dynamicBaselineFee = getPriorityFeeToUse(
+			CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE,
+			'dynamic'
+		).priorityFeeInSol;
+
+		if (isMobile) {
+			if (dynamicBaselineFee < 0.000001) {
+				setBaselineDynamicFee(`<$0.000001`);
+			} else {
+				setBaselineDynamicFee(dynamicBaselineFee.toFixed(6));
+			}
+		} else {
+			setBaselineDynamicFee(`~${dynamicBaselineFee.toFixed(6)}`);
+		}
+
 		setEstimatedDynamicFee(
 			getPriorityFeeToUse(
 				CIRCUIT_TXN_COMPUTE_UNITS_LIMIT_ESTIMATE,
@@ -134,7 +143,10 @@ export default function PriorityFeesSettingModal() {
 		onClose();
 	};
 
-	const handleMaxFeeCap = handleOnValueChangeCurried(setMaxFeeCap, SOL_MARKET);
+	const handleMaxFeeCap = COMMON_UI_UTILS.formatTokenInputCurried(
+		setMaxFeeCap,
+		SOL_MARKET
+	);
 
 	const handleCustomPriorityFee = (newValue: string) => {
 		const numericNewValue = +newValue;
@@ -143,7 +155,10 @@ export default function PriorityFeesSettingModal() {
 
 		if (numericNewValue > Env.priorityFee.maxFeeInSol) return;
 
-		handleOnValueChangeCurried(setCustomPriorityFee, SOL_MARKET)(newValue);
+		COMMON_UI_UTILS.formatTokenInputCurried(
+			setCustomPriorityFee,
+			SOL_MARKET
+		)(newValue);
 	};
 
 	function getSolPrice() {

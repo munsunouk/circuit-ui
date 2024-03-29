@@ -2,7 +2,7 @@
 
 import useAppStore from '@/stores/app/useAppStore';
 import { UiVaultConfig } from '@/types';
-import { useCommonDriftStore } from '@drift-labs/react';
+import { useCommonDriftStore, useScreenSizeStore } from '@drift-labs/react';
 import { BN, BigNum } from '@drift-labs/sdk';
 import { USDC_SPOT_MARKET_INDEX } from '@drift/common';
 import { PublicKey } from '@solana/web3.js';
@@ -19,7 +19,6 @@ import { useVaultStats } from '@/hooks/useVaultStats';
 import { encodeVaultName, hexToHue } from '@/utils/utils';
 import { getUiVaultConfig } from '@/utils/vaults';
 
-import { BREAKPOINTS } from '@/constants/breakpoints';
 import { USDC_MARKET } from '@/constants/environment';
 import { sourceCodePro, syne } from '@/constants/fonts';
 
@@ -134,7 +133,8 @@ const CardContainer = ({
 	vaultName: string;
 	hue: number;
 }) => {
-	const isLargeAndAbove = useWindowSize().width >= 1024;
+	const screenSize = useScreenSizeStore((s) => s.screenSize);
+	const isLargeAndAbove = screenSize === 'xl' || screenSize === 'lg';
 
 	if (comingSoon) {
 		return (
@@ -181,7 +181,8 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		s.authority,
 	]);
 	const appActions = useAppActions();
-	const isBelowLarge = useWindowSize().width < 1024;
+	const screenSize = useScreenSizeStore((s) => s.screenSize);
+	const isBelowLarge = screenSize !== 'lg' && screenSize !== 'xl';
 
 	const vaultPubkey = useMemo(
 		() => (vault.pubkeyString ? new PublicKey(vault.pubkeyString) : undefined),
@@ -251,7 +252,7 @@ export default function VaultPreviewCard({ vault }: VaultPreviewCardProps) {
 		const maxHeight = 120;
 		let viewportWidth;
 
-		if (width < BREAKPOINTS.md) {
+		if (screenSize === 'xs' || screenSize === 'sm') {
 			viewportWidth = 20;
 		} else {
 			viewportWidth = 10;

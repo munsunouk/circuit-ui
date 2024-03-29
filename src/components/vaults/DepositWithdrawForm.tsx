@@ -9,7 +9,7 @@ import {
 	ZERO,
 } from '@drift-labs/sdk';
 import { VaultDepositorAction } from '@drift-labs/vaults-sdk';
-import { ENUM_UTILS } from '@drift/common';
+import { COMMON_UI_UTILS, ENUM_UTILS } from '@drift/common';
 import { useWallet } from '@solana/wallet-adapter-react';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
@@ -25,10 +25,7 @@ import { useCurrentVault } from '@/hooks/useVault';
 import { useCurrentVaultStats } from '@/hooks/useVaultStats';
 import { useWithdrawalState } from '@/hooks/useWithdrawalState';
 
-import {
-	handleOnValueChangeCurried,
-	redeemPeriodToString,
-} from '@/utils/utils';
+import { redeemPeriodToString } from '@/utils/utils';
 import { getUiVaultConfig } from '@/utils/vaults';
 
 import { USDC_MARKET } from '@/constants/environment';
@@ -281,7 +278,7 @@ const DepositForm = ({
 		+amount > maxDepositAmount ||
 		isBelowMinDepositAmount;
 
-	const handleOnValueChange = handleOnValueChangeCurried(
+	const handleOnValueChange = COMMON_UI_UTILS.formatTokenInputCurried(
 		setAmount,
 		spotMarketConfig
 	);
@@ -476,7 +473,7 @@ const WithdrawForm = ({
 		}
 	}, [vaultDepositorAccount, vaultAccountData, tvlBaseValue]);
 
-	const handleOnValueChange = handleOnValueChangeCurried(
+	const handleOnValueChange = COMMON_UI_UTILS.formatTokenInputCurried(
 		setAmount,
 		spotMarketConfig
 	);

@@ -5,11 +5,10 @@ import {
 	FeeType,
 	useCurrentRpc,
 	useCurrentRpcLatency,
+	useIsMobileScreenSize,
 	usePriorityFeeUserSettings,
 } from '@drift-labs/react';
 import Link from 'next/link';
-
-import { useIsMobileSize } from '@/hooks/useIsMobileSize';
 
 import { getRpcLatencyColor } from '@/utils/utils';
 
@@ -33,7 +32,7 @@ export default function Footer() {
 	const setAppStore = useAppStore((s) => s.set);
 	const [currentRpc] = useCurrentRpc();
 	const currentRpcLatency = useCurrentRpcLatency();
-	const isMobile = useIsMobileSize();
+	const isMobile = useIsMobileScreenSize();
 	const { priorityFeeSettings } = usePriorityFeeUserSettings();
 
 	const rpcLatencyColor = getRpcLatencyColor(currentRpcLatency?.avg);

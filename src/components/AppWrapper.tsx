@@ -3,18 +3,18 @@
 import useAppStore from '@/stores/app/useAppStore';
 import useFetchVault from '@/stores/app/useFetchVault';
 import {
+	DEFAULT_BREAKPOINTS,
 	DriftProvider,
 	MarketAndAccount,
 	initializeDriftStore,
 	useAllRpcLatencies,
 	useCommonDriftStore,
-	useEmulation,
 	usePriorityFeeUserSettings,
 	useSyncOraclePriceStore,
 	useSyncPriorityFeeStore,
 } from '@drift-labs/react';
 import { UIMarket } from '@drift/common';
-import { WalletContext, WalletProvider } from '@solana/wallet-adapter-react';
+import { WalletProvider } from '@solana/wallet-adapter-react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -65,7 +65,6 @@ const AppSetup = ({ children }: { children: React.ReactNode }) => {
 	useFetchVault();
 	useDepositAssetBalances();
 	useAllRpcLatencies();
-	useEmulation();
 	useShowAcknowledgeModal();
 	useSyncOraclePriceStore(marketsAndAccounts);
 	useSyncVaultStats();
@@ -93,10 +92,9 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<WalletProvider wallets={[]} autoConnect>
 			<DriftProvider
-				// @ts-ignore
-				walletContext={WalletContext}
+				// walletContext={WalletContext}
 				disable={{
-					idlePollingRateSwitcher: true,
+					// idlePollingRateSwitcher: true,
 					geoblocking: true,
 				}}
 				additionalDriftClientConfig={{
@@ -104,6 +102,7 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 						skipPreflight: true,
 					},
 				}}
+				breakpoints={DEFAULT_BREAKPOINTS}
 			>
 				<SWRConfig
 					value={{
